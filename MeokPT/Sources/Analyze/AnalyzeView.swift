@@ -46,6 +46,13 @@ struct AnalyzeView: View {
                     }
                 }
                 .padding(24)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.gray, lineWidth: 1)
+                        .background(Color.white)
+                )
+                .padding(24)
+                
                 
                 Spacer()
                 
