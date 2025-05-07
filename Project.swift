@@ -4,7 +4,7 @@ let project = Project(
     name: "MeokPT",
     options: .options(
         defaultKnownRegions: ["ko"],
-        developmentRegion: "ko",
+        developmentRegion: "ko"
   ),
     targets: [
         .target(
