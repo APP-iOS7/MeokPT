@@ -4,7 +4,7 @@ import ComposableArchitecture
 struct AppFeature {
     
     @ObservableState
-    struct State: Equatable {
+    struct State {
         var dietState = DietFeature.State()
         var analyzeState = AnalyzeFeature.State()
         var communityState = CommunityFeature.State()
