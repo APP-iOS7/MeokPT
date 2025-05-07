@@ -2,12 +2,16 @@ import ProjectDescription
 
 let project = Project(
     name: "MeokPT",
+    options: .options(
+        defaultKnownRegions: ["ko"],
+        developmentRegion: "ko",
+  ),
     targets: [
         .target(
             name: "MeokPT",
             destinations: .iOS,
             product: .app,
-            bundleId: "io.tuist.MeokPT",
+            bundleId: "kr.co.codegrove.MeokPT",
             infoPlist: .extendingDefault(
                 with: [
                     "UILaunchScreen": [
@@ -18,13 +22,15 @@ let project = Project(
             ),
             sources: ["MeokPT/Sources/**"],
             resources: ["MeokPT/Resources/**"],
-            dependencies: []
+            dependencies: [
+                .external(name: "ComposableArchitecture"),
+            ]
         ),
         .target(
             name: "MeokPTTests",
             destinations: .iOS,
             product: .unitTests,
-            bundleId: "io.tuist.MeokPTTests",
+            bundleId: "kr.co.codegrove.MeokPTTests",
             infoPlist: .default,
             sources: ["MeokPT/Tests/**"],
             resources: [],
