@@ -11,6 +11,8 @@ struct MyPageView: View {
             }
             .navigationTitle("마이페이지")
             .navigationBarTitleDisplayMode(.inline)
+            .containerRelativeFrame([.horizontal, .vertical])
+            .background(Color("AppBackgroundColor"))
         }
     }
     

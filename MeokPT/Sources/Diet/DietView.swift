@@ -8,6 +8,8 @@ struct DietView: View {
         VStack {
             
         }
+        .containerRelativeFrame([.horizontal, .vertical])
+        .background(Color("AppBackgroundColor"))
     }
 }
 

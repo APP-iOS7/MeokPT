@@ -11,6 +11,8 @@ struct CommunityView: View {
             }
             .navigationTitle("커뮤니티")
             .navigationBarTitleDisplayMode(.inline)
+            .containerRelativeFrame([.horizontal, .vertical])
+            .background(Color("AppBackgroundColor"))
         }
     }
 }

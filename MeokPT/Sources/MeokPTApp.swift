@@ -10,7 +10,7 @@ struct MeokPTApp: App {
     var body: some Scene {
         WindowGroup {
             AppView(store: MeokPTApp.store)
-                .tint(Color("AppTintColor"))
+                .tint(.primary)
         }
     }
 }

@@ -25,6 +25,8 @@ struct AppView: View {
                         Text("마이페이지")
                     }
             }
+            .toolbarBackground(.visible, for: .tabBar)
+            .toolbarBackground(Color(UIColor.systemBackground), for: .tabBar)
         }
     }
 }
@@ -35,5 +37,5 @@ struct AppView: View {
             AppFeature()
         }
     )
-    .tint(Color("AppTintColor"))
+    .tint(.primary)
 }

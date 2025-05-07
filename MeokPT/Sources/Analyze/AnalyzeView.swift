@@ -11,6 +11,8 @@ struct AnalyzeView: View {
             }
             .navigationTitle("분석")
             .navigationBarTitleDisplayMode(.inline)
+            .containerRelativeFrame([.horizontal, .vertical])
+            .background(Color("AppBackgroundColor"))
         }
     }
 }
