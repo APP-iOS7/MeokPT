@@ -68,3 +68,9 @@ Derived/
 
 ### Tuist managed dependencies ###
 Tuist/.build
+
+### VSCode ###
+.vscode/
+
+### others ###
+buildServer.json
