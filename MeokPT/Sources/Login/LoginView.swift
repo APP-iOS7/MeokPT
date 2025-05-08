@@ -73,7 +73,9 @@ struct LoginView: View {
                 
                 Spacer().frame(height: 70)
                 
-                Button(action: {}) {
+                Button(action: {
+                    store.send(.loginButtonTapped)
+                }) {
                     ZStack {
                         HStack {
                             Spacer().frame(width: 36)
@@ -98,7 +100,9 @@ struct LoginView: View {
                 
                 Spacer().frame(height: 16)
                 
-                Button(action: {}) {
+                Button(action: {
+                    store.send(.appleLoginButtonTapped)
+                }) {
                     ZStack {
                         HStack {
                             Spacer().frame(width: 36)
@@ -124,7 +128,9 @@ struct LoginView: View {
                 
                 Spacer().frame(height: 16)
                 
-                Button(action: {}) {
+                Button(action: {
+                    store.send(.kakaoLoginButtonTapped)
+                }) {
                     ZStack {
                         HStack {
                             Spacer().frame(width: 36)
@@ -149,10 +155,15 @@ struct LoginView: View {
                 
                 Spacer().frame(height: 40)
                 Divider().frame(width: 160).padding()
-                Button(action: {}) {
-                    Text("회원가입")
-                        .font(.headline)
-                        .foregroundStyle(Color("AppTintColor"))
+                
+                NavigationStack {
+                    NavigationLink {
+                        
+                    } label: {
+                        Text("회원가입")
+                            .font(.headline)
+                            .foregroundColor(Color("AppTintColor"))
+                    }
                 }
                 
             }
