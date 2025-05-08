@@ -22,74 +22,77 @@ struct AnalyzeView: View {
         
     var body: some View {
         NavigationStack {
-            VStack {
-                // MARK: - 신체 정보가 없는 경우
-//                Text("신체 정보가 없습니다")
-//                    .font(.headline)
-//                    .foregroundStyle(Color.secondary)
-//                
-                // MARK: - 신체 정보가 있는 경우
+            ScrollView {
                 VStack {
-                    ForEach(Array(nutritionInfo.enumerated()), id: \.0) { index, item in
-                        let unit = units[index]
-                        let maxNutrition = maxNutritionInfo[index]
-                        
-                        VStack {
-                            HStack {
-                                Text("\(item.key)")
-                                Spacer()
-                                Text("\(item.value)\(unit) / \(maxNutrition)\(unit)")
+                    // MARK: - 신체 정보가 없는 경우
+                    //                Text("신체 정보가 없습니다")
+                    //                    .font(.headline)
+                    //                    .foregroundStyle(Color.secondary)
+                    //                
+                    // MARK: - 신체 정보가 있는 경우
+                    VStack {
+                        ForEach(Array(nutritionInfo.enumerated()), id: \.0) { index, item in
+                            let unit = units[index]
+                            let maxNutrition = maxNutritionInfo[index]
+                            
+                            VStack {
+                                HStack {
+                                    Text("\(item.key)")
+                                    Spacer()
+                                    Text("\(item.value)\(unit) / \(maxNutrition)\(unit)")
+                                }
+                                ConditionalProgressView(current: Double(item.value), max: Double(maxNutrition))
                             }
-                            ConditionalProgressView(current: Double(item.value), max: Double(maxNutrition))
+                            .padding(10)
                         }
-                        .padding(10)
                     }
+                    .padding(24)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color.gray, lineWidth: 1)
+                            .background(Color.white)
+                    )
+                    .padding(.horizontal, 24)
+                    // MARK: - 식단이 없는 경우
+                    //                Text("추가한 식단이 없습니다")
+                    //                    .foregroundStyle(Color.secondary)
+                    //                Spacer()
+                    
+                    // MARK: - 식단이 있는 경우
+                    VStack(alignment: .leading, spacing: 16) {
+                        // 헤더 섹션
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("샐러드와 고구마")
+                                .font(.headline)
+                            Text("400kcal")
+                                .font(.subheadline)
+                        }
+                        
+                        HStack(spacing: 20) {
+                            NutrientView(name: "탄수화물", value: "107.5g")
+                            Spacer()
+                            NutrientView(name: "단백질", value: "33.3g")
+                            Spacer()
+                            NutrientView(name: "지방", value: "8.2g")
+                        }
+                        .frame(width: .infinity)
+                    }
+                    .padding(24)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color.gray, lineWidth: 1)
+                            .background(Color.white)
+                    )
+                    .padding(.horizontal, 24)
+                    
                 }
-                .padding(24)
-                .background(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.gray, lineWidth: 1)
-                        .background(Color.white)
-                )
-                .padding(24)
-                // MARK: - 식단이 없는 경우
-//                Text("추가한 식단이 없습니다")
-//                    .foregroundStyle(Color.secondary)
-//                Spacer()
+                .navigationTitle("분석")
+                .navigationBarTitleDisplayMode(.inline)
+                .containerRelativeFrame([.horizontal, .vertical])
+                .background(Color("AppBackgroundColor"))
+                // MARK: - AI 식단 분석 버튼
                 
-                // MARK: - 식단이 있는 경우
-                VStack(alignment: .leading, spacing: 16) {
-                    // 헤더 섹션
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("샐러드와 고구마")
-                            .font(.headline)
-                        Text("400kcal")
-                            .font(.subheadline)
-                    }
-
-                    HStack(spacing: 20) {
-                        NutrientView(name: "탄수화물", value: "107.5g")
-                        Spacer()
-                        NutrientView(name: "단백질", value: "33.3g")
-                        Spacer()
-                        NutrientView(name: "지방", value: "8.2g")
-                    }
-                    .frame(width: .infinity)
-                }
-                .padding(24)
-                .background(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.gray, lineWidth: 1)
-                        .background(Color.white)
-                )
-                .padding(.horizontal, 24)
-                               
             }
-            .navigationTitle("분석")
-            .navigationBarTitleDisplayMode(.inline)
-            .containerRelativeFrame([.horizontal, .vertical])
-            .background(Color("AppBackgroundColor"))
-            // MARK: - AI 식단 분석 버튼
             .safeAreaInset(edge: .bottom) {
                 Button {
                     
