@@ -54,7 +54,7 @@ struct AnalyzeView: View {
                             .stroke(Color.gray, lineWidth: 1)
                             .background(Color.white)
                     )
-                    .padding(.horizontal, 24)
+                    .padding(24)
                     
                     Spacer()
                     // MARK: - 식단이 없는 경우
@@ -118,7 +118,8 @@ struct AnalyzeView: View {
                 }
                 .navigationTitle("분석")
                 .navigationBarTitleDisplayMode(.inline)
-                .containerRelativeFrame([.horizontal, .vertical])
+                // 해당 코드 주석 처리 후, toolbar와 뷰 겹침 문제 해결
+//                .containerRelativeFrame([.horizontal, .vertical])
                 .background(Color("AppBackgroundColor"))
                 // MARK: - AI 식단 분석 버튼
                 
