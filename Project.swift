@@ -5,7 +5,12 @@ let project = Project(
     options: .options(
         defaultKnownRegions: ["ko"],
         developmentRegion: "ko"
-  ),
+    ),
+    settings: .settings(
+        base: [
+            "OTHER_LDFLAGS": ["-ObjC"]
+        ]
+    ),
     targets: [
         .target(
             name: "MeokPT",
@@ -18,12 +23,19 @@ let project = Project(
                         "UIColorName": "",
                         "UIImageName": "",
                     ],
+                    "NSAppTransportSecurity": [
+                        "NSAllowsArbitraryLoads": true
+                    ],
                 ]
             ),
             sources: ["MeokPT/Sources/**"],
             resources: ["MeokPT/Resources/**"],
             dependencies: [
                 .external(name: "ComposableArchitecture"),
+                .external(name: "FirebaseCore"),
+                .external(name: "FirebaseFirestore"),
+                .external(name: "FirebaseAuth"),
+                .external(name: "FirebaseStorage")
             ]
         ),
         .target(

@@ -1,8 +1,13 @@
 import SwiftUI
 import ComposableArchitecture
+import FirebaseCore
 
 @main
 struct MeokPTApp: App {
+    init() {
+      FirebaseApp.configure()
+    }
+    
     static let store = Store(initialState: AppFeature.State()) {
         AppFeature()
     }
