@@ -52,10 +52,6 @@ struct AnalyzeView: View {
                         .background(Color.white)
                 )
                 .padding(24)
-                
-                
-                Spacer()
-                
                 // MARK: - 식단이 없는 경우
 //                Text("추가한 식단이 없습니다")
 //                    .foregroundStyle(Color.secondary)
@@ -111,12 +107,30 @@ struct AnalyzeView: View {
                         .background(Color.white)
                 )
                 .padding(24)
+                
+                               
             }
             .navigationTitle("분석")
             .navigationBarTitleDisplayMode(.inline)
             .containerRelativeFrame([.horizontal, .vertical])
             .background(Color("AppBackgroundColor"))
+            // MARK: - AI 식단 분석 버튼
+            .safeAreaInset(edge: .bottom) {
+                Button {
+                    
+                } label: {
+                    Text("AI 식단 분석")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .foregroundStyle(.black)
+                        .background(Color("AppTintColor"))
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .padding(.horizontal)
+                }
+            }
         }
+        
+       
     }
 }
 
