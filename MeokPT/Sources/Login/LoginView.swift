@@ -6,11 +6,10 @@
 //
 
 import SwiftUI
+import ComposableArchitecture
 
 struct LoginView: View {
-    
-    @State private var emailText: String = ""
-    @State private var password: String = ""
+    @Bindable var store: StoreOf<LoginFeature>
     
     var body: some View {
         NavigationStack{
@@ -20,17 +19,28 @@ struct LoginView: View {
                         .font(.body)
                         .foregroundStyle(Color("AppSecondaryColor"))
                     Spacer().frame(height: 16)
-                    VStack {
+                    VStack (alignment: .leading) {
                         TextField(
                             "",
-                            text: $emailText,
+                            text: $store.emailText,
                             prompt: Text(verbatim: "example@example.com")
                         )
                         Rectangle()
-                            .frame(height: 1) // 밑줄 두께
-                            .foregroundColor(Color(.placeholderText)) // 밑줄 색상
+                            .frame(height: 1)
+                            .foregroundColor(store.isEmailValid ? Color(.placeholderText) : .red)
+                        if !store.isEmailValid && !store.emailText.isEmpty {
+                            Text(store.emailErrorMessage)
+                                .font(.caption)
+                                .foregroundColor(.red)
+                                .padding(.top, 4)
+                        }
+                        else {
+                            Text(" ")
+                                .font(.caption)
+                                .padding(.top, 4)
+                        }
                     }
-                    Spacer().frame(height: 36)
+                    Spacer().frame(height: 40)
                     HStack {
                         Text("비밀번호")
                             .font(.body)
@@ -41,17 +51,25 @@ struct LoginView: View {
                             .foregroundStyle(Color(.placeholderText))
                     }
                     Spacer().frame(height: 16)
-                    VStack {
-                        TextField(
-                            "",
-                            text: $password,
-                            prompt: Text(verbatim: "******")
-                        )
+                    VStack(alignment: .leading) {
+                        SecureField("******", text: $store.passWord)
+                            .textContentType(.oneTimeCode)
                         Rectangle()
                             .frame(height: 1)
-                            .foregroundColor(Color(.placeholderText))
+                            .foregroundColor(store.isPasswordValid ? Color(.placeholderText) : .red)
+                        if !store.isPasswordValid && !store.passWord.isEmpty {
+                            Text(store.passwordErrorMessage)
+                                .font(.caption)
+                                .foregroundColor(.red)
+                                .padding(.top, 4)
+                        } else {
+                            Text(" ")
+                                .font(.caption)
+                                .padding(.top, 4)
+                        }
                     }
                 }
+                .padding()
                 
                 Spacer().frame(height: 70)
                 
@@ -139,7 +157,7 @@ struct LoginView: View {
                 
             }
             .padding(.horizontal, 24)
-            .navigationTitle("회원가입 / 로그인")
+            .navigationTitle("로그인 / 회원가입")
             .navigationBarTitleDisplayMode(.inline)
             .containerRelativeFrame([.horizontal, .vertical])
             .background(Color("AppBackgroundColor"))
@@ -148,5 +166,9 @@ struct LoginView: View {
 }
 
 #Preview {
-    LoginView()
+    LoginView(
+        store: Store(initialState: LoginFeature.State()) {
+            LoginFeature()
+        }
+    )
 }
