@@ -56,13 +56,11 @@ struct AnalyzeView: View {
                 }
             }
             .sheet(isPresented: $isSheetPresented) {
-                AddMealPlanView()
+                AddDietView()
             }
         }
     }
 }
-
-
 
 #Preview {
     AnalyzeView(

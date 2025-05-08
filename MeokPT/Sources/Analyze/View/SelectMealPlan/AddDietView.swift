@@ -5,7 +5,7 @@ enum Options: String, CaseIterable {
     case favorite = "즐겨찾기"
 }
 
-struct AddMealPlanView: View {
+struct AddDietView: View {
     @State private var selectedOption: Options = .all
     
     @Environment(\.dismiss) private var dismiss
@@ -26,6 +26,26 @@ struct AddMealPlanView: View {
             }
             .navigationTitle("식단 선택")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button {
+                        
+                    } label: {
+                        Text("추가")
+                    }
+                    .foregroundStyle(Color("AppTintColor"))
+                    .fontWeight(.semibold)
+                }
+                
+                ToolbarItem(placement: .cancellationAction) {
+                    Button {
+                        
+                    } label: {
+                        Text("취소")
+                    }
+                    .foregroundStyle(Color("AppTintColor"))
+                }
+            }
         }
     }
 }
