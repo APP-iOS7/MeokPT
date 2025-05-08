@@ -4,6 +4,8 @@ import ComposableArchitecture
 struct AnalyzeView: View {
     let store: StoreOf<AnalyzeFeature>
     
+    // 테스트 코드
+    @State private var isSheetPresented = false
 
         
     var body: some View {
@@ -38,7 +40,7 @@ struct AnalyzeView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button {
-                        
+                        isSheetPresented = true
                     } label: {
                         Text("식단 추가")
                             .foregroundStyle(Color("AppTintColor"))
@@ -47,19 +49,31 @@ struct AnalyzeView: View {
                 }
                 ToolbarItem(placement: .cancellationAction) {
                     Button {
-                        
                     } label: {
                         Text("비우기")
                             .foregroundStyle(Color("AppTintColor"))
                     }
                 }
             }
+            .sheet(isPresented: $isSheetPresented) {
+                ModalView()
+            }
         }
     }
 }
 
+struct ModalView: View {
+    @Environment(\.dismiss) private var dismiss
 
-
+    var body: some View {
+        VStack {
+            Text("모달 뷰입니다.")
+            Button("닫기") {
+                dismiss()
+            }
+        }
+    }
+}
 
 #Preview {
     AnalyzeView(
