@@ -38,8 +38,10 @@ struct AnalyzeView: View {
                             VStack {
                                 HStack {
                                     Text("\(item.key)")
+                                        .font(.headline)
                                     Spacer()
                                     Text("\(item.value)\(unit) / \(maxNutrition)\(unit)")
+                                        .font(.caption)
                                 }
                                 ConditionalProgressView(current: Double(item.value), max: Double(maxNutrition))
                             }
@@ -48,11 +50,13 @@ struct AnalyzeView: View {
                     }
                     .padding(24)
                     .background(
-                        RoundedRectangle(cornerRadius: 10)
+                        RoundedRectangle(cornerRadius: 20)
                             .stroke(Color.gray, lineWidth: 1)
                             .background(Color.white)
                     )
                     .padding(.horizontal, 24)
+                    
+                    Spacer()
                     // MARK: - 식단이 없는 경우
                     //                Text("추가한 식단이 없습니다")
                     //                    .foregroundStyle(Color.secondary)
@@ -79,12 +83,38 @@ struct AnalyzeView: View {
                     }
                     .padding(24)
                     .background(
-                        RoundedRectangle(cornerRadius: 10)
+                        RoundedRectangle(cornerRadius: 20)
                             .stroke(Color.gray, lineWidth: 1)
                             .background(Color.white)
                     )
                     .padding(.horizontal, 24)
+                    Spacer()
                     
+                    VStack(alignment: .leading, spacing: 16) {
+                        // 헤더 섹션
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("샐러드와 고구마")
+                                .font(.headline)
+                            Text("400kcal")
+                                .font(.subheadline)
+                        }
+                        
+                        HStack(spacing: 20) {
+                            NutrientView(name: "탄수화물", value: "107.5g")
+                            Spacer()
+                            NutrientView(name: "단백질", value: "33.3g")
+                            Spacer()
+                            NutrientView(name: "지방", value: "8.2g")
+                        }
+                        .frame(width: .infinity)
+                    }
+                    .padding(24)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(Color.gray, lineWidth: 1)
+                            .background(Color.white)
+                    )
+                    .padding(.horizontal, 24)
                 }
                 .navigationTitle("분석")
                 .navigationBarTitleDisplayMode(.inline)
@@ -106,9 +136,26 @@ struct AnalyzeView: View {
                         .padding(.horizontal, 24)
                 }
             }
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button {
+                        
+                    } label: {
+                        Text("식단 추가")
+                            .foregroundStyle(Color("AppTintColor"))
+                            .fontWeight(.semibold)
+                    }
+                }
+                ToolbarItem(placement: .cancellationAction) {
+                    Button {
+                        
+                    } label: {
+                        Text("비우기")
+                            .foregroundStyle(Color("AppTintColor"))
+                    }
+                }
+            }
         }
-        
-       
     }
 }
 
