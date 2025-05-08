@@ -56,24 +56,13 @@ struct AnalyzeView: View {
                 }
             }
             .sheet(isPresented: $isSheetPresented) {
-                ModalView()
+                AddMealPlanView()
             }
         }
     }
 }
 
-struct ModalView: View {
-    @Environment(\.dismiss) private var dismiss
 
-    var body: some View {
-        VStack {
-            Text("모달 뷰입니다.")
-            Button("닫기") {
-                dismiss()
-            }
-        }
-    }
-}
 
 #Preview {
     AnalyzeView(
