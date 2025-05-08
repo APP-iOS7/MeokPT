@@ -23,6 +23,7 @@ struct AddDietView: View {
                 .padding()
 
                 Spacer()
+                DietItemListView()
             }
             .navigationTitle("식단 선택")
             .navigationBarTitleDisplayMode(.inline)
@@ -39,7 +40,7 @@ struct AddDietView: View {
                 
                 ToolbarItem(placement: .cancellationAction) {
                     Button {
-                        
+                        dismiss()
                     } label: {
                         Text("취소")
                     }
