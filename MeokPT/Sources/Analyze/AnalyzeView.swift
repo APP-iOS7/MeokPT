@@ -57,9 +57,60 @@ struct AnalyzeView: View {
                 Spacer()
                 
                 // MARK: - 식단이 없는 경우
-                Text("추가한 식단이 없습니다")
-                    .foregroundStyle(Color.secondary)
-                Spacer()
+//                Text("추가한 식단이 없습니다")
+//                    .foregroundStyle(Color.secondary)
+//                Spacer()
+                
+                // MARK: - 식단이 있는 경우
+                VStack {
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text("샐러드와 고구마")
+                                .font(.headline)
+                            Spacer()
+                            HStack{
+                                Text("400kcal")
+                                Spacer()
+                            }
+                            Spacer()
+                        }
+                        Spacer()
+                    }
+                    Spacer()
+
+                    HStack {
+                        VStack {
+                            Text("탄수화물")
+                                .font(.caption)
+                                .foregroundStyle(Color("AppSecondaryColor"))
+                            Spacer()
+                            Text("107.5g")
+                        }
+                        Spacer()
+                        VStack {
+                            Text("단백질")
+                                .font(.caption)
+                                .foregroundStyle(Color("AppSecondaryColor"))
+                            Spacer()
+                            Text("33.3g")
+                        }
+                        Spacer()
+                        VStack {
+                            Text("지방")
+                                .font(.caption)
+                                .foregroundStyle(Color("AppSecondaryColor"))
+                            Spacer()
+                            Text("8.2g")
+                        }
+                    }
+                }
+                .padding(24)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.gray, lineWidth: 1)
+                        .background(Color.white)
+                )
+                .padding(24)
             }
             .navigationTitle("분석")
             .navigationBarTitleDisplayMode(.inline)
