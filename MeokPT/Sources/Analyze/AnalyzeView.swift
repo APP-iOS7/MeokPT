@@ -58,47 +58,23 @@ struct AnalyzeView: View {
 //                Spacer()
                 
                 // MARK: - 식단이 있는 경우
-                VStack {
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text("샐러드와 고구마")
-                                .font(.headline)
-                            Spacer()
-                            HStack{
-                                Text("400kcal")
-                                Spacer()
-                            }
-                            Spacer()
-                        }
-                        Spacer()
+                VStack(alignment: .leading, spacing: 16) {
+                    // 헤더 섹션
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("샐러드와 고구마")
+                            .font(.headline)
+                        Text("400kcal")
+                            .font(.subheadline)
                     }
-                    Spacer()
 
-                    HStack {
-                        VStack {
-                            Text("탄수화물")
-                                .font(.caption)
-                                .foregroundStyle(Color("AppSecondaryColor"))
-                            Spacer()
-                            Text("107.5g")
-                        }
+                    HStack(spacing: 20) {
+                        NutrientView(name: "탄수화물", value: "107.5g")
                         Spacer()
-                        VStack {
-                            Text("단백질")
-                                .font(.caption)
-                                .foregroundStyle(Color("AppSecondaryColor"))
-                            Spacer()
-                            Text("33.3g")
-                        }
+                        NutrientView(name: "단백질", value: "33.3g")
                         Spacer()
-                        VStack {
-                            Text("지방")
-                                .font(.caption)
-                                .foregroundStyle(Color("AppSecondaryColor"))
-                            Spacer()
-                            Text("8.2g")
-                        }
+                        NutrientView(name: "지방", value: "8.2g")
                     }
+                    .frame(width: .infinity)
                 }
                 .padding(24)
                 .background(
@@ -106,8 +82,7 @@ struct AnalyzeView: View {
                         .stroke(Color.gray, lineWidth: 1)
                         .background(Color.white)
                 )
-                .padding(24)
-                
+                .padding(.horizontal, 24)
                                
             }
             .navigationTitle("분석")
@@ -125,7 +100,7 @@ struct AnalyzeView: View {
                         .foregroundStyle(.black)
                         .background(Color("AppTintColor"))
                         .clipShape(RoundedRectangle(cornerRadius: 10))
-                        .padding(.horizontal)
+                        .padding(.horizontal, 24)
                 }
             }
         }
@@ -151,6 +126,21 @@ struct ConditionalProgressView: View {
             .tint(progressColor)
     }
 }
+
+struct NutrientView: View {
+    let name: String
+    let value: String
+    
+    var body: some View {
+        VStack {
+            Text(name)
+                .font(.caption)
+                .foregroundStyle(Color("AppSecondaryColor"))
+            Text(value)
+        }
+    }
+}
+
 
 #Preview {
     AnalyzeView(
