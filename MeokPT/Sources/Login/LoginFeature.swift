@@ -17,9 +17,7 @@ struct LoginFeature {
         var emailText: String = ""
         var passWord: String = ""
         var isLoading: Bool = false
-        var isEmailValid: Bool = true
         var emailErrorMessage: String = ""
-        var isPasswordValid: Bool = true
         var passwordErrorMessage: String = ""
         var loginErrorMessage: String = ""
     }
@@ -33,7 +31,6 @@ struct LoginFeature {
     }
     
     enum CancelID {
-        case validation
         case loginRequest
     }
     
@@ -42,18 +39,29 @@ struct LoginFeature {
         Reduce { state, action in
             switch action {
             case .binding(\.emailText):
-                validateEmail(state: &state)
+                state.emailErrorMessage = ""
+                state.loginErrorMessage = ""
                 return .none
                 
             case .binding(\.passWord):
-                validatePassword(state: &state)
+                state.passwordErrorMessage = ""
+                state.loginErrorMessage = ""
                 return .none
                 
             case .loginButtonTapped:
+                state.isLoading = true
+                
                 state.emailErrorMessage = ""
                 state.passwordErrorMessage = ""
                 state.loginErrorMessage = ""
-                state.isLoading = true
+                
+                validateEmail(state: &state)
+                validatePassword(state: &state)
+                
+                if !state.emailErrorMessage.isEmpty || !state.passwordErrorMessage.isEmpty {
+                    state.isLoading = false
+                    return .none
+                }
                 
                 return .run { [email = state.emailText, password = state.passWord] send in
                     do {
@@ -99,34 +107,26 @@ struct LoginFeature {
     
     private func validateEmail(state: inout State) {
         if state.emailText.isEmpty {
-            state.isEmailValid = false
             state.emailErrorMessage = "이메일을 입력해주세요."
         } else {
             let emailRegEx = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
             let emailPred = NSPredicate(format:"SELF MATCHES %@", emailRegEx)
             if !emailPred.evaluate(with: state.emailText) {
-                state.isEmailValid = false
                 state.emailErrorMessage = "올바른 이메일 주소를 입력해주세요."
             } else {
-                state.isEmailValid = true
                 state.emailErrorMessage = ""
             }
         }
-        state.loginErrorMessage = ""
     }
     
     private func validatePassword(state: inout State) {
         if state.passWord.isEmpty {
-            state.isPasswordValid = false
             state.passwordErrorMessage = "비밀번호를 입력해주세요."
         } else if state.passWord.count < 6 {
-            state.isPasswordValid = false
             state.passwordErrorMessage = "비밀번호는 6자 이상이어야 합니다."
         } else {
-            state.isPasswordValid = true
             state.passwordErrorMessage = ""
         }
-        state.loginErrorMessage = ""
     }
     
     private func loginSuccess(_ state: inout LoginFeature.State, _ authResult: AuthDataResult) {
@@ -145,11 +145,8 @@ struct LoginFeature {
         if nsError.domain == AuthErrorDomain {
             if let errorCode = AuthErrorCode(rawValue: nsError.code) {
                 switch errorCode {
-                case .invalidEmail:
-                    state.isEmailValid = false
-                    state.emailErrorMessage = "이메일 주소 형식이 잘못되었습니다."
-                case .userNotFound, .wrongPassword, .invalidCredential:
-                    state.loginErrorMessage = "이메일 또는 비밀번호가 잘못되었습니다. 다시 확인 후 시도해주세요."
+                case .invalidEmail, .userNotFound, .wrongPassword, .invalidCredential:
+                    state.loginErrorMessage = "이메일 또는 비밀번호가 잘못되었거나, 가입되지 않은 사용자입니다. 다시 확인 후 시도해주세요."
                 case .userDisabled:
                     state.loginErrorMessage = "관리자에 의해 이 사용자 계정이 비활성화되었습니다."
                 case .networkError:
