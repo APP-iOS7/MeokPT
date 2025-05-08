@@ -10,6 +10,8 @@ struct AppFeature {
         var communityState = CommunityFeature.State()
         var myPageState = MyPageFeature.State()
         var loginState = LoginFeature.State()
+        var signUpState = SignUpFeature.State()
+
     }
     
     enum Action {
@@ -18,6 +20,7 @@ struct AppFeature {
         case communityAction(CommunityFeature.Action)
         case myPageAction(MyPageFeature.Action)
         case loginAction(LoginFeature.Action)
+        case signUpAction(SignUpFeature.Action)
     }
     
     var body: some ReducerOf<Self> {
@@ -39,6 +42,10 @@ struct AppFeature {
         
         Scope(state: \.loginState, action: \.loginAction) {
             LoginFeature()
+        }
+        
+        Scope(state: \.signUpState, action: \.signUpAction) {
+            SignUpFeature()
         }
         
         Reduce { state, action in
