@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct DietItemCell: View {
+struct DietItemCellView: View {
     @Binding var isSelected: Bool
     
     var body: some View {

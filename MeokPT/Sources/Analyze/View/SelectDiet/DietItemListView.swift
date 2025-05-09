@@ -1,10 +1,3 @@
-//
-//  DietItemListView.swift
-//  MeokPT
-//
-//  Created by 최시온 on 5/8/25.
-//
-
 import SwiftUI
 
 struct DietItemListView: View {
@@ -16,7 +9,7 @@ struct DietItemListView: View {
         ScrollView {
             LazyVStack(spacing: 16) {
                 ForEach(items.indices, id:\.self) { index in
-                    DietItemCell(isSelected: $selectedStates[index])
+                    DietItemCellView(isSelected: $selectedStates[index])
                 }
             }
         }
