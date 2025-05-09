@@ -9,50 +9,56 @@ struct AnalyzeView: View {
     var body: some View {
         ZStack {
             NavigationStack {
-                ScrollView {
-                    VStack {
-                        // TODO: - 신체 정보, 식단의 유무에 따라 다른 뷰를 이용
-                    }
-                    .navigationTitle("분석")
-                    .navigationBarTitleDisplayMode(.inline)
-                    .background(Color("AppBackgroundColor"))
-                }
-                .safeAreaInset(edge: .bottom) {
-                    Button {
-                        withAnimation {
-                            isAIModal = true
+                ZStack {
+                    Color("AppBackgroundColor")
+                               .ignoresSafeArea()
+                    ScrollView {
+                        VStack {
+                            // TODO: - 신체 정보, 식단의 유무에 따라 다른 뷰를 이용
                         }
-                    } label: {
-                        Text("AI 식단 분석")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .foregroundStyle(.black)
-                            .background(Color("AppTintColor"))
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                            .padding(.horizontal, 24)
+                        .navigationTitle("분석")
+                        .navigationBarTitleDisplayMode(.inline)
+                        .background(Color("AppBackgroundColor"))
                     }
-                }
-                .toolbar {
-                    ToolbarItem(placement: .confirmationAction) {
+                    .safeAreaInset(edge: .bottom) {
                         Button {
-                            isSheetPresented = true
+                            withAnimation {
+                                isAIModal = true
+                            }
                         } label: {
-                            Text("식단 추가")
-                                .foregroundStyle(Color("AppTintColor"))
-                                .fontWeight(.semibold)
+                            Text("AI 식단 분석")
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .foregroundStyle(.black)
+                                .background(Color("AppTintColor"))
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                                .padding(.horizontal, 24)
                         }
                     }
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button {
-                        } label: {
-                            Text("비우기")
-                                .foregroundStyle(Color("AppTintColor"))
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button {
+                                isSheetPresented = true
+                            } label: {
+                                Text("식단 추가")
+                                    .foregroundStyle(Color("AppTintColor"))
+                                    .fontWeight(.semibold)
+                            }
+                        }
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button {
+                            } label: {
+                                Text("비우기")
+                                    .foregroundStyle(Color("AppTintColor"))
+                            }
                         }
                     }
+                    .sheet(isPresented: $isSheetPresented) {
+                        AddDietView()
+                    }
                 }
-                .sheet(isPresented: $isSheetPresented) {
-                    AddDietView()
                 }
+            .scrollContentBackground(.hidden)
             }
             
             if isAIModal {
@@ -60,7 +66,6 @@ struct AnalyzeView: View {
                     .transition(.opacity)
                     .zIndex(1)
             }
-        }
     }
 }
 
