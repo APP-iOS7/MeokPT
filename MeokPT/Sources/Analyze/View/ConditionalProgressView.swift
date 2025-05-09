@@ -5,7 +5,7 @@ struct ConditionalProgressView: View {
     var max: Double
     
     var progressColor: Color {
-        current > max ? .red : Color("Green")
+        current > max ? Color("Red") :  Color(red: 102.0/255.0, green: 204.0/255.0, blue: 102.0/255.0)
     }
     
     var progressValue: Double {
@@ -16,4 +16,8 @@ struct ConditionalProgressView: View {
         ProgressView(value: progressValue, total: max)
             .tint(progressColor)
     }
+}
+
+#Preview {
+    ConditionalProgressView(current: 50, max: 100)
 }
