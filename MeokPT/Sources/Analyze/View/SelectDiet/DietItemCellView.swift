@@ -16,10 +16,9 @@ struct DietItemCellView: View {
                 Button {
                     isSelected.toggle()
                 } label: {
-                    // MARK: - 버튼만 / 버튼+색깔 / 색깔만
-//                    Image(systemName: isSelected ? "checkmark.square" : "square")
-//                        .foregroundColor(.black)
-//                        .imageScale(.large)
+                    Image(systemName: isSelected ? "checkmark.square" : "square")
+                        .foregroundColor(.black)
+                        .imageScale(.large)
                 }
             }
             

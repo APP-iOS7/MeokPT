@@ -57,15 +57,17 @@ struct AnalyzeView: View {
                         AddDietView()
                     }
                 }
-                }
-            .scrollContentBackground(.hidden)
             }
+            .scrollContentBackground(.hidden)
             
             if isAIModal {
                 AIModalView(isPresented: $isAIModal)
                     .transition(.opacity)
                     .zIndex(1)
+                    .ignoresSafeArea(edges: .bottom)
             }
+        }
+        .animation(.easeInOut, value: isAIModal)
     }
 }
 
