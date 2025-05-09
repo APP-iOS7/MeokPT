@@ -5,7 +5,8 @@ import Foundation
 struct AnalyzeFeature {
     @ObservableState
     struct State {
-        
+        // 비우기 툴바를 위한 변수
+        // 식단 추가를 위한 변수
     }
     
     enum Action {
