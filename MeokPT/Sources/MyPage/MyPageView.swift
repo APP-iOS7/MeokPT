@@ -9,17 +9,14 @@ struct MyPageView: View {
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 32) {
+            VStack(alignment: .leading, spacing: 0) {
                 
-                HStack {
-                    Text("마이페이지")
-                        .font(.system(size: 34, weight: .bold))
-                        .padding(.horizontal)
-                        .padding(.top, 32)
-                        .padding(.leading, 10)
-                    
-                    Spacer()
-                }
+                Text("마이페이지")
+                    .font(.system(size: 34, weight: .bold))
+                    .padding(.horizontal)
+                    .padding(.top, 32)
+                
+                Spacer().frame(height: 24)
                 
                 HStack(spacing: 16) {
                     ZStack {
@@ -49,6 +46,7 @@ struct MyPageView: View {
                     }
                 }
                 .padding(.horizontal)
+                .padding(.bottom, 32)
                 
                 HStack(spacing: 16) {
                     NavigationLink(destination: BodyInfoInputView()) {
@@ -93,48 +91,36 @@ struct MyPageView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal)
-                
+                .padding(.bottom, 32)
+
                 VStack(alignment: .leading, spacing: 24) {
                     NavigationLink(destination: Text("내가 쓴 글")) {
                         Text("내가 쓴 글")
-                            .foregroundColor(Color("AppTertiaryColor"))
-                            .font(.system(size: 16, weight: .regular))
                     }
-                }
-                
-                VStack(alignment: .leading, spacing: 24) {
                     NavigationLink(destination: Text("로그아웃")) {
                         Text("로그아웃")
-                            .foregroundColor(Color("AppTertiaryColor"))
-                            .font(.system(size: 16, weight: .regular))
                     }
-                }
-                
-                VStack(alignment: .leading, spacing: 24) {
                     NavigationLink(destination: Text("회원탈퇴")) {
                         Text("회원탈퇴")
-                            .foregroundColor(Color("AppTertiaryColor"))
-                            .font(.system(size: 16, weight: .regular))
                     }
                 }
-                
+                .foregroundColor(Color("AppTertiaryColor"))
+                .font(.system(size: 16, weight: .semibold))
                 .padding(.horizontal)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.top, 8)
                 
+                Spacer()
             }
             .onAppear {
                 if let saved = UserDefaults.standard.dictionary(forKey: "BodyInfo") as? [String: String] {
                     savedWeight = saved["weight"] ?? ""
                 }
             }
-            
-            //            .navigationTitle("마이페이지")
             .navigationBarTitleDisplayMode(.inline)
-            .containerRelativeFrame([.horizontal, .vertical])
             .background(Color("AppBackgroundColor"))
         }
     }
-    
 }
 
 #Preview {
