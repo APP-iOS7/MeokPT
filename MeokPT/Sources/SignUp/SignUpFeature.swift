@@ -25,10 +25,10 @@ struct SignUpFeature {
         case binding(BindingAction<State>)
         case signUpButtonTapped
         case signUpResponse(Result<AuthDataResult, Error>)
-        case delegate(Delegate) // 부모(LoginFeature)에게 전달할 액션
+        case delegate(DelegateAction)
     }
 
-    enum Delegate {
+    enum DelegateAction {
         case signUpCompletedSuccessfully
     }
 
@@ -44,13 +44,9 @@ struct SignUpFeature {
             case .binding(\.emailText):
                 validateEmail(&state)
                 return .none
-            // 다른 모든 바인딩 변경 (명시적으로 처리하지 않은 경우)
-            case .binding:
-                return .none
 
             case .signUpButtonTapped:
                 if !state.isFormValid { return .none }
-                
                 state.isLoading = true
                 state.signUpErrorMessage = ""
                 return .run { [email = state.emailText, password = state.passWord] send in
@@ -66,29 +62,18 @@ struct SignUpFeature {
             case .signUpResponse(.success(let authResult)):
                 state.isLoading = false
                 print("SignUpFeature: 회원가입 성공 - UID: \(authResult.user.uid)")
-                return .send(.delegate(.signUpCompletedSuccessfully))
-
-            case .signUpResponse(.failure(let error)):
-                state.isLoading = false
-                let nsError = error as NSError
-                if nsError.domain == AuthErrorDomain, let errorCode = AuthErrorCode(rawValue: nsError.code) {
-                    switch errorCode {
-                    case .emailAlreadyInUse:
-                        state.emailErrorMessage = "이미 사용 중인 이메일입니다."
-                    case .invalidEmail:
-                        state.emailErrorMessage = "유효하지 않은 이메일 형식입니다."
-                    case .weakPassword:
-                        state.passwordErrorMessage = "비밀번호가 너무 약합니다. (6자 이상)"
-                    default:
-                        state.signUpErrorMessage = "회원가입 중 오류가 발생했습니다. (\(errorCode.rawValue))"
-                    }
-                } else {
-                    state.signUpErrorMessage = "알 수 없는 오류가 발생했습니다."
-                }
-                print("SignUp Error: \(error.localizedDescription)")
+                //TODO: 프로필 설정으로 넘어가기
                 return .none
 
-            case .delegate:
+            case .signUpResponse(.failure(let error)):
+                SignUpFailure(&state, error)
+                return .none
+                
+            case .delegate(_):
+                return .none
+                
+            // 다른 모든 바인딩 변경 (명시적으로 처리하지 않은 경우)
+            case .binding(_):
                 return .none
             }
         }
@@ -105,5 +90,25 @@ struct SignUpFeature {
                 state.emailErrorMessage = ""
             }
         }
+    }
+    
+    private func SignUpFailure(_ state: inout SignUpFeature.State, _ error: any Error) {
+        state.isLoading = false
+        let nsError = error as NSError
+        if nsError.domain == AuthErrorDomain, let errorCode = AuthErrorCode(rawValue: nsError.code) {
+            switch errorCode {
+            case .emailAlreadyInUse:
+                state.emailErrorMessage = "이미 사용 중인 이메일입니다."
+            case .invalidEmail:
+                state.emailErrorMessage = "유효하지 않은 이메일 형식입니다."
+            case .weakPassword:
+                state.passwordErrorMessage = "비밀번호가 너무 약합니다. (6자 이상)"
+            default:
+                state.signUpErrorMessage = "회원가입 중 오류가 발생했습니다. (\(errorCode.rawValue))"
+            }
+        } else {
+            state.signUpErrorMessage = "알 수 없는 오류가 발생했습니다."
+        }
+        print("SignUp Error: \(error.localizedDescription)")
     }
 }

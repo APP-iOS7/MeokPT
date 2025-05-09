@@ -32,7 +32,7 @@ struct AppView: View {
         .fullScreenCover(
             item: Binding(
                 get: {
-                    store.activeSheet?.isFullScreen == true ? store.activeSheet : nil
+                    store.appRoute?.screenType == "fullScreenCover" ? store.appRoute : nil
                 },
                 set: { newValue in
                     store.send(.setActiveSheet(newValue))
@@ -44,7 +44,7 @@ struct AppView: View {
         .sheet(
             item: Binding(
                 get: {
-                    store.activeSheet?.isFullScreen == false ? store.activeSheet : nil
+                    store.appRoute?.screenType == "sheet" ? store.appRoute : nil
                 },
                 set: { newValue in
                     store.send(.setActiveSheet(newValue))
@@ -63,7 +63,7 @@ struct AppSheetContentView: View {
     let store: StoreOf<AppFeature>
 
     var body: some View {
-        if let sheet = store.activeSheet {
+        if let sheet = store.appRoute {
             NavigationStack {
                 switch sheet {
                 case .login:
@@ -71,8 +71,13 @@ struct AppSheetContentView: View {
                         state: \.loginState,
                         action: \.loginAction
                     ))
-                 case .signUp:
-                     EmptyView()
+//                 case .signUp:
+//                    SignUpView(store: store.scope(
+//                        state: \.signUpState,
+//                        action: \.signUpAction
+//                    ))
+                default:
+                    EmptyView()
                 }
             }
         }

@@ -35,7 +35,7 @@ struct LoginFeature {
     }
     
     enum DelegateAction {
-        case dismiss
+        case dismissLoginSheet
         case goSignUp
     }
     
@@ -87,7 +87,7 @@ struct LoginFeature {
                 
             case .loginResponse(.success(let authResult)):
                 loginSuccess(&state, authResult)
-                return .send(.delegate(.dismiss))
+                return .send(.delegate(.dismissLoginSheet))
                 
             case .loginResponse(.failure(let error)):
                 loginFailure(&state, error)
@@ -108,7 +108,7 @@ struct LoginFeature {
                 return .none
                 
             case .closeButtonTapped:
-                return .send(.delegate(.dismiss))
+                return .send(.delegate(.dismissLoginSheet))
                 
             case .signUpButtonTapped:
                 return .send(.delegate(.goSignUp))

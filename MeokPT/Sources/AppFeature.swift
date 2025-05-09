@@ -1,20 +1,21 @@
 import ComposableArchitecture
 import SwiftUI
 
-enum ActiveSheet: Hashable, Identifiable {
+enum AppRoute: Hashable, Identifiable {
     case login
-    case signUp
+//    case signUp
+    case detail
     
     var id: Self { self }
     
-    var isFullScreen: Bool {
-        // true  -> fullScreenCover
-        // false -> sheet
+    var screenType: String {
         switch self {
         case .login:
-            return true
-        case .signUp:
-            return false
+            return "fullScreenCover"
+//        case .signUp:
+//            return "fullScreenCover"
+        case .detail:
+            return "navigation"
         }
     }
 }
@@ -31,7 +32,9 @@ struct AppFeature {
         var loginState = LoginFeature.State()
         var signUpState = SignUpFeature.State()
         
-        var activeSheet: ActiveSheet?
+        var appRoute: AppRoute?
+        
+        var path = NavigationPath()
     }
     
     enum Action {
@@ -43,7 +46,11 @@ struct AppFeature {
         case signUpAction(SignUpFeature.Action)
         
         case dismissSheet
-        case setActiveSheet(ActiveSheet?)
+        case setActiveSheet(AppRoute?)
+        
+        case push(AppRoute)
+        case popToRoot
+        case pathChanged(NavigationPath)
     }
     
     var body: some ReducerOf<Self> {
@@ -74,18 +81,27 @@ struct AppFeature {
         Reduce { state, action in
             switch action {
             case .myPageAction(.delegate(.loginSignUpButtonTapped)):
-                state.activeSheet = .login
+                state.appRoute = .login
                 return .none
                 
-            case .loginAction(.delegate(.dismiss)):
+            case .loginAction(.delegate(.dismissLoginSheet)):
                 return .send(.dismissSheet)
                 
             case .setActiveSheet(let newSheet):
-                state.activeSheet = newSheet
+                state.appRoute = newSheet
                 return .none
                 
             case .dismissSheet:
-                state.activeSheet = nil
+                // appRoute 가 nil 이면 sheet 는 닫힌다.
+                state.appRoute = nil
+                return .none
+                
+            case .push(let route):
+                state.path.append(route)
+                return .none
+
+            case .popToRoot:
+                state.path.removeLast(state.path.count)
                 return .none
                 
             default:
