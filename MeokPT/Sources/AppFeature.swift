@@ -1,4 +1,23 @@
 import ComposableArchitecture
+import SwiftUI
+
+enum ActiveSheet: Hashable, Identifiable {
+    case login
+    case signUp
+    
+    var id: Self { self }
+    
+    var isFullScreen: Bool {
+        // true  -> fullScreenCover
+        // false -> sheet
+        switch self {
+        case .login:
+            return true
+        case .signUp:
+            return false
+        }
+    }
+}
 
 @Reducer
 struct AppFeature {
@@ -11,7 +30,8 @@ struct AppFeature {
         var myPageState = MyPageFeature.State()
         var loginState = LoginFeature.State()
         var signUpState = SignUpFeature.State()
-
+        
+        var activeSheet: ActiveSheet?
     }
     
     enum Action {
@@ -21,6 +41,9 @@ struct AppFeature {
         case myPageAction(MyPageFeature.Action)
         case loginAction(LoginFeature.Action)
         case signUpAction(SignUpFeature.Action)
+        
+        case dismissSheet
+        case setActiveSheet(ActiveSheet?)
     }
     
     var body: some ReducerOf<Self> {
@@ -49,8 +72,25 @@ struct AppFeature {
         }
         
         Reduce { state, action in
-            // Core logic of the app feature
-            return .none
+            switch action {
+            case .myPageAction(.delegate(.loginSignUpButtonTapped)):
+                state.activeSheet = .login
+                return .none
+                
+            case .loginAction(.delegate(.dismiss)):
+                return .send(.dismissSheet)
+                
+            case .setActiveSheet(let newSheet):
+                state.activeSheet = newSheet
+                return .none
+                
+            case .dismissSheet:
+                state.activeSheet = nil
+                return .none
+                
+            default:
+                return .none
+            }
         }
     }
 }

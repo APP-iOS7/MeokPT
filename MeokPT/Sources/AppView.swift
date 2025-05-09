@@ -28,6 +28,54 @@ struct AppView: View {
             .toolbarBackground(.visible, for: .tabBar)
             .toolbarBackground(Color(UIColor.systemBackground), for: .tabBar)
         }
+// MARK: - fullScreenCover 또는 sheet 생성
+        .fullScreenCover(
+            item: Binding(
+                get: {
+                    store.activeSheet?.isFullScreen == true ? store.activeSheet : nil
+                },
+                set: { newValue in
+                    store.send(.setActiveSheet(newValue))
+                }
+            )
+        ) {_ in 
+            AppSheetContentView(store: store)
+        }
+        .sheet(
+            item: Binding(
+                get: {
+                    store.activeSheet?.isFullScreen == false ? store.activeSheet : nil
+                },
+                set: { newValue in
+                    store.send(.setActiveSheet(newValue))
+                }
+            )
+        ) {_ in 
+            AppSheetContentView(store: store)
+                .presentationDragIndicator(.visible)
+                .presentationDetents([.large])  // 여기도 나중에 분기
+        }
+    }
+}
+
+// MARK: - Sheet에 들어갈 내용을 분기하는 뷰
+struct AppSheetContentView: View {
+    let store: StoreOf<AppFeature>
+
+    var body: some View {
+        if let sheet = store.activeSheet {
+            NavigationStack {
+                switch sheet {
+                case .login:
+                    LoginView(store: store.scope(
+                        state: \.loginState,
+                        action: \.loginAction
+                    ))
+                 case .signUp:
+                     EmptyView()
+                }
+            }
+        }
     }
 }
 

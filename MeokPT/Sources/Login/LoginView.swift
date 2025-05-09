@@ -15,7 +15,6 @@ struct LoginView: View {
     @FocusState private var passwordFocusedField
     
     var body: some View {
-        NavigationStack{
             ScrollView{
                 VStack {
                     VStack(alignment: .leading) {
@@ -177,14 +176,12 @@ struct LoginView: View {
                     
                     Spacer().frame(height: 40)
                     
-                    NavigationStack {
-                        NavigationLink {
-                            
-                        } label: {
-                            Text("회원가입")
-                                .font(.headline)
-                                .foregroundColor(Color("AppTintColor"))
-                        }
+                    Button(action: {
+                        store.send(.signUpButtonTapped)
+                    }) {
+                        Text("회원가입")
+                            .font(.headline)
+                            .foregroundColor(Color("AppTintColor"))
                     }
                     
                 }
@@ -200,14 +197,23 @@ struct LoginView: View {
             }
             .scrollDisabled(true)
             .background(Color("AppBackgroundColor"))
-        }
+            .toolbar(content: {
+                ToolbarItem(placement: .topBarLeading,
+                            content: { Button(action: {
+                    store.send(.closeButtonTapped)
+                }) { Text("취소")
+                        .foregroundColor(Color("AppTintColor"))
+                }})
+            })
     }
 }
 
 #Preview {
-    LoginView(
-        store: Store(initialState: LoginFeature.State()) {
-            LoginFeature()
-        }
-    )
+    NavigationStack {
+        LoginView(
+            store: Store(initialState: LoginFeature.State()) {
+                LoginFeature()
+            }
+        )
+    }
 }

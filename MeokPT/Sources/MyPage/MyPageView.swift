@@ -7,7 +7,12 @@ struct MyPageView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                
+                Button(action: {
+                    store.send(.loginSignUpButtonTapped)
+                }) {
+                    Text("회원가입/로그인")
+                        .foregroundStyle(Color("AppTintColor"))
+                }
             }
             .navigationTitle("마이페이지")
             .navigationBarTitleDisplayMode(.inline)

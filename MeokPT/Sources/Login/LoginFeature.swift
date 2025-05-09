@@ -28,6 +28,15 @@ struct LoginFeature {
         case loginResponse(Result<AuthDataResult, Error>)
         case appleLoginButtonTapped
         case kakaoLoginButtonTapped
+        case signUpButtonTapped
+        
+        case closeButtonTapped
+        case delegate(DelegateAction)
+    }
+    
+    enum DelegateAction {
+        case dismiss
+        case goSignUp
     }
     
     enum CancelID {
@@ -78,8 +87,7 @@ struct LoginFeature {
                 
             case .loginResponse(.success(let authResult)):
                 loginSuccess(&state, authResult)
-                // TODO: 로그인 성공 시 추가 작업 구현 (예: 화면 이동)
-                return .none
+                return .send(.delegate(.dismiss))
                 
             case .loginResponse(.failure(let error)):
                 loginFailure(&state, error)
@@ -99,6 +107,14 @@ struct LoginFeature {
             case .kakaoLoginButtonTapped:
                 return .none
                 
+            case .closeButtonTapped:
+                return .send(.delegate(.dismiss))
+                
+            case .signUpButtonTapped:
+                return .send(.delegate(.goSignUp))
+                
+            case .delegate(_):
+                return .none
             case .binding(_):
                 return .none
             }
