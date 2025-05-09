@@ -12,18 +12,22 @@ struct AddDietView: View {
 
     var body: some View {
         NavigationStack {
-            VStack {
-                Picker("옵션 선택", selection: $selectedOption) {
-                    ForEach(Options.allCases, id: \.self) { option in
-                        Text(option.rawValue).tag(option)
-                        
+            ZStack {
+                Color("AppBackgroundColor")
+                VStack {
+                    Picker("옵션 선택", selection: $selectedOption) {
+                        ForEach(Options.allCases, id: \.self) { option in
+                            Text(option.rawValue).tag(option)
+                            
+                        }
                     }
+                    .frame(width: 194, height: 25)
+                    .pickerStyle(SegmentedPickerStyle())
+                    .padding()
+                    
+                    Spacer()
+                    DietItemListView()
                 }
-                .pickerStyle(SegmentedPickerStyle())
-                .padding()
-
-                Spacer()
-                DietItemListView()
             }
             .navigationTitle("식단 선택")
             .navigationBarTitleDisplayMode(.inline)
