@@ -94,7 +94,7 @@ struct MyPageView: View {
                 .padding(.bottom, 32)
 
                 VStack(alignment: .leading, spacing: 24) {
-                    NavigationLink(destination: Text("내가 쓴 글")) {
+                    NavigationLink(destination: MyPostsView()) {
                         Text("내가 쓴 글")
                     }
                     NavigationLink(destination: Text("로그아웃")) {
