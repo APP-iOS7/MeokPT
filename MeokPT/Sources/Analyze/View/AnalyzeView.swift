@@ -56,16 +56,15 @@ struct AnalyzeView: View {
                     .sheet(isPresented: $isSheetPresented) {
                         AddDietView()
                     }
+                    .sheet(isPresented: $isAIModal) {
+                        AIModalView(isPresented: $isAIModal)
+                            .presentationDragIndicator(.visible)
+                            .presentationDetents([.fraction(0.8), .fraction(0.5)])
+                    }
                 }
             }
             .scrollContentBackground(.hidden)
-            
-            if isAIModal {
-                AIModalView(isPresented: $isAIModal)
-                    .transition(.opacity)
-                    .zIndex(1)
-                    .ignoresSafeArea(edges: .bottom)
-            }
+
         }
         .animation(.easeInOut, value: isAIModal)
     }
