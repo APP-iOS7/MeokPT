@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import SwiftUI
 
-enum AppRoute: Hashable, Identifiable {
+enum AppRoute: Identifiable {
     case loginView
     case dietDetailView
     

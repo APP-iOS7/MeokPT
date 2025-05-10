@@ -11,7 +11,7 @@ import FirebaseCore
 import FirebaseAuth
 import SwiftUI
 
-enum LoginRoute: Hashable {
+enum LoginRoute {
     case signUp
 }
 
