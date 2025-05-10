@@ -28,6 +28,7 @@ struct AppView: View {
             .toolbarBackground(.visible, for: .tabBar)
             .toolbarBackground(Color(UIColor.systemBackground), for: .tabBar)
         }
+        .tint(.primary)
 // MARK: - fullScreenCover 또는 sheet 생성
         .fullScreenCover(
             item: Binding(

@@ -189,7 +189,7 @@ struct LoginView: View {
                     }
                 }
                 .padding(.horizontal, 24)
-                .navigationTitle("로그인 / 회원가입")
+                .navigationTitle("로그인")
                 .navigationBarTitleDisplayMode(.inline)
                 .containerRelativeFrame([.horizontal, .vertical])
                 .contentShape(Rectangle())
@@ -216,9 +216,7 @@ struct LoginView: View {
             ToolbarItem(placement: .topBarLeading,
                         content: { Button(action: {
                 store.send(.closeButtonTapped)
-            }) { Text("취소")
-                    .foregroundColor(Color("AppTintColor"))
-            }})
+            }) { Text("취소") }})
         })
     }
 }
