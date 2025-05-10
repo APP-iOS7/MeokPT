@@ -3,8 +3,7 @@ import SwiftUI
 
 enum AppRoute: Hashable, Identifiable {
     case login
-//    case signUp
-    case detail
+    case detailView
     
     var id: Self { self }
     
@@ -12,9 +11,7 @@ enum AppRoute: Hashable, Identifiable {
         switch self {
         case .login:
             return "fullScreenCover"
-//        case .signUp:
-//            return "fullScreenCover"
-        case .detail:
+        case .detailView:
             return "navigation"
         }
     }
@@ -45,12 +42,11 @@ struct AppFeature {
         case loginAction(LoginFeature.Action)
         case signUpAction(SignUpFeature.Action)
         
-        case dismissSheet
         case setActiveSheet(AppRoute?)
+        case dismissSheet
         
         case push(AppRoute)
         case popToRoot
-        case pathChanged(NavigationPath)
     }
     
     var body: some ReducerOf<Self> {

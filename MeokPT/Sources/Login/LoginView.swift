@@ -11,10 +11,11 @@ import ComposableArchitecture
 struct LoginView: View {
     @Bindable var store: StoreOf<LoginFeature>
     
-    @FocusState private var emailFocusedField
-    @FocusState private var passwordFocusedField
+    @FocusState private var emailFocusedField: Bool
+    @FocusState private var passwordFocusedField: Bool
     
     var body: some View {
+        NavigationStack(path: $store.path) {
             ScrollView{
                 VStack {
                     VStack(alignment: .leading) {
@@ -113,6 +114,7 @@ struct LoginView: View {
                                     .foregroundStyle(.black)
                             }
                         }
+                        .contentShape(Rectangle())
                     }
                     .frame(width: 320, height: 60)
                     .background(Color("AppTintColor"))
@@ -141,6 +143,7 @@ struct LoginView: View {
                                     .foregroundStyle(.background)
                             }
                         }
+                        .contentShape(Rectangle())
                     }
                     .frame(width: 320, height: 60)
                     .background(.primary)
@@ -168,6 +171,7 @@ struct LoginView: View {
                                     .foregroundStyle(.black)
                             }
                         }
+                        .contentShape(Rectangle())
                     }
                     .frame(width: 320, height: 60)
                     .background(.yellow)
@@ -177,13 +181,12 @@ struct LoginView: View {
                     Spacer().frame(height: 40)
                     
                     Button(action: {
-                        store.send(.signUpButtonTapped)
+                        store.send(.push(.signUp))
                     }) {
                         Text("회원가입")
                             .font(.headline)
                             .foregroundColor(Color("AppTintColor"))
                     }
-                    
                 }
                 .padding(.horizontal, 24)
                 .navigationTitle("로그인 / 회원가입")
@@ -197,14 +200,26 @@ struct LoginView: View {
             }
             .scrollDisabled(true)
             .background(Color("AppBackgroundColor"))
-            .toolbar(content: {
-                ToolbarItem(placement: .topBarLeading,
-                            content: { Button(action: {
-                    store.send(.closeButtonTapped)
-                }) { Text("취소")
-                        .foregroundColor(Color("AppTintColor"))
-                }})
-            })
+            .navigationDestination(for: LoginRoute.self) { route in
+                switch route {
+                case .signUp:
+                    SignUpView(
+                        store: store.scope(
+                            state: \.signUpState,
+                            action: \.signUpAction
+                        )
+                    )
+                }
+            }
+        }
+        .toolbar(content: {
+            ToolbarItem(placement: .topBarLeading,
+                        content: { Button(action: {
+                store.send(.closeButtonTapped)
+            }) { Text("취소")
+                    .foregroundColor(Color("AppTintColor"))
+            }})
+        })
     }
 }
 

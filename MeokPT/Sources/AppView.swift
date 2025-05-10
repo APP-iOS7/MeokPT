@@ -71,11 +71,6 @@ struct AppSheetContentView: View {
                         state: \.loginState,
                         action: \.loginAction
                     ))
-//                 case .signUp:
-//                    SignUpView(store: store.scope(
-//                        state: \.signUpState,
-//                        action: \.signUpAction
-//                    ))
                 default:
                     EmptyView()
                 }

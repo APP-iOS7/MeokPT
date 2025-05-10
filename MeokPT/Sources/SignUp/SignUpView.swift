@@ -16,7 +16,6 @@ struct SignUpView: View {
     @FocusState private var passwordVerifyFocused: Bool
     
     var body: some View {
-        NavigationStack {
             ScrollView {
                 VStack() {
                     Spacer()
@@ -24,7 +23,6 @@ struct SignUpView: View {
                         Text("이메일")
                             .font(.body)
                             .foregroundStyle(Color("AppSecondaryColor"))
-                            .focused($emailFocused)
                         VStack (alignment: .leading) {
                             TextField(
                                 "",
@@ -33,6 +31,7 @@ struct SignUpView: View {
                             )
                             .keyboardType(.emailAddress)
                             .autocapitalization(.none)
+                            .focused($emailFocused)
                             Rectangle()
                                 .frame(height: 1)
                                 .foregroundColor(Color(.placeholderText))
@@ -110,6 +109,7 @@ struct SignUpView: View {
                             .font(.subheadline.bold())
                             .foregroundStyle(!store.isFormValid ? Color.gray.opacity(0.5) : .black)
                             .frame(maxWidth: .infinity)
+                            .contentShape(Rectangle())
                     }
                     .frame(height: 60)
                     .background(!store.isFormValid ? Color("AppTintColor").opacity(0.5) : Color("AppTintColor"))
@@ -131,7 +131,7 @@ struct SignUpView: View {
             }
             .scrollDisabled(true)
             .background(Color("AppBackgroundColor"))
-        }
+        
     }
 }
 

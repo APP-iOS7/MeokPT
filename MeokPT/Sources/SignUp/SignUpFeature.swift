@@ -17,7 +17,7 @@ struct SignUpFeature {
         var signUpErrorMessage: String = "" // 전체 회원가입 폼 에러
         var isFormValid: Bool {
             !emailText.isEmpty && !passWord.isEmpty && !passWordVerify.isEmpty &&
-            emailErrorMessage.isEmpty && passwordErrorMessage.isEmpty && passwordVerifyErrorMessage.isEmpty
+            emailErrorMessage.isEmpty && passwordErrorMessage.isEmpty && passwordVerifyErrorMessage.isEmpty && passWord == passWordVerify
         }
     }
     
@@ -44,7 +44,18 @@ struct SignUpFeature {
             case .binding(\.emailText):
                 validateEmail(&state)
                 return .none
-
+                
+            case .binding(\.passWord):
+                validatePassword(&state)
+                if !state.passWordVerify.isEmpty {
+                    validatePasswordVerify(&state)
+                }
+                return .none
+                
+            case .binding(\.passWordVerify):
+                validatePasswordVerify(&state)
+                return .none
+                
             case .signUpButtonTapped:
                 if !state.isFormValid { return .none }
                 state.isLoading = true
@@ -62,8 +73,7 @@ struct SignUpFeature {
             case .signUpResponse(.success(let authResult)):
                 state.isLoading = false
                 print("SignUpFeature: 회원가입 성공 - UID: \(authResult.user.uid)")
-                //TODO: 프로필 설정으로 넘어가기
-                return .none
+                return .send(.delegate(.signUpCompletedSuccessfully))
 
             case .signUpResponse(.failure(let error)):
                 SignUpFailure(&state, error)
@@ -80,8 +90,11 @@ struct SignUpFeature {
     }
     private func validateEmail(_ state: inout SignUpFeature.State) {
         state.emailErrorMessage = ""
-        if state.emailText.isEmpty { state.emailErrorMessage = "이메일을 입력해주세요." }
-        else {
+        state.signUpErrorMessage = ""
+        
+        if state.emailText.isEmpty {
+            state.emailErrorMessage = "이메일을 입력해주세요."
+        } else {
             let emailRegEx = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
             let emailPred = NSPredicate(format:"SELF MATCHES %@", emailRegEx)
             if !emailPred.evaluate(with: state.emailText) {
@@ -89,6 +102,32 @@ struct SignUpFeature {
             } else {
                 state.emailErrorMessage = ""
             }
+        }
+    }
+    
+    private func validatePassword(_ state: inout SignUpFeature.State) {
+        state.passwordErrorMessage = ""
+        state.signUpErrorMessage = ""
+        
+        if state.passWord.isEmpty {
+            state.passwordErrorMessage = "비밀번호를 입력해주세요."
+        } else if state.passWord.count < 6 {
+            state.passwordErrorMessage = "비밀번호는 6자 이상이어야 합니다."
+        } else {
+            state.passwordErrorMessage = ""
+        }
+    }
+    
+    private func validatePasswordVerify(_ state: inout SignUpFeature.State) {
+        state.passwordVerifyErrorMessage = ""
+        state.signUpErrorMessage = ""
+        
+        if state.passWordVerify.isEmpty {
+            state.passwordVerifyErrorMessage = "비밀번호 확인을 입력해주세요."
+        } else if state.passWord != state.passWordVerify {
+            state.passwordVerifyErrorMessage = "비밀번호가 일치하지 않습니다."
+        } else {
+            state.passwordVerifyErrorMessage = ""
         }
     }
     
