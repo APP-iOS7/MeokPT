@@ -6,7 +6,12 @@ struct DietView: View {
     
     var body: some View {
         VStack {
-            
+            Button(action: {
+                store.send(.goDietDetailViewAction)
+            }) {
+                Text("상세페이지")
+                    .foregroundStyle(Color("AppTintColor"))
+            }
         }
         .containerRelativeFrame([.horizontal, .vertical])
         .background(Color("AppBackgroundColor"))

@@ -2,16 +2,16 @@ import ComposableArchitecture
 import SwiftUI
 
 enum AppRoute: Hashable, Identifiable {
-    case login
-    case detailView
+    case loginView
+    case dietDetailView
     
     var id: Self { self }
     
     var screenType: String {
         switch self {
-        case .login:
+        case .loginView:
             return "fullScreenCover"
-        case .detailView:
+        case .dietDetailView:
             return "navigation"
         }
     }
@@ -34,7 +34,8 @@ struct AppFeature {
         var path = NavigationPath()
     }
     
-    enum Action {
+    enum Action: BindableAction {
+        case binding(BindingAction<State>)
         case dietAction(DietFeature.Action)
         case analyzeAction(AnalyzeFeature.Action)
         case communityAction(CommunityFeature.Action)
@@ -50,6 +51,8 @@ struct AppFeature {
     }
     
     var body: some ReducerOf<Self> {
+        BindingReducer()
+
         Scope(state: \.dietState, action: \.dietAction) {
             DietFeature()
         }
@@ -76,8 +79,11 @@ struct AppFeature {
         
         Reduce { state, action in
             switch action {
+            case .dietAction(.delegate(.goDietDetailView)):
+                return .send(.push(.dietDetailView))
+                
             case .myPageAction(.delegate(.loginSignUpButtonTapped)):
-                state.appRoute = .login
+                state.appRoute = .loginView
                 return .none
                 
             case .loginAction(.delegate(.dismissLoginSheet)):
@@ -100,6 +106,8 @@ struct AppFeature {
                 state.path.removeLast(state.path.count)
                 return .none
                 
+            case .binding(_):
+                return .none
             default:
                 return .none
             }
