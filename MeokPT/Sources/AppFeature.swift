@@ -83,8 +83,7 @@ struct AppFeature {
                 return .send(.push(.dietDetailView))
                 
             case .myPageAction(.delegate(.loginSignUpButtonTapped)):
-                state.appRoute = .loginView
-                return .none
+                return .send(.setActiveSheet(.loginView))
                 
             case .loginAction(.delegate(.dismissLoginSheet)):
                 return .send(.dismissSheet)
