@@ -28,6 +28,7 @@ struct AppFeature {
         var myPageState = MyPageFeature.State()
         var loginState = LoginFeature.State()
         var signUpState = SignUpFeature.State()
+        var profileSettingState = ProfileSettingFeature.State()
         
         var appRoute: AppRoute?
         
@@ -42,6 +43,7 @@ struct AppFeature {
         case myPageAction(MyPageFeature.Action)
         case loginAction(LoginFeature.Action)
         case signUpAction(SignUpFeature.Action)
+        case profileSettingAction(ProfileSettingFeature.Action)
         
         case setActiveSheet(AppRoute?)
         case dismissSheet
@@ -75,6 +77,10 @@ struct AppFeature {
         
         Scope(state: \.signUpState, action: \.signUpAction) {
             SignUpFeature()
+        }
+        
+        Scope(state: \.profileSettingState, action: \.profileSettingAction) {
+            ProfileSettingFeature()
         }
         
         Reduce { state, action in
