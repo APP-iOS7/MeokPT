@@ -85,6 +85,10 @@ struct DietFeature {
             
             case .path:
                 return .none
+            case .goDietDetailViewAction:
+                return .send(.delegate(.goDietDetailView))
+            case .delegate(_):
+                return .none
             }
         }
         .forEach(\.path, action: \.path) { // Path Reducer 통합

@@ -1,8 +1,13 @@
 import SwiftUI
 import ComposableArchitecture
+import FirebaseCore
 
 @main
 struct MeokPTApp: App {
+    init() {
+      FirebaseApp.configure()
+    }
+    
     static let store = Store(initialState: AppFeature.State()) {
         AppFeature()
     }
@@ -10,7 +15,7 @@ struct MeokPTApp: App {
     var body: some Scene {
         WindowGroup {
             AppView(store: MeokPTApp.store)
-                .tint(.primary)
+                .tint(Color("AppTintColor"))
         }
     }
 }

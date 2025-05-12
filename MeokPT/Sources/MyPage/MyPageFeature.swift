@@ -10,7 +10,13 @@ struct MyPageFeature {
     
     enum Action {
         case onAppear
+        case loginSignUpButtonTapped
+        case delegate(DelegateAction)
     }
+    
+     enum DelegateAction {
+         case loginSignUpButtonTapped
+     }
     
     enum CancelID { case timer }
     
@@ -18,6 +24,10 @@ struct MyPageFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                return .none
+            case .loginSignUpButtonTapped:
+                return .send(.delegate(.loginSignUpButtonTapped))
+            case .delegate(_):
                 return .none
             }
         }

@@ -29,24 +29,34 @@ struct MyPageView: View {
                             .frame(width: 36, height: 36)
                             .foregroundColor(Color(.white))
                     }
-                    
-                    NavigationLink(destination: Text("회원가입 / 로그인 화면")) {
-                        HStack {
-                            Text("회원가입 / 로그인")
-                                .foregroundColor(.white)
-                                .font(.system(size: 18, weight: .semibold))
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .foregroundColor(.white)
-                        }
-                        .padding()
-                        .frame(maxWidth: .infinity, minHeight: 100)
-                        .background(Color("AppTertiaryColor"))
-                        .cornerRadius(16)
-                    }
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 32)
+                    
+//                     NavigationLink(destination: Text("회원가입 / 로그인 화면")) {
+//                         HStack {
+//                             Text("회원가입 / 로그인")
+//                                 .foregroundColor(.white)
+//                                 .font(.system(size: 18, weight: .semibold))
+//                             Spacer()
+//                             Image(systemName: "chevron.right")
+//                                 .foregroundColor(.white)
+//                         }
+//                         .padding()
+//                         .frame(maxWidth: .infinity, minHeight: 100)
+//                         .background(Color("AppTertiaryColor"))
+//                         .cornerRadius(16)
+//                     }
+//                 }
+//                 .padding(.horizontal)
+//                 .padding(.bottom, 32)
+
+                Button(action: {
+                    store.send(.loginSignUpButtonTapped)
+                }) {
+                    Text("회원가입/로그인")
+                        .foregroundStyle(Color("AppTintColor"))
+                }
                 
                 HStack(spacing: 16) {
                     NavigationLink(destination: BodyInfoInputView()) {
