@@ -12,7 +12,7 @@ struct AppView: View {
                     .tabItem {
                         Text("식단")
                     }
-                AnalyzeView(store: store.scope(state: \.analyzeState, action: \.analyzeAction))
+                DailyNutritionMealInfoView(store: store.scope(state: \.analyzeState, action: \.analyzeAction))
                     .tabItem {
                         Text("분석")
                     }

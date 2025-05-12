@@ -6,14 +6,14 @@ struct AppFeature {
     @ObservableState
     struct State {
         var dietState = DietFeature.State()
-        var analyzeState = AnalyzeFeature.State()
+        var analyzeState = DailyNutritionMealInfoFeature.State()
         var communityState = CommunityFeature.State()
         var myPageState = MyPageFeature.State()
     }
     
     enum Action {
         case dietAction(DietFeature.Action)
-        case analyzeAction(AnalyzeFeature.Action)
+        case analyzeAction(DailyNutritionMealInfoFeature.Action)
         case communityAction(CommunityFeature.Action)
         case myPageAction(MyPageFeature.Action)
     }
@@ -24,7 +24,7 @@ struct AppFeature {
         }
         
         Scope(state: \.analyzeState, action: \.analyzeAction) {
-            AnalyzeFeature()
+            DailyNutritionMealInfoFeature(environment: .mock)
         }
         
         Scope(state: \.communityState, action: \.communityAction) {

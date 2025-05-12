@@ -1,7 +1,8 @@
 import SwiftUI
 import ComposableArchitecture
-struct AnalyzeView: View {
-    let store: StoreOf<AnalyzeFeature>
+
+struct DailyNutritionMealInfoView: View {
+    let store: StoreOf<DailyNutritionMealInfoFeature>
     
     @State private var isSheetPresented = false
     @State private var isAIModal = false
@@ -66,14 +67,17 @@ struct AnalyzeView: View {
             .scrollContentBackground(.hidden)
 
         }
+        .task {
+            ViewStore(store, observe: { $0 }).send(.onAppear)
+        }
         .animation(.easeInOut, value: isAIModal)
     }
 }
 
 #Preview {
-    AnalyzeView(
-        store: Store(initialState: AnalyzeFeature.State()) {
-            AnalyzeFeature()
+    DailyNutritionMealInfoView(
+        store: Store(initialState: DailyNutritionMealInfoFeature.State()) {
+            DailyNutritionMealInfoFeature(environment: .mock)
         }
     )
 }
