@@ -71,7 +71,7 @@ struct DietView: View {
         }
         .tint(Color("AppSecondaryColor"))
         .onAppear {
-            store.send(.onAppear)
+//            store.send(.onAppear)
         }
     }
 }

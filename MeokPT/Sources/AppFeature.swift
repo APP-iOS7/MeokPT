@@ -29,6 +29,7 @@ struct AppFeature {
         var loginState = LoginFeature.State()
         var signUpState = SignUpFeature.State()
         var profileSettingState = ProfileSettingFeature.State()
+        var dietDetailState = DietDetailFeature.State()
         
         var appRoute: AppRoute?
         
@@ -44,6 +45,7 @@ struct AppFeature {
         case loginAction(LoginFeature.Action)
         case signUpAction(SignUpFeature.Action)
         case profileSettingAction(ProfileSettingFeature.Action)
+        case dietDetailAction(DietDetailFeature.Action)
         
         case setActiveSheet(AppRoute?)
         case dismissSheet
@@ -83,10 +85,14 @@ struct AppFeature {
             ProfileSettingFeature()
         }
         
+        Scope(state: \.dietDetailState, action: \.dietDetailAction) {
+            DietDetailFeature()
+        }
+        
         Reduce { state, action in
             switch action {
-            case .dietAction(.delegate(.goDietDetailView)):
-                return .send(.push(.dietDetailView))
+//            case .dietAction(.delegate(.goDietDetailView)):
+//                return .send(.push(.dietDetailView))
                 
             case .myPageAction(.delegate(.loginSignUpButtonTapped)):
                 return .send(.setActiveSheet(.loginView))

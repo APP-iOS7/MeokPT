@@ -61,7 +61,7 @@ struct DailyNutritionDietInfoView: View {
                         }
                     }
                     .sheet(isPresented: $isSheetPresented) {
-                        DietSelectionModalView()
+                        AddDietView()
                     }
                     .sheet(isPresented: $isAIModal) {
                         AIModalView(isPresented: $isAIModal)
