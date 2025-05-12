@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct DietPlanView: View {
+struct DietNotEmptyView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 8) {
@@ -30,5 +30,5 @@ struct DietPlanView: View {
 }
 
 #Preview {
-    DietPlanView()
+    DietNotEmptyView()
 }

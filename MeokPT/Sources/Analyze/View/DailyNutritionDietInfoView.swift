@@ -1,8 +1,8 @@
 import SwiftUI
 import ComposableArchitecture
 
-struct DailyNutritionMealInfoView: View {
-    let store: StoreOf<DailyNutritionMealInfoFeature>
+struct DailyNutritionDietInfoView: View {
+    let store: StoreOf<DailyNutritionDietInfoFeature>
     
     @State private var isSheetPresented = false
     @State private var isAIModal = false
@@ -15,7 +15,13 @@ struct DailyNutritionMealInfoView: View {
                                .ignoresSafeArea()
                     ScrollView {
                         VStack {
-                            // TODO: - 신체 정보, 식단의 유무에 따라 다른 뷰를 이용
+                            WithViewStore(self.store, observe: { $0 }) { viewStore in
+                                content(for: viewStore)
+                                    .onAppear {
+                                        viewStore.send(.onAppear)
+                                    }
+                                
+                            }
                         }
                         .navigationTitle("분석")
                         .navigationBarTitleDisplayMode(.inline)
@@ -55,7 +61,7 @@ struct DailyNutritionMealInfoView: View {
                         }
                     }
                     .sheet(isPresented: $isSheetPresented) {
-                        AddDietView()
+                        DietSelectionModalView()
                     }
                     .sheet(isPresented: $isAIModal) {
                         AIModalView(isPresented: $isAIModal)
@@ -72,12 +78,26 @@ struct DailyNutritionMealInfoView: View {
         }
         .animation(.easeInOut, value: isAIModal)
     }
+    
+    @ViewBuilder
+    private func content(for viewStore: ViewStore<DailyNutritionDietInfoFeature.State, DailyNutritionDietInfoFeature.Action>) -> some View {
+        if viewStore.isLoading {
+            ProgressView("로딩 중입니다…")
+        } else if viewStore.dailyNutrition != nil {
+            DailyNutritionInfoView(nutritionItems: mockNutritionItems)
+        } else if let errorMessage = viewStore.errorMessage {
+            Text(errorMessage)
+                .font(.caption)
+        } else {
+            DailyNutritionInfoEmptyView()
+        }
+    }
 }
 
 #Preview {
-    DailyNutritionMealInfoView(
-        store: Store(initialState: DailyNutritionMealInfoFeature.State()) {
-            DailyNutritionMealInfoFeature(environment: .mock)
+    DailyNutritionDietInfoView(
+        store: Store(initialState: DailyNutritionDietInfoFeature.State()) {
+            DailyNutritionDietInfoFeature(environment: .mock)
         }
     )
 }

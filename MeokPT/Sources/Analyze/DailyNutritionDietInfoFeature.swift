@@ -2,17 +2,17 @@ import ComposableArchitecture
 import Foundation
 
 @Reducer
-struct DailyNutritionMealInfoFeature {
+struct DailyNutritionDietInfoFeature {
     @ObservableState
     struct State: Equatable {
-        var dailyNubrition: DailyNutrition?
+        var dailyNutrition: [NutritionItem]?
         var isLoading: Bool = false
         var errorMessage: String?
     }
     
     enum Action: Equatable {
         case onAppear
-        case nutritionResponse(Result<DailyNutrition?, NutritionError>)
+        case nutritionResponse(Result<[NutritionItem]?, NutritionError>)
     }
     
     enum NutritionError: Error, Equatable {
@@ -20,7 +20,7 @@ struct DailyNutritionMealInfoFeature {
     }
 
     struct NutritionEnvironment {
-        var fetchNutrition: () async -> Result<DailyNutrition?, NutritionError>
+        var fetchNutrition: () async -> Result<[NutritionItem]?, NutritionError>
     }
     
     var environment: NutritionEnvironment
@@ -40,10 +40,10 @@ struct DailyNutritionMealInfoFeature {
                 state.isLoading = false
                 switch result {
                 case let .success(nutrition):
-                    state.dailyNubrition = nutrition
+                    state.dailyNutrition = nutrition
                     state.errorMessage = nil
                 case .failure:
-                    state.dailyNubrition = nil
+                    state.dailyNutrition = nil
                     state.errorMessage = "개인 맞춤 영양성분을 불러올 수 없습니다."
                 }
                 return .none
@@ -52,14 +52,13 @@ struct DailyNutritionMealInfoFeature {
     }
 }
 
-extension DailyNutritionMealInfoFeature.NutritionEnvironment {
-    // 하루 영양 정보 목업 (실제 비동기 흐름 모사)
+// MARK: - Mock 비동기 구현
+extension DailyNutritionDietInfoFeature.NutritionEnvironment {
     static let mock = Self(
         fetchNutrition: {
-            // 1초 지연 후 목 데이터 반환
             try? await Task.sleep(nanoseconds: 1_000_000_000)
             return .success(
-                DailyNutrition(calories: 2000, carbohydrate: 100, protein: 56, fat: 35, dietaryFiber: 28, sugar: 20, sodium: 2000)
+                mockNutritionItems
             )
         }
     )
