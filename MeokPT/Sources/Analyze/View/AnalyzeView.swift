@@ -12,14 +12,14 @@ struct AnalyzeView: View {
                 ZStack {
                     Color("AppBackgroundColor")
                                .ignoresSafeArea()
-                    ScrollView {
-                        VStack {
-                            // TODO: - 신체 정보, 식단의 유무에 따라 다른 뷰를 이용
-                        }
-                        .navigationTitle("분석")
-                        .navigationBarTitleDisplayMode(.inline)
-                        .background(Color("AppBackgroundColor"))
-                    }
+//                    ScrollView {
+//                        VStack {
+//                            // TODO: - 신체 정보, 식단의 유무에 따라 다른 뷰를 이용
+//                        }
+//                        .navigationTitle("분석")
+//                        .navigationBarTitleDisplayMode(.inline)
+//                        .background(Color("AppBackgroundColor"))
+//                    }
                     .safeAreaInset(edge: .bottom) {
                         Button {
                             withAnimation {
@@ -54,7 +54,7 @@ struct AnalyzeView: View {
                         }
                     }
                     .sheet(isPresented: $isSheetPresented) {
-                        AddDietView()
+                        PickDietView()
                     }
                     .sheet(isPresented: $isAIModal) {
                         AIModalView(isPresented: $isAIModal)

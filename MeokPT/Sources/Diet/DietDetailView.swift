@@ -8,28 +8,28 @@ struct DietDetailView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
-                    VStack(alignment: .leading) {
-                        HStack {
-                            TextField("제목", text: $store.diet.title.sending(\.updateTitle))
-                            .submitLabel(.done)
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            Spacer()
-                            Toggle("즐겨찾기", isOn: Binding(
-                                get: { store.diet.isFavorite },
-                                set: { _ in store.send(.likeButtonTapped) }
-                            ))
-                            .toggleStyle(FavoriteToggleStyle())
-                            .padding(.horizontal)
-                        }
-                        Text("\(String(format: "%.0f", store.diet.kcal)) kcal")
-                            .font(.title2)
-                    }
+//                    VStack(alignment: .leading) {
+//                        HStack {
+//                            TextField("제목", text: $store.diet.title.sending(\.updateTitle))
+//                            .submitLabel(.done)
+//                            .font(.largeTitle)
+//                            .fontWeight(.bold)
+//                            Spacer()
+//                            Toggle("즐겨찾기", isOn: Binding(
+//                                get: { store.diet.isFavorite },
+//                                set: { _ in store.send(.likeButtonTapped) }
+//                            ))
+//                            .toggleStyle(FavoriteToggleStyle())
+//                            .padding(.horizontal)
+//                        }
+//                        Text("\(String(format: "%.0f", store.diet.kcal)) kcal")
+//                            .font(.title2)
+//                    }
                     
-                    HStack {
-                        NutrientView(carbohydrate: store.diet.carbohydrate, protein: store.diet.protein, fat: store.diet.fat)
-                    }
-                    .padding(.horizontal, 32)
+//                    HStack {
+//                        NutrientView(carbohydrate: store.diet.carbohydrate, protein: store.diet.protein, fat: store.diet.fat)
+//                    }
+//                    .padding(.horizontal, 32)
                     
                     // 음식 리스트
                     VStack {

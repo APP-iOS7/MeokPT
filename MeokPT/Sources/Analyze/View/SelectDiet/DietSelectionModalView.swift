@@ -5,7 +5,7 @@ enum Options: String, CaseIterable {
     case favorite = "즐겨찾기"
 }
 
-struct AddDietView: View {
+struct PickDietView: View {
     @State private var selectedOption: Options = .all
     
     @Environment(\.dismiss) private var dismiss
