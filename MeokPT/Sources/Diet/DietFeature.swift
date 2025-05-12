@@ -35,7 +35,7 @@ struct DietFeature {
     }
     
     enum Action {
-        case onAppear
+//        case onAppear
         case likeButtonTapped(id: Diet.ID)
         case path(StackAction<Path.State, Path.Action>) // 네비게이션 액션 추가
     }
@@ -60,13 +60,13 @@ struct DietFeature {
     var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
-            case .onAppear:
-                state.dietList = [
-                    Diet(title: "닭가슴살 샐러드", kcal: 350, carbohydrate: 20, protein: 40, fat: 10, isFavorite: false),
-                    Diet(title: "현미밥과 연어구이", kcal: 550, carbohydrate: 60, protein: 35, fat: 18, isFavorite: true),
-                    Diet(title: "두부김치", kcal: 400, carbohydrate: 30, protein: 25, fat: 20, isFavorite: false)
-                ]
-                return .none
+//            case .onAppear:
+//                state.dietList = [
+//                    Diet(title: "닭가슴살 샐러드", kcal: 350, carbohydrate: 20, protein: 40, fat: 10, isFavorite: false),
+//                    Diet(title: "현미밥과 연어구이", kcal: 550, carbohydrate: 60, protein: 35, fat: 18, isFavorite: true),
+//                    Diet(title: "두부김치", kcal: 400, carbohydrate: 30, protein: 25, fat: 20, isFavorite: false)
+//                ]
+//                return .none
                 
             case let .likeButtonTapped(id):
                 guard state.dietList[id: id] != nil else { return .none }
@@ -77,18 +77,18 @@ struct DietFeature {
             case let .path(.element(id: pathID, action: .detail(.delegate(.favoriteToggled(isFavorite))))):
                 // DietDetailView에서 즐겨찾기 상태가 변경되면 dietList 업데이트
                 guard case let .detail(detailState) = state.path[id: pathID] else { return .none }
-                if var dietToUpdate = state.dietList[id: detailState.diet.id] {
-                    dietToUpdate.isFavorite = isFavorite
-                    state.dietList[id: detailState.diet.id] = dietToUpdate
-                }
+//                if var dietToUpdate = state.dietList[id: detailState.diet.id] {
+//                    dietToUpdate.isFavorite = isFavorite
+//                    state.dietList[id: detailState.diet.id] = dietToUpdate
+//                }
                 return .none
             
             case .path:
                 return .none
-            case .goDietDetailViewAction:
-                return .send(.delegate(.goDietDetailView))
-            case .delegate(_):
-                return .none
+//            case .goDietDetailViewAction:
+//                return .send(.delegate(.goDietDetailView))
+//            case .delegate(_):
+//                return .none
             }
         }
         .forEach(\.path, action: \.path) { // Path Reducer 통합

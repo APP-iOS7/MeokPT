@@ -15,8 +15,8 @@ struct Food: Identifiable, Equatable {
 struct DietDetailFeature {
     @ObservableState
     struct State: Equatable {
-        var diet: Diet
-        var foods: [Food]
+        var diet: Diet?
+        var foods: [Food] = []
     }
     
     enum Action {
@@ -35,10 +35,10 @@ struct DietDetailFeature {
         Reduce { state, action in
             switch action {
             case .likeButtonTapped:
-                state.diet.isFavorite.toggle()
-                return .send(.delegate(.favoriteToggled(isFavorite: state.diet.isFavorite)))
+                state.diet?.isFavorite.toggle()
+                return .send(.delegate(.favoriteToggled(isFavorite: state.diet?.isFavorite ?? false)))
             case let .updateTitle(newTitle):
-                state.diet.title = newTitle
+                state.diet?.title = newTitle
                 return .none
             case .delegate:
                 return .none

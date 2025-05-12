@@ -57,17 +57,17 @@ struct AppView: View {
                     .presentationDragIndicator(.visible)
                     .presentationDetents([.large])  // 여기도 나중에 분기
             }
-            .navigationDestination(for: AppRoute.self) { route in
-                switch route {
-                case .dietDetailView:
-                    DietDetailView(store: store.scope(
-                        state: \.dietState,
-                        action: \.dietAction,
-                    ))
-                default:
-                    Text("지원하지 않는 화면입니다")
-                }
-            }
+//            .navigationDestination(for: AppRoute.self) { route in
+//                switch route {
+//                case .dietDetailView:
+//                    DietDetailView(store: store.scope(
+//                        state: \.dietState,
+//                        action: \.dietAction,
+//                    ))
+//                default:
+//                    Text("지원하지 않는 화면입니다")
+//                }
+//            }
         }
     }
 }
