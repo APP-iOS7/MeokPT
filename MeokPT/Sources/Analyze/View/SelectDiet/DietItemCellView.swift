@@ -44,7 +44,3 @@ struct DietItemCellView: View {
         }
     }
 }
-
-//#Preview {
-//    DietItemCell(isSelected: Bindi false)
-//}
