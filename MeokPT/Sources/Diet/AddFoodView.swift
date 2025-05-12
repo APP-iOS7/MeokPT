@@ -13,6 +13,7 @@ struct AddFoodView: View {
     @State private var foodItem = FoodItem(name: "고구마, 찐고구마", servingGram: 200, calories: 139, carbohydrate: 32.4, protein: 1.6, fat: 0.2)
     @State private var amountGram: Int = 200
     private let cornerRadius: CGFloat = 20
+    private let maxInputLength = 12
 
     private var currentCalories: Double {
         (foodItem.calories / Double(foodItem.servingGram)) * Double(amountGram)
@@ -45,7 +46,6 @@ struct AddFoodView: View {
                         .multilineTextAlignment(.center)
                         .keyboardType(.numberPad)
                         .onChange(of: amountGram) {
-                            let maxInputLength = 12
                             let amountText = String(amountGram)
                                 
                             if amountText.count > maxInputLength {
