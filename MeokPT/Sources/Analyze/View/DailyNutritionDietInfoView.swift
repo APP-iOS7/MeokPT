@@ -2,8 +2,8 @@ import SwiftUI
 import ComposableArchitecture
 
 struct DailyNutritionDietInfoView: View {
-    let store: StoreOf<DailyNutritionDietInfoFeature>
-    
+    @Bindable var store: StoreOf<DailyNutritionDietInfoFeature>
+
     @State private var isSheetPresented = false
     @State private var isAIModal = false
     
@@ -45,7 +45,7 @@ struct DailyNutritionDietInfoView: View {
                     .toolbar {
                         ToolbarItem(placement: .confirmationAction) {
                             Button {
-                                isSheetPresented = true
+                                store.send(.dietSelectionModalViewAction)
                             } label: {
                                 Text("식단 추가")
                                     .foregroundStyle(Color("AppTintColor"))
@@ -60,9 +60,9 @@ struct DailyNutritionDietInfoView: View {
                             }
                         }
                     }
-                    .sheet(isPresented: $isSheetPresented) {
-                        DietSelectionModalView()
-                    }
+//                    .sheet(isPresented: $isSheetPresented) {
+//                        DietSelectionModalView()
+//                    }
                     .sheet(isPresented: $isAIModal) {
                         AIModalView(isPresented: $isAIModal)
                             .presentationDragIndicator(.visible)

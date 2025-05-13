@@ -15,12 +15,12 @@ struct DailyNutritionDietInfoFeature {
     enum Action: Equatable {
         case onAppear
         case nutritionResponse(Result<[NutritionItem]?, NutritionError>)
-        case DietSelectionViewAction
+        case dietSelectionModalViewAction
         case delegate(DelegateAction)
     }
     
     enum DelegateAction {
-        case DietSelectionView
+        case dietSelectionModalView
     }
     
     enum NutritionError: Error, Equatable {
@@ -55,8 +55,8 @@ struct DailyNutritionDietInfoFeature {
                     state.errorMessage = "개인 맞춤 영양성분을 불러올 수 없습니다."
                 }
                 return .none
-            case .DietSelectionViewAction:
-                return .send(.delegate(.DietSelectionView))
+            case .dietSelectionModalViewAction:
+                return .send(.delegate(.dietSelectionModalView))
             case .delegate(_):
                 return .none
             }

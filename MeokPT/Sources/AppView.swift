@@ -85,6 +85,11 @@ struct AppSheetContentView: View {
                         state: \.loginState,
                         action: \.loginAction
                     ))
+                case .dailyNutritionDietInfoView:
+                    DietSelectionModalView(store: store.scope(
+                        state: \.dietSelectionModalState,
+                        action: \.dietSelectionModalAction
+                    ))
                 default:
                     EmptyView()
                 }
