@@ -7,13 +7,19 @@ enum AppRoute: Identifiable {
     
     var id: Self { self }
     
-    var screenType: String {
+    var screenType: ScreenPresentationType {
         switch self {
         case .loginView:
-            return "fullScreenCover"
+            return .fullScreenCover
         case .dietDetailView:
-            return "navigation"
+            return .navigation
         }
+    }
+    
+    enum ScreenPresentationType {
+        case fullScreenCover
+        case navigation
+        case sheet
     }
 }
 
@@ -29,7 +35,7 @@ struct AppFeature {
         var loginState = LoginFeature.State()
         var signUpState = SignUpFeature.State()
         var profileSettingState = ProfileSettingFeature.State()
-        var dietDetailState = DietDetailFeature.State()
+//        var dietDetailState = DietDetailFeature.State()
         
         var appRoute: AppRoute?
         
@@ -45,7 +51,7 @@ struct AppFeature {
         case loginAction(LoginFeature.Action)
         case signUpAction(SignUpFeature.Action)
         case profileSettingAction(ProfileSettingFeature.Action)
-        case dietDetailAction(DietDetailFeature.Action)
+//        case dietDetailAction(DietDetailFeature.Action)
         
         case setActiveSheet(AppRoute?)
         case dismissSheet
@@ -85,9 +91,9 @@ struct AppFeature {
             ProfileSettingFeature()
         }
         
-        Scope(state: \.dietDetailState, action: \.dietDetailAction) {
-            DietDetailFeature()
-        }
+//        Scope(state: \.dietDetailState, action: \.dietDetailAction) {
+//            DietDetailFeature()
+//        }
         
         Reduce { state, action in
             switch action {
