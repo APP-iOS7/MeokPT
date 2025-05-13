@@ -5,14 +5,22 @@ import Foundation
 struct DailyNutritionDietInfoFeature {
     @ObservableState
     struct State: Equatable {
-        var dailyNutrition: [NutritionItem]?
-        var isLoading: Bool = false
+        var nutritionItems: [NutritionItem]?
+        var dietItems: [DietItem]?
+        
+        var isLoading = false
         var errorMessage: String?
     }
     
     enum Action: Equatable {
         case onAppear
         case nutritionResponse(Result<[NutritionItem]?, NutritionError>)
+        case DietSelectionViewAction
+        case delegate(DelegateAction)
+    }
+    
+    enum DelegateAction {
+        case DietSelectionView
     }
     
     enum NutritionError: Error, Equatable {
@@ -40,12 +48,16 @@ struct DailyNutritionDietInfoFeature {
                 state.isLoading = false
                 switch result {
                 case let .success(nutrition):
-                    state.dailyNutrition = nutrition
+                    state.nutritionItems = nutrition
                     state.errorMessage = nil
                 case .failure:
-                    state.dailyNutrition = nil
+                    state.nutritionItems = nil
                     state.errorMessage = "개인 맞춤 영양성분을 불러올 수 없습니다."
                 }
+                return .none
+            case .DietSelectionViewAction:
+                return .send(.delegate(.DietSelectionView))
+            case .delegate(_):
                 return .none
             }
         }

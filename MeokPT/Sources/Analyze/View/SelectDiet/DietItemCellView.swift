@@ -23,11 +23,11 @@ struct DietItemCellView: View {
             }
             
             HStack(spacing: 20) {
-                AnalyzeNutrientView(name: "탄수화물", value: "107.5g")
+                NutritionInfoCellView(name: "탄수화물", value: "107.5g")
                 Spacer()
-                AnalyzeNutrientView(name: "단백질", value: "33.3g")
+                NutritionInfoCellView(name: "단백질", value: "33.3g")
                 Spacer()
-                AnalyzeNutrientView(name: "지방", value: "8.2g")
+                NutritionInfoCellView(name: "지방", value: "8.2g")
             }
             .frame(width: .infinity)
         }

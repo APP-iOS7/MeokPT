@@ -61,7 +61,7 @@ struct DailyNutritionDietInfoView: View {
                         }
                     }
                     .sheet(isPresented: $isSheetPresented) {
-                        AddDietView()
+                        DietSelectionModalView()
                     }
                     .sheet(isPresented: $isAIModal) {
                         AIModalView(isPresented: $isAIModal)
@@ -83,7 +83,7 @@ struct DailyNutritionDietInfoView: View {
     private func content(for viewStore: ViewStore<DailyNutritionDietInfoFeature.State, DailyNutritionDietInfoFeature.Action>) -> some View {
         if viewStore.isLoading {
             ProgressView("로딩 중입니다…")
-        } else if viewStore.dailyNutrition != nil {
+        } else if viewStore.nutritionItems != nil {
             DailyNutritionInfoView(nutritionItems: mockNutritionItems)
         } else if let errorMessage = viewStore.errorMessage {
             Text(errorMessage)
