@@ -69,6 +69,9 @@ struct AppView: View {
 //                }
 //            }
         }
+        .onAppear {
+            store.send(.onAppear)
+        }
     }
 }
 
@@ -84,6 +87,11 @@ struct AppSheetContentView: View {
                     LoginView(store: store.scope(
                         state: \.loginState,
                         action: \.loginAction
+                    ))
+                case .profileSettingView:
+                    ProfileSettingView(store: store.scope(
+                        state: \.profileSettingState,
+                        action: \.profileSettingAction
                     ))
                 default:
                     EmptyView()

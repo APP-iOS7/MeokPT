@@ -29,7 +29,7 @@ struct SignUpFeature {
     }
 
     enum DelegateAction {
-        case signUpCompletedSuccessfully
+        case signUpCompletedSuccessfully(User)
     }
 
     enum CancelID { case signUpRequest }
@@ -73,7 +73,7 @@ struct SignUpFeature {
             case .signUpResponse(.success(let authResult)):
                 state.isLoading = false
                 print("SignUpFeature: 회원가입 성공 - UID: \(authResult.user.uid)")
-                return .send(.delegate(.signUpCompletedSuccessfully))
+                return .send(.delegate(.signUpCompletedSuccessfully(authResult.user)))
 
             case .signUpResponse(.failure(let error)):
                 SignUpFailure(&state, error)
