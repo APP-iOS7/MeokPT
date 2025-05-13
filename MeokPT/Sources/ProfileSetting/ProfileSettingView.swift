@@ -53,7 +53,9 @@ struct ProfileSettingView: View {
                     .frame(height: 1)
                     .foregroundColor(Color(.placeholderText))
                 Spacer()
-                Button(action: {}) {
+                Button(action: {
+                    store.send(.saveProfile)
+                }) {
                     Text("프로필 저장")
                         .font(.subheadline.bold())
                         .frame(maxWidth: .infinity)

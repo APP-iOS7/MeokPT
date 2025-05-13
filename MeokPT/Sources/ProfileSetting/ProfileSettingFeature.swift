@@ -9,6 +9,8 @@ import ComposableArchitecture
 import _PhotosUI_SwiftUI
 import SwiftUICore
 import FirebaseStorage
+import FirebaseAuth
+import FirebaseFirestore
 
 @Reducer
 struct ProfileSettingFeature {
@@ -23,31 +25,74 @@ struct ProfileSettingFeature {
         var errorMessage: String?
         
         var nickName: String = ""
+        var isSavingProfile = false
+        var saveProfileError: String?
+        var profileSaveSuccess = false
     }
     
     enum Action: BindableAction {
         case binding(BindingAction<State>)
         
-        case _loadImageTaskResponse(TaskResult<UIImage>)
+        case _loadImageResponse(Result<UIImage, Error>)
         case _initiateImageUpload
         case _imageUploadProgress(Double)
-        case _imageUploadCompleted(TaskResult<URL>)
+        case _imageUploadCompleted(Result<URL, Error>)
+
+        case saveProfile
+        case _saveProfileResponse(Result<Void, Error>)
+
+        case onAppear
+        case resetSaveStatus
     }
+    
+    @Dependency(\.dismiss) var dismiss
     
     private enum CancelID {
         case loadImage
         case imageUpload
+        case saveProfile
     }
     
-    enum ImageLoadingError: Error, Equatable {
+    enum ImageLoadingError: Error, Equatable, LocalizedError {
         case noData
         case conversionFailed
+
+        var errorDescription: String? {
+            switch self {
+            case .noData: return "선택된 항목에서 이미지 데이터를 가져올 수 없습니다."
+            case .conversionFailed: return "가져온 데이터를 이미지로 변환할 수 없습니다. 다른 파일을 선택해주세요."
+            }
+        }
     }
     
-    enum ImageUploadError: Error, Equatable {
+    enum ImageUploadError: Error, Equatable, LocalizedError {
         case noImageSelected
         case dataConversionFailed
         case firebaseError(String)
+
+        var errorDescription: String? {
+            switch self {
+            case .noImageSelected: return "업로드할 이미지가 선택되지 않았습니다."
+            case .dataConversionFailed: return "이미지를 데이터로 변환하는데 실패했습니다."
+            case .firebaseError(let msg): return "Firebase 저장소 오류: \(msg)"
+            }
+        }
+    }
+    
+    enum ProfileSaveError: Error, Equatable, LocalizedError {
+        case notAuthenticated
+        case networkError(String)
+        case unknownError(String)
+        case nicknameEmpty
+
+        var errorDescription: String? {
+            switch self {
+            case .notAuthenticated: return "사용자 인증 정보가 없습니다. 다시 로그인해주세요."
+            case .networkError(let msg): return "저장 실패 (네트워크): \(msg)"
+            case .unknownError(let msg): return "알 수 없는 오류로 저장에 실패했습니다: \(msg)"
+            case .nicknameEmpty: return "닉네임을 입력해주세요."
+            }
+        }
     }
     
     var body: some ReducerOf<Self> {
@@ -56,8 +101,17 @@ struct ProfileSettingFeature {
         Reduce { state, action in
             switch action {
             case .binding(\.selectedItem):
-                var effects: [Effect<Action>] = [.cancel(id: CancelID.loadImage), .cancel(id: CancelID.imageUpload)]
                 state.uploadedImageUrl = nil
+                state.errorMessage = nil
+                state.isUploading = false
+                state.uploadProgress = 0.0
+                state.profileSaveSuccess = false
+                state.saveProfileError = nil
+                
+                var effects: [Effect<Action>] = [
+                    .cancel(id: CancelID.loadImage),
+                    .cancel(id: CancelID.imageUpload)
+                ]
 
                 guard let pickerItem = state.selectedItem else {
                     state.selectedImage = nil
@@ -68,41 +122,31 @@ struct ProfileSettingFeature {
                 }
 
                 effects.append(.run { send in
-                    await send(._loadImageTaskResponse(
-                        TaskResult {
-                            guard let data = try await pickerItem.loadTransferable(type: Data.self) else {
-                                throw ImageLoadingError.noData
-                            }
-                            guard let image = UIImage(data: data) else {
-                                throw ImageLoadingError.conversionFailed
-                            }
-                            return image
+                    let result: Result<UIImage, Error> = await Result {
+                        guard let data = try await pickerItem.loadTransferable(type: Data.self) else {
+                            throw ImageLoadingError.noData
                         }
-                    ))
+                        guard let image = UIImage(data: data) else {
+                            throw ImageLoadingError.conversionFailed
+                        }
+                        return image
+                    }
+                    await send(._loadImageResponse(result))
                 }
                 .cancellable(id: CancelID.loadImage, cancelInFlight: true))
-                
+
                 return .concatenate(effects)
 
-            case ._loadImageTaskResponse(.success(let image)):
+            case ._loadImageResponse(.success(let image)):
                 state.selectedImage = image
                 state.errorMessage = nil
                 return .send(._initiateImageUpload)
                 
-            case ._loadImageTaskResponse(.failure(let error)):
+            case ._loadImageResponse(.failure(let error)):
                 state.selectedImage = nil
                 state.isUploading = false
                 state.uploadProgress = 0.0
-                if let loadingError = error as? ImageLoadingError {
-                    switch loadingError {
-                    case .noData:
-                        state.errorMessage = "선택된 항목에서 이미지 데이터를 가져올 수 없습니다."
-                    case .conversionFailed:
-                        state.errorMessage = "가져온 데이터를 이미지로 변환할 수 없습니다. 다른 파일을 선택해주세요."
-                    }
-                } else {
-                    state.errorMessage = "이미지를 로드할 수 없습니다: \(error.localizedDescription)"
-                }
+                state.errorMessage = error.localizedDescription
                 return .none
             
             case ._initiateImageUpload:
@@ -115,6 +159,8 @@ struct ProfileSettingFeature {
                 state.uploadProgress = 0.0
                 state.errorMessage = nil
                 state.uploadedImageUrl = nil
+                state.profileSaveSuccess = false
+                state.saveProfileError = nil
 
                 return .run { send in
                     do {
@@ -220,6 +266,77 @@ struct ProfileSettingFeature {
                      state.errorMessage = "이미지 업로드 실패: \(error.localizedDescription)"
                  }
                 return .none
+                
+            case .saveProfile:
+                guard !state.nickName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                    state.saveProfileError = "닉네임을 입력해주세요."
+                    return .none
+                }
+
+                guard !state.isUploading else {
+                    state.saveProfileError = "이미지 업로드 중입니다. 잠시 후 다시 시도해주세요."
+                    return .none
+                }
+
+                state.isSavingProfile = true
+                state.saveProfileError = nil
+                state.profileSaveSuccess = false
+
+                guard let userId = Auth.auth().currentUser?.uid else {
+                    return .send(._saveProfileResponse(.failure(ProfileSaveError.notAuthenticated)))
+                }
+
+                let profileData: [String: Any] = [
+                    "nickname": state.nickName,
+                    "profileImageUrl": state.uploadedImageUrl?.absoluteString ?? NSNull()
+                ]
+
+                return .run { send in
+                    do {
+                        let db = Firestore.firestore()
+                        try await db.collection("users").document(userId).setData(profileData, merge: true)
+
+                        await send(._saveProfileResponse(.success(())))
+
+                    } catch {
+                        await send(._saveProfileResponse(.failure(ProfileSaveError.networkError(error.localizedDescription))))
+                    }
+                }
+                .cancellable(id: CancelID.saveProfile, cancelInFlight: true)
+
+
+            case ._saveProfileResponse(.success):
+                state.isSavingProfile = false
+                state.saveProfileError = nil
+                state.profileSaveSuccess = true
+                return .none
+                
+            case ._saveProfileResponse(.failure(let error)):
+                state.isSavingProfile = false
+                state.profileSaveSuccess = false
+                if let saveError = error as? ProfileSaveError {
+                    switch saveError {
+                    case .notAuthenticated:
+                        state.saveProfileError = "사용자 인증 정보가 없습니다. 다시 로그인해주세요."
+                    case .networkError(let msg):
+                        state.saveProfileError = "저장 실패 (네트워크): \(msg)"
+                    case .unknownError(let msg):
+                        state.saveProfileError = "알 수 없는 오류로 저장에 실패했습니다: \(msg)"
+                    case .nicknameEmpty:
+                         state.saveProfileError = "닉네임을 입력해주세요."
+                    }
+                } else {
+                    state.saveProfileError = "프로필 저장 중 오류 발생: \(error.localizedDescription)"
+                }
+                return .none
+
+            case .onAppear:
+                return .none
+                
+            case .resetSaveStatus:
+                 state.profileSaveSuccess = false
+                 state.saveProfileError = nil
+                 return .none
                 
             case .binding(_):
                 return .none
