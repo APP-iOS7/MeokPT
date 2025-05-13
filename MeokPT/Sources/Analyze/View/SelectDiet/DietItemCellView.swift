@@ -29,7 +29,7 @@ struct DietItemCellView: View {
                 Spacer()
                 DietNutritionInfoCellView(name: "지방", value: "8.2g")
             }
-            .frame(width: .infinity)
+            .frame(maxWidth: .infinity)
         }
         .padding(24)
         .background(

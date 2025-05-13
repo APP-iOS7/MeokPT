@@ -85,7 +85,7 @@ struct AppSheetContentView: View {
                         state: \.loginState,
                         action: \.loginAction
                     ))
-                case .dailyNutritionDietInfoView:
+                case .dietSelectionModalView:
                     DietSelectionModalView(store: store.scope(
                         state: \.dietSelectionModalState,
                         action: \.dietSelectionModalAction

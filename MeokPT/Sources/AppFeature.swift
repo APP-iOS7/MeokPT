@@ -4,7 +4,7 @@ import SwiftUI
 enum AppRoute: Identifiable {
     case loginView
     case dietDetailView
-    case dailyNutritionDietInfoView
+    case dietSelectionModalView
     
     var id: Self { self }
     
@@ -14,7 +14,7 @@ enum AppRoute: Identifiable {
             return "fullScreenCover"
         case .dietDetailView:
             return "navigation"
-        case .dailyNutritionDietInfoView:
+        case .dietSelectionModalView:
             return "fullScreenCover"
         }
     }
@@ -101,7 +101,8 @@ struct AppFeature {
         Reduce { state, action in
             switch action {
             case .analyzeAction(.delegate(.dietSelectionModalView)):
-                return .send(.setActiveSheet(.dailyNutritionDietInfoView))
+                return .send(.setActiveSheet(.dietSelectionModalView))
+                
 //            case .dietAction(.delegate(.goDietDetailView)):
 //                return .send(.push(.dietDetailView))
                 
