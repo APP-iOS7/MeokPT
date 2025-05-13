@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct NutritionInfoCellView: View {
+struct DietNutritionInfoCellView: View {
     let name: String
     let value: String
     
