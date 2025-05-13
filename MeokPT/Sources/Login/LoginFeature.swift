@@ -9,6 +9,7 @@ import Foundation
 import ComposableArchitecture
 import FirebaseCore
 import FirebaseAuth
+import FirebaseFirestore
 import SwiftUI
 
 enum LoginRoute {
@@ -28,6 +29,10 @@ struct LoginFeature {
         
         var path = NavigationPath()
         var signUpState = SignUpFeature.State()
+        
+        var isCreatingUserDB: Bool = false
+        var createUserDBError: String?
+        var flowCompletedSuccessfully: Bool = false
     }
     
     enum Action: BindableAction {
@@ -43,14 +48,18 @@ struct LoginFeature {
         case push(LoginRoute)
         case popToRoot
         case signUpAction(SignUpFeature.Action)
+        
+        case _createUserDBResponse(Result<Void, Error>)
     }
     
     enum DelegateAction {
         case dismissLoginSheet
+        case loginSuccessfully
     }
     
     enum CancelID {
         case loginRequest
+        case createUserDBRequest
     }
     
     var body: some ReducerOf<Self> {
@@ -126,20 +135,64 @@ struct LoginFeature {
                 
             case .popToRoot:
                 state.path.removeLast(state.path.count)
-                return .send(.delegate(.dismissLoginSheet))
-                
+                if state.flowCompletedSuccessfully {
+                    return .send(.delegate(.dismissLoginSheet))
+                }
+                return .none
             case .delegate(_):
                 return .none
             case .binding(_):
                 return .none
                 
             case .signUpAction(.delegate(.signUpCompletedSuccessfully)):
-                print("회원가입 성공, user DB 생성, 로그인 화면으로 돌아가기")
-                // TODO: user DB 생성
-                return .send(.popToRoot)
+                print("회원가입 성공, user DB 생성 시도")
+                state.isCreatingUserDB = true
+                state.createUserDBError = nil
+
+                // 방금 회원가입한 사용자의 UID 가져오기
+                guard let user = Auth.auth().currentUser else {
+                    print("오류: 회원가입 후 현재 사용자를 가져올 수 없습니다.")
+                    state.isCreatingUserDB = false
+                    state.createUserDBError = "사용자 정보를 가져오는데 실패했습니다."
+                    return .send(._createUserDBResponse(.failure(NSError(domain: "AuthError", code: -1, userInfo: [NSLocalizedDescriptionKey: "Current user not found after sign up."]))))
+                }
+                let userId = user.uid
+                
+                // Firestore에 저장할 데이터
+                let initialUserData: [String: Any] = [
+                    "nickname": NSNull(),
+                    "profileImageUrl": NSNull(),
+                    "postItems": []
+                ]
+                
+                return .run { send in
+                    do {
+                        let db = Firestore.firestore()
+                        try await db.collection("users").document(userId).setData(initialUserData)
+                        print("Firestore에 사용자 초기 데이터 생성 완료. UID: \(userId)")
+                        await send(._createUserDBResponse(.success(())))
+                    } catch {
+                        print("Firestore 사용자 데이터 생성 실패: \(error.localizedDescription)")
+                        await send(._createUserDBResponse(.failure(error)))
+                    }
+                }
+                .cancellable(id: CancelID.createUserDBRequest)
                 
             case .signUpAction(_):
                 return .none
+
+            case ._createUserDBResponse(.success):
+                state.isCreatingUserDB = false
+                state.flowCompletedSuccessfully = true
+                print("사용자 DB 생성 성공 처리 완료.")
+                return .send(.popToRoot)
+
+            case ._createUserDBResponse(.failure(let error)):
+                state.isCreatingUserDB = false
+                state.createUserDBError = "사용자 DB 생성 실패: \(error.localizedDescription)"
+                state.flowCompletedSuccessfully = false
+                print("사용자 DB 생성 실패 처리: \(error.localizedDescription)")
+                return .send(.popToRoot)
             }
         }
         Scope(state: \.signUpState, action: \.signUpAction) {
