@@ -29,9 +29,7 @@ struct DailyNutritionDietInfoView: View {
                     }
                     .safeAreaInset(edge: .bottom) {
                         Button {
-                            withAnimation {
-                                isAIModal = true
-                            }
+                            store.send(.toAIModalViewAction)
                         } label: {
                             Text("AI 식단 분석")
                                 .frame(maxWidth: .infinity)
@@ -45,7 +43,7 @@ struct DailyNutritionDietInfoView: View {
                     .toolbar {
                         ToolbarItem(placement: .confirmationAction) {
                             Button {
-                                store.send(.dietSelectionModalViewAction)
+                                store.send(.toDietSelectionModalViewAction)
                             } label: {
                                 Text("식단 추가")
                                     .foregroundStyle(Color("AppTintColor"))
@@ -59,14 +57,6 @@ struct DailyNutritionDietInfoView: View {
                                     .foregroundStyle(Color("AppTintColor"))
                             }
                         }
-                    }
-//                    .sheet(isPresented: $isSheetPresented) {
-//                        DietSelectionModalView()
-//                    }
-                    .sheet(isPresented: $isAIModal) {
-                        AIModalView(isPresented: $isAIModal)
-                            .presentationDragIndicator(.visible)
-                            .presentationDetents([.fraction(0.8), .fraction(0.5)])
                     }
                 }
             }
@@ -94,12 +84,7 @@ struct DailyNutritionDietInfoView: View {
     }
 }
 
-#Preview {
-    DailyNutritionDietInfoView(
-        store: Store(initialState: DailyNutritionDietInfoFeature.State()) {
-            DailyNutritionDietInfoFeature(environment: .mock)
-        }
-    )
-}
-
+//#Preview {
+//    DailyNutritionDietInfoView(store: DailyNutritionDietInfoFeature)
+//}
 

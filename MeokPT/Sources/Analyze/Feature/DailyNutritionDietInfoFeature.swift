@@ -15,33 +15,33 @@ struct DailyNutritionDietInfoFeature {
     enum Action: Equatable {
         case onAppear
         case nutritionResponse(Result<[NutritionItem]?, NutritionError>)
-        case dietSelectionModalViewAction
-        case delegate(DelegateAction)
+        
+        case toDietSelectionModalViewAction
+        case dietSelectionDelegate(DelegateAction)
+        
+        case toAIModalViewAction
+        case AIModalDelegate(DelegateAction)
     }
     
     enum DelegateAction {
-        case dietSelectionModalView
+        case toDietSelectionModalView
+        case toAIModalView
     }
     
     enum NutritionError: Error, Equatable {
         case fetchFailed
     }
 
-    struct NutritionEnvironment {
-        var fetchNutrition: () async -> Result<[NutritionItem]?, NutritionError>
-    }
-    
-    var environment: NutritionEnvironment
+    @Dependency(\.fetchNutrition) var fetchNutrition
 
     var body: some ReducerOf<Self> {
-
         Reduce { state, action in
             switch action {
             case .onAppear:
                 state.isLoading = true
                 state.errorMessage = nil
-                return .run { [environment] send in
-                    let result = await environment.fetchNutrition()
+                return .run { send in
+                    let result = await fetchNutrition()
                     await send(.nutritionResponse(result))
                 }
             case let .nutritionResponse(result):
@@ -55,23 +55,35 @@ struct DailyNutritionDietInfoFeature {
                     state.errorMessage = "개인 맞춤 영양성분을 불러올 수 없습니다."
                 }
                 return .none
-            case .dietSelectionModalViewAction:
-                return .send(.delegate(.dietSelectionModalView))
-            case .delegate(_):
+            case .toDietSelectionModalViewAction:
+                return .send(.dietSelectionDelegate(.toDietSelectionModalView))
+            case .dietSelectionDelegate(_):
+                return .none
+            case .toAIModalViewAction:
+                return .send(.AIModalDelegate(.toAIModalView))
+            case .AIModalDelegate(_):
                 return .none
             }
         }
     }
 }
 
-// MARK: - Mock 비동기 구현
-extension DailyNutritionDietInfoFeature.NutritionEnvironment {
-    static let mock = Self(
-        fetchNutrition: {
-            try? await Task.sleep(nanoseconds: 1_000_000_000)
-            return .success(
-                mockNutritionItems
-            )
-        }
-    )
+enum FetchNutritionKey: DependencyKey {
+    static let liveValue: () async -> Result<[NutritionItem]?, DailyNutritionDietInfoFeature.NutritionError> = {
+        // 실제 구현
+        .failure(.fetchFailed) // 예시
+    }
+
+    static let testValue: () async -> Result<[NutritionItem]?, DailyNutritionDietInfoFeature.NutritionError> = {
+        try? await Task.sleep(nanoseconds: 1_000_000_000)
+        return .success(mockNutritionItems)
+    }
 }
+
+extension DependencyValues {
+    var fetchNutrition: () async -> Result<[NutritionItem]?, DailyNutritionDietInfoFeature.NutritionError> {
+        get { self[FetchNutritionKey.self] }
+        set { self[FetchNutritionKey.self] = newValue }
+    }
+}
+

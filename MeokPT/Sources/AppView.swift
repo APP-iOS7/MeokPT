@@ -55,7 +55,7 @@ struct AppView: View {
             ) {_ in
                 AppSheetContentView(store: store)
                     .presentationDragIndicator(.visible)
-                    .presentationDetents([.large])  // 여기도 나중에 분기
+                    .presentationDetents([.fraction(0.8), .fraction(0.5)])  // 여기도 나중에 분기
             }
 //            .navigationDestination(for: AppRoute.self) { route in
 //                switch route {
@@ -89,6 +89,11 @@ struct AppSheetContentView: View {
                     DietSelectionModalView(store: store.scope(
                         state: \.dietSelectionModalState,
                         action: \.dietSelectionModalAction
+                    ))
+                case .AIModalView:
+                    AIModalView(store: store.scope(
+                        state: \.AIModalState,
+                        action: \.AIModalAction
                     ))
                 default:
                     EmptyView()
