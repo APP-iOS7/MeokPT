@@ -17,7 +17,7 @@ struct DietNotEmptyView: View {
                 Spacer()
                 NutritionInfoCellView(name: "지방", value: "8.2g")
             }
-            .frame(width: .infinity)
+            .frame(maxWidth: .infinity)
         }
         .padding(24)
         .background(
