@@ -7,14 +7,20 @@ enum AppRoute: Identifiable {
     
     var id: Self { self }
     
-    var screenType: String {
+    var screenType: ScreenPresentationType {
         switch self {
         case .loginView:
-            return "fullScreenCover"
+            return .fullScreenCover
         case .dietDetailView:
-            return "navigation"
+            return .navigation
         }
     }
+}
+
+enum ScreenPresentationType {
+    case sheet
+    case fullScreenCover
+    case navigation
 }
 
 @Reducer

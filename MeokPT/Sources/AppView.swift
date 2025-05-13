@@ -34,7 +34,7 @@ struct AppView: View {
             .fullScreenCover(
                 item: Binding(
                     get: {
-                        store.appRoute?.screenType == "fullScreenCover" ? store.appRoute : nil
+                        store.appRoute?.screenType == .fullScreenCover ? store.appRoute : nil
                     },
                     set: { newValue in
                         store.send(.setActiveSheet(newValue))
@@ -46,7 +46,7 @@ struct AppView: View {
             .sheet(
                 item: Binding(
                     get: {
-                        store.appRoute?.screenType == "sheet" ? store.appRoute : nil
+                        store.appRoute?.screenType == .sheet ? store.appRoute : nil
                     },
                     set: { newValue in
                         store.send(.setActiveSheet(newValue))
