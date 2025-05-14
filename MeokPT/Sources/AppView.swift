@@ -32,34 +32,18 @@ struct AppView: View {
             store.send(.onAppear)
         }
         .fullScreenCover(
-            store: store.scope(state: \.$loginModal, action: \.loginModalAction)
+            store: store.scope(state: \.$loginFullScreenCover, action: \.loginAction)
         ) { loginStore in
             NavigationStack {
                 LoginView(store: loginStore)
             }
         }
         .fullScreenCover(
-            store: store.scope(state: \.$profileSettingModal, action: \.profileSettingModalAction)
+            store: store.scope(state: \.$profileSettingFullScreenCover, action: \.profileSettingAction)
         ) { profileStore in
             NavigationStack {
                 ProfileSettingView(store: profileStore)
             }
-        }
-        .sheet(
-            store: store.scope(state: \.$dietSelectionModal, action: \.dietSelectionModalAction)
-        ) { modalStore in
-            NavigationStack {
-                DietSelectionModalView(store: modalStore)
-            }
-            .presentationDragIndicator(.visible)
-        }
-        .sheet(
-            store: store.scope(state: \.$aiModal, action: \.aiModalAction)
-        ) { modalStore in
-            NavigationStack {
-                AIModalView(store: modalStore)
-            }
-            .presentationDragIndicator(.visible)
         }
     }
 }
