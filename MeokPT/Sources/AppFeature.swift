@@ -6,6 +6,8 @@ import FirebaseFirestore
 enum AppRoute: Identifiable {
     case loginView
     case profileSettingView
+    case dietSelectionModalView
+    case AIModalView
     
     var id: Self { self }
     
@@ -30,11 +32,13 @@ struct AppFeature {
     @ObservableState
     struct State {
         var dietState = DietFeature.State()
-        var analyzeState = AnalyzeFeature.State()
+        var analyzeState = DailyNutritionDietInfoFeature.State()
         var communityState = CommunityFeature.State()
         var myPageState = MyPageFeature.State()
         var loginState = LoginFeature.State()
         var profileSettingState = ProfileSettingFeature.State()
+        var dietSelectionModalState = DietSelectionModalFeature.State()
+        var AIModalState = AIModalFeature.State()
         
         var appRoute: AppRoute?
                 
@@ -48,11 +52,13 @@ struct AppFeature {
     enum Action: BindableAction {
         case binding(BindingAction<State>)
         case dietAction(DietFeature.Action)
-        case analyzeAction(AnalyzeFeature.Action)
+        case analyzeAction(DailyNutritionDietInfoFeature.Action)
         case communityAction(CommunityFeature.Action)
         case myPageAction(MyPageFeature.Action)
         case loginAction(LoginFeature.Action)
         case profileSettingAction(ProfileSettingFeature.Action)
+        case dietSelectionModalAction(DietSelectionModalFeature.Action)
+        case AIModalAction(AIModalFeature.Action)
         
         case setActiveSheet(AppRoute?)
         case dismissSheet
@@ -75,16 +81,57 @@ struct AppFeature {
     var body: some ReducerOf<Self> {
         BindingReducer()
 
-        Scope(state: \.dietState, action: \.dietAction) { DietFeature() }
-        Scope(state: \.analyzeState, action: \.analyzeAction) { AnalyzeFeature() }
-        Scope(state: \.communityState, action: \.communityAction) { CommunityFeature() }
-        Scope(state: \.myPageState, action: \.myPageAction) { MyPageFeature() }
-        Scope(state: \.loginState, action: \.loginAction) { LoginFeature() }
-        Scope(state: \.profileSettingState, action: \.profileSettingAction) { ProfileSettingFeature() }
+        Scope(state: \.dietState, action: \.dietAction) {
+            DietFeature()
+        }
+        
+        Scope(state: \.analyzeState, action: \.analyzeAction) {
+            DailyNutritionDietInfoFeature()
+        }
+        
+        Scope(state: \.communityState, action: \.communityAction) {
+            CommunityFeature()
+        }
+        
+        Scope(state: \.myPageState, action: \.myPageAction) {
+            MyPageFeature()
+        }
+        
+        Scope(state: \.loginState, action: \.loginAction) {
+            LoginFeature()
+        }
+        
+        Scope(state: \.signUpState, action: \.signUpAction) {
+            SignUpFeature()
+        }
+        
+        Scope(state: \.profileSettingState, action: \.profileSettingAction) {
+            ProfileSettingFeature()
+        }
+        
+        Scope(state: \.dietSelectionModalState, action: \.dietSelectionModalAction) {
+            DietSelectionModalFeature()
+        }
+        
+        Scope(state: \.AIModalState, action: \.AIModalAction) {
+            AIModalFeature()
+        }
         
         Reduce { state, action in
             switch action {
-            // MARK: - myPageAction
+                
+            case let .analyzeAction(action):
+                  switch action {
+                  case .dietSelectionDelegate(.toDietSelectionModalView):
+                      return .send(.setActiveSheet(.dietSelectionModalView))
+
+                  case .AIModalDelegate(.toAIModalView):
+                      return .send(.setActiveSheet(.AIModalView))
+
+                  default:
+                      return .none
+                  }
+                
             case .myPageAction(.delegate(.loginSignUpButtonTapped)):
                 return .send(.setActiveSheet(.loginView))
                 
@@ -115,7 +162,6 @@ struct AppFeature {
                 return .none
                 
             case .dismissSheet:
-                // appRoute 가 nil 이면 sheet 는 닫힌다.
                 state.appRoute = nil
                 return .none
                 

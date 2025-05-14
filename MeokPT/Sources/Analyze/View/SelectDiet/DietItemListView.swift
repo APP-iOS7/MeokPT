@@ -7,7 +7,7 @@ struct DietItemListView: View {
 
     var body: some View {
         ScrollView {
-            LazyVStack(spacing: 16) {
+            LazyVStack(spacing: 20) {
                 ForEach(items.indices, id:\.self) { index in
                     DietItemCellView(isSelected: $selectedStates[index])
                 }

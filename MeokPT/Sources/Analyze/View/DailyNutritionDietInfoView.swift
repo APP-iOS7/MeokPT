@@ -1,8 +1,9 @@
 import SwiftUI
 import ComposableArchitecture
-struct AnalyzeView: View {
-    let store: StoreOf<AnalyzeFeature>
-    
+
+struct DailyNutritionDietInfoView: View {
+    @Bindable var store: StoreOf<DailyNutritionDietInfoFeature>
+
     @State private var isSheetPresented = false
     @State private var isAIModal = false
     
@@ -12,19 +13,23 @@ struct AnalyzeView: View {
                 ZStack {
                     Color("AppBackgroundColor")
                                .ignoresSafeArea()
-//                    ScrollView {
-//                        VStack {
-//                            // TODO: - 신체 정보, 식단의 유무에 따라 다른 뷰를 이용
-//                        }
-//                        .navigationTitle("분석")
-//                        .navigationBarTitleDisplayMode(.inline)
-//                        .background(Color("AppBackgroundColor"))
-//                    }
+                    ScrollView {
+                        VStack {
+                            WithViewStore(self.store, observe: { $0 }) { viewStore in
+                                content(for: viewStore)
+                                    .onAppear {
+                                        viewStore.send(.onAppear)
+                                    }
+                                
+                            }
+                        }
+                        .navigationTitle("분석")
+                        .navigationBarTitleDisplayMode(.inline)
+                        .background(Color("AppBackgroundColor"))
+                    }
                     .safeAreaInset(edge: .bottom) {
                         Button {
-                            withAnimation {
-                                isAIModal = true
-                            }
+                            store.send(.toAIModalViewAction)
                         } label: {
                             Text("AI 식단 분석")
                                 .frame(maxWidth: .infinity)
@@ -38,7 +43,7 @@ struct AnalyzeView: View {
                     .toolbar {
                         ToolbarItem(placement: .confirmationAction) {
                             Button {
-                                isSheetPresented = true
+                                store.send(.toDietSelectionModalViewAction)
                             } label: {
                                 Text("식단 추가")
                                     .foregroundStyle(Color("AppTintColor"))
@@ -53,29 +58,33 @@ struct AnalyzeView: View {
                             }
                         }
                     }
-                    .sheet(isPresented: $isSheetPresented) {
-                        PickDietView()
-                    }
-                    .sheet(isPresented: $isAIModal) {
-                        AIModalView(isPresented: $isAIModal)
-                            .presentationDragIndicator(.visible)
-                            .presentationDetents([.fraction(0.8), .fraction(0.5)])
-                    }
                 }
             }
             .scrollContentBackground(.hidden)
 
         }
+        .task {
+            ViewStore(store, observe: { $0 }).send(.onAppear)
+        }
         .animation(.easeInOut, value: isAIModal)
+    }
+    
+    @ViewBuilder
+    private func content(for viewStore: ViewStore<DailyNutritionDietInfoFeature.State, DailyNutritionDietInfoFeature.Action>) -> some View {
+        if viewStore.isLoading {
+            ProgressView("로딩 중입니다…")
+        } else if viewStore.nutritionItems != nil {
+            DailyNutritionInfoView(nutritionItems: mockNutritionItems)
+        } else if let errorMessage = viewStore.errorMessage {
+            Text(errorMessage)
+                .font(.caption)
+        } else {
+            DailyNutritionInfoEmptyView()
+        }
     }
 }
 
-#Preview {
-    AnalyzeView(
-        store: Store(initialState: AnalyzeFeature.State()) {
-            AnalyzeFeature()
-        }
-    )
-}
-
+//#Preview {
+//    DailyNutritionDietInfoView(store: DailyNutritionDietInfoFeature)
+//}
 
