@@ -13,20 +13,24 @@ struct MyPageView: View {
                 Spacer().frame(height: 24)
                 Button(action: {
                     store.send(.loginSignUpButtonTapped)
-                }) {
-                    HStack() {
-                        HStack {
-                            ZStack {
-                                Circle()
-                                    .fill(Color("AppBackgroundColor"))
-                                    .frame(width: 100, height: 100)
-                                Image(systemName: "person.circle.fill")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 108, height: 108)
-                                    .foregroundColor(Color("AppSecondaryColor"))
+                }
+                .padding()
+                .frame(maxWidth: .infinity, minHeight: 100)
+                .background(Color("AppTertiaryColor"))
+                .cornerRadius(16)
+                .padding(.horizontal)
+                .padding(.bottom, 32)
+                
+                HStack(spacing: 16) {
+                    NavigationLink(destination: BodyInfoInputView(
+                        store: Store(
+                            initialState: BodyInfoInputFeature.State(),
+                            reducer: {
+                                BodyInfoInputFeature()
                             }
-                            Spacer().frame(width: 26)
+                    )
+                    )) {
+                        VStack(alignment: .leading, spacing: 4) {
                             HStack {
                                 Text("회원가입 / 로그인")
                                     .foregroundColor(.white)
