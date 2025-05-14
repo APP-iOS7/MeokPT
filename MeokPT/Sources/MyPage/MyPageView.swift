@@ -71,7 +71,11 @@ struct MyPageView: View {
                             }
                         }
                         
-                        NavigationLink(destination: DailyCalorieView()) {
+                        NavigationLink(destination: DailyNutritionView(
+                            store: Store(
+                            initialState: DailyNutritionFeature.State()) {
+                                DailyNutritionFeature()
+                        })) {
                             VStack {
                                 HStack {
                                     Text("하루 목표 칼로리")
