@@ -23,13 +23,13 @@ struct DietItemCellView: View {
             }
             
             HStack(spacing: 20) {
-                AnalyzeNutrientView(name: "탄수화물", value: "107.5g")
+                DietNutritionInfoCellView(name: "탄수화물", value: "107.5g")
                 Spacer()
-                AnalyzeNutrientView(name: "단백질", value: "33.3g")
+                DietNutritionInfoCellView(name: "단백질", value: "33.3g")
                 Spacer()
-                AnalyzeNutrientView(name: "지방", value: "8.2g")
+                DietNutritionInfoCellView(name: "지방", value: "8.2g")
             }
-            .frame(width: .infinity)
+            .frame(maxWidth: .infinity)
         }
         .padding(24)
         .background(
@@ -44,7 +44,3 @@ struct DietItemCellView: View {
         }
     }
 }
-
-//#Preview {
-//    DietItemCell(isSelected: Bindi false)
-//}

@@ -23,6 +23,11 @@ struct AppView: View {
                     .tabItem {
                         Text("마이페이지")
                     }
+                )
+            ) {_ in
+                AppSheetContentView(store: store)
+                    .presentationDragIndicator(.visible)
+                    .presentationDetents([.fraction(0.8), .fraction(0.5)])  // 여기도 나중에 분기
             }
             .toolbarBackground(.visible, for: .tabBar)
             .toolbarBackground(Color(UIColor.systemBackground), for: .tabBar)
@@ -71,6 +76,16 @@ struct AppSheetContentView: View {
                     LoginView(store: store.scope(
                         state: \.loginState,
                         action: \.loginAction
+                    ))
+                case .dietSelectionModalView:
+                    DietSelectionModalView(store: store.scope(
+                        state: \.dietSelectionModalState,
+                        action: \.dietSelectionModalAction
+                    ))
+                case .AIModalView:
+                    AIModalView(store: store.scope(
+                        state: \.AIModalState,
+                        action: \.AIModalAction
                     ))
                 default:
                     EmptyView()

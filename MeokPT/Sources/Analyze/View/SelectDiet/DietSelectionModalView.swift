@@ -1,3 +1,4 @@
+import ComposableArchitecture
 import SwiftUI
 
 enum Options: String, CaseIterable {
@@ -5,7 +6,9 @@ enum Options: String, CaseIterable {
     case favorite = "즐겨찾기"
 }
 
-struct PickDietView: View {
+struct DietSelectionModalView: View {
+    @Bindable var store: StoreOf<DietSelectionModalFeature>
+
     @State private var selectedOption: Options = .all
     
     @Environment(\.dismiss) private var dismiss

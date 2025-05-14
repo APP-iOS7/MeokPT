@@ -1,8 +1,10 @@
+import ComposableArchitecture
 import SwiftUI
 
 struct AIModalView: View {
+    @Bindable var store: StoreOf<AIModalFeature>
+
     @Environment(\.dismiss) var dismiss
-    @Binding var isPresented: Bool
 
     var body: some View {
         VStack(spacing: 16) {            
