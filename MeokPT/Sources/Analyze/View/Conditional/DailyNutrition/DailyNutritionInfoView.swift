@@ -29,6 +29,6 @@ struct DailyNutritionInfoView: View {
     }
 }
 
-#Preview {
-    DailyNutritionInfoView(nutritionItems: mockNutritionItems)
-}
+//#Preview {
+//    DailyNutritionInfoView(nutritionItems: mockNutritionItems)
+//}

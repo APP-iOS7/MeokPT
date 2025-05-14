@@ -1,13 +1,29 @@
 import Foundation
+import SwiftData
 
-struct NutritionItem: Identifiable, Equatable {    
-    let type: NutritionType
+@Model
+class NutritionItem: Identifiable, Equatable {
+    var typeRawValue: String
     var value: Int
     var max: Int
-    
-    var id: String { type.id }
+
+    var id: String { typeRawValue }
+    var type: NutritionType {
+        get { NutritionType(rawValue: typeRawValue) ?? .calorie } 
+        set { typeRawValue = newValue.rawValue }
+    }
     var name: String { type.rawValue }
     var unit: String { type.unit }
+    
+    init(type: NutritionType, value: Int, max: Int) {
+        self.typeRawValue = type.rawValue
+        self.value = value
+        self.max = max
+    }
+
+    static func == (lhs: NutritionItem, rhs: NutritionItem) -> Bool {
+        lhs.id == rhs.id
+    }
 }
 
 let mockNutritionItems: [NutritionItem] = [

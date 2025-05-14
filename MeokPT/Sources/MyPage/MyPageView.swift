@@ -83,7 +83,15 @@ struct MyPageView: View {
                         .cornerRadius(16)
                     }
                     
-                    NavigationLink(destination: DailyCalorieView()) {
+                    NavigationLink(destination:
+                        DailyNutritionView(
+                            store: Store(
+                                initialState: DailyNutritionFeature.State(),
+                                reducer: {
+                                    DailyNutritionFeature()
+                                }
+                        )
+                    )) {
                         VStack {
                             HStack {
                                 Text("하루 목표 칼로리")

@@ -41,7 +41,7 @@ struct BodyInfoInputFeature: Reducer {
                 state.selectedGoal = text
                 return .none
             case let .loadSavedData(context):
-                print("\n 데이터 로드 시작")
+                print("\n데이터 로드 시작")
                 if let existing = try? context.fetch(FetchDescriptor<BodyInfo>()).first {
                     state.height = String(existing.height)
                     state.age = String(existing.age)
