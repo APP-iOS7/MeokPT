@@ -17,6 +17,10 @@ enum AppRoute: Identifiable {
             return .fullScreenCover
         case .profileSettingView:
             return .fullScreenCover
+        case .dietSelectionModalView:
+            return .sheet
+        case .AIModalView:
+            return .sheet
         }
     }
 }
@@ -99,10 +103,6 @@ struct AppFeature {
         
         Scope(state: \.loginState, action: \.loginAction) {
             LoginFeature()
-        }
-        
-        Scope(state: \.signUpState, action: \.signUpAction) {
-            SignUpFeature()
         }
         
         Scope(state: \.profileSettingState, action: \.profileSettingAction) {
@@ -234,7 +234,7 @@ struct AppFeature {
             case .binding(_):
                 return .none
 
-            case .dietAction(_), .analyzeAction(_), .communityAction(_), .myPageAction(_), .loginAction(_), .profileSettingAction(_):
+            case .dietAction(_), .communityAction(_), .myPageAction(_), .loginAction(_), .profileSettingAction(_), .dietSelectionModalAction(_), .AIModalAction(_):
                  return .none
             }
         }
