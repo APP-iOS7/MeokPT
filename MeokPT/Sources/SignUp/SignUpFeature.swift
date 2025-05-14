@@ -29,7 +29,7 @@ struct SignUpFeature {
     }
 
     enum DelegateAction {
-        case signUpCompletedSuccessfully
+        case signUpCompletedSuccessfully(User)
     }
 
     enum CancelID { case signUpRequest }
@@ -73,10 +73,10 @@ struct SignUpFeature {
             case .signUpResponse(.success(let authResult)):
                 state.isLoading = false
                 print("SignUpFeature: 회원가입 성공 - UID: \(authResult.user.uid)")
-                return .send(.delegate(.signUpCompletedSuccessfully))
+                return .send(.delegate(.signUpCompletedSuccessfully(authResult.user)))
 
             case .signUpResponse(.failure(let error)):
-                SignUpFailure(&state, error)
+                signUpFailure(&state, error)
                 return .none
                 
             case .delegate(_):
@@ -131,7 +131,7 @@ struct SignUpFeature {
         }
     }
     
-    private func SignUpFailure(_ state: inout SignUpFeature.State, _ error: any Error) {
+    private func signUpFailure(_ state: inout SignUpFeature.State, _ error: any Error) {
         state.isLoading = false
         let nsError = error as NSError
         if nsError.domain == AuthErrorDomain, let errorCode = AuthErrorCode(rawValue: nsError.code) {

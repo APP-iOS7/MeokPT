@@ -7,7 +7,7 @@ enum Options: String, CaseIterable {
 }
 
 struct DietSelectionModalView: View {
-    @Bindable var store: StoreOf<DietSelectionModalFeature>
+    @Bindable var store: StoreOf<DietSelectionSheetFeature>
 
     @State private var selectedOption: Options = .all
     
