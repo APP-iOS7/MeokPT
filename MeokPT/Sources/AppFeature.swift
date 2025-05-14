@@ -9,17 +9,19 @@ enum AppRoute: Identifiable {
     
     var id: Self { self }
     
-    var screenType: String {
+    var screenType: ScreenPresentationType {
         switch self {
         case .loginView:
-            return "fullScreenCover"
+            return .fullScreenCover
         case .dietDetailView:
-            return "navigation"
-        case .dietSelectionModalView:
-            return "fullScreenCover"
-        case .AIModalView:
-            return "sheet"
+            return .navigation
         }
+    }
+    
+    enum ScreenPresentationType {
+        case fullScreenCover
+        case navigation
+        case sheet
     }
 }
 
@@ -35,7 +37,6 @@ struct AppFeature {
         var loginState = LoginFeature.State()
         var signUpState = SignUpFeature.State()
         var profileSettingState = ProfileSettingFeature.State()
-        var dietDetailState = DietDetailFeature.State()
         var dietSelectionModalState = DietSelectionModalFeature.State()
         var AIModalState = AIModalFeature.State()
         
@@ -53,7 +54,6 @@ struct AppFeature {
         case loginAction(LoginFeature.Action)
         case signUpAction(SignUpFeature.Action)
         case profileSettingAction(ProfileSettingFeature.Action)
-        case dietDetailAction(DietDetailFeature.Action)
         case dietSelectionModalAction(DietSelectionModalFeature.Action)
         case AIModalAction(AIModalFeature.Action)
         
@@ -93,10 +93,6 @@ struct AppFeature {
         
         Scope(state: \.profileSettingState, action: \.profileSettingAction) {
             ProfileSettingFeature()
-        }
-        
-        Scope(state: \.dietDetailState, action: \.dietDetailAction) {
-            DietDetailFeature()
         }
         
         Scope(state: \.dietSelectionModalState, action: \.dietSelectionModalAction) {
