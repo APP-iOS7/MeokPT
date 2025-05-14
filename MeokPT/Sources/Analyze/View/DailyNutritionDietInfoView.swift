@@ -3,9 +3,6 @@ import ComposableArchitecture
 
 struct DailyNutritionDietInfoView: View {
     @Bindable var store: StoreOf<DailyNutritionDietInfoFeature>
-
-    @State private var isSheetPresented = false
-    @State private var isAIModal = false
     
     var body: some View {
         ZStack {
@@ -66,7 +63,6 @@ struct DailyNutritionDietInfoView: View {
         .task {
             ViewStore(store, observe: { $0 }).send(.onAppear)
         }
-        .animation(.easeInOut, value: isAIModal)
     }
     
     @ViewBuilder

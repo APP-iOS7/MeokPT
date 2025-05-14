@@ -53,7 +53,14 @@ struct MyPageView: View {
                 .padding(.bottom, 32)
                 
                 HStack(spacing: 16) {
-                    NavigationLink(destination: BodyInfoInputView()) {
+                    NavigationLink(destination: BodyInfoInputView(
+                        store: Store(
+                            initialState: BodyInfoInputFeature.State(),
+                            reducer: {
+                                BodyInfoInputFeature()
+                            }
+                    )
+                    )) {
                         VStack(alignment: .leading, spacing: 4) {
                             HStack {
                                 Text("신체정보 입력")
