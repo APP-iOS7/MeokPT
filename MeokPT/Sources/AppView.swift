@@ -79,8 +79,6 @@ struct AppSheetContentView: View {
                         state: \.profileSettingState,
                         action: \.profileSettingAction
                     ))
-                default:
-                    EmptyView()
                 }
             }
         }

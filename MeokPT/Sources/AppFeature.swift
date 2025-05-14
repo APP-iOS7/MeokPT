@@ -5,7 +5,6 @@ import FirebaseFirestore
 
 enum AppRoute: Identifiable {
     case loginView
-    case dietDetailView
     case profileSettingView
     
     var id: Self { self }
@@ -14,8 +13,6 @@ enum AppRoute: Identifiable {
         switch self {
         case .loginView:
             return .fullScreenCover
-        case .dietDetailView:
-            return .navigation
         case .profileSettingView:
             return .fullScreenCover
         }
@@ -25,7 +22,6 @@ enum AppRoute: Identifiable {
 enum ScreenPresentationType {
     case sheet
     case fullScreenCover
-    case navigation
 }
 
 @Reducer
@@ -39,12 +35,9 @@ struct AppFeature {
         var myPageState = MyPageFeature.State()
         var loginState = LoginFeature.State()
         var profileSettingState = ProfileSettingFeature.State()
-//        var dietDetailState = DietDetailFeature.State()
         
         var appRoute: AppRoute?
-        
-        var path = NavigationPath()
-        
+                
         var currentUser: User?
         var userProfile: UserProfile?
         var isLoadingUserProfile: Bool = false
@@ -60,14 +53,10 @@ struct AppFeature {
         case myPageAction(MyPageFeature.Action)
         case loginAction(LoginFeature.Action)
         case profileSettingAction(ProfileSettingFeature.Action)
-//        case dietDetailAction(DietDetailFeature.Action)
         
         case setActiveSheet(AppRoute?)
         case dismissSheet
-        
-        case push(AppRoute)
-        case popToRoot
-        
+                
         case authStatusChanged(User?)
         case handleAuthenticatedUser(User)
         case userProfileLoaded(Result<UserProfile, Error>)
@@ -92,14 +81,9 @@ struct AppFeature {
         Scope(state: \.myPageState, action: \.myPageAction) { MyPageFeature() }
         Scope(state: \.loginState, action: \.loginAction) { LoginFeature() }
         Scope(state: \.profileSettingState, action: \.profileSettingAction) { ProfileSettingFeature() }
-//        Scope(state: \.dietDetailState, action: \.dietDetailAction) { DietDetailFeature() }
         
         Reduce { state, action in
             switch action {
-            // MARK: - dietAction
-//            case .dietAction(.delegate(.goDietDetailView)):
-//                return .send(.push(.dietDetailView))
-                
             // MARK: - myPageAction
             case .myPageAction(.delegate(.loginSignUpButtonTapped)):
                 return .send(.setActiveSheet(.loginView))
@@ -133,14 +117,6 @@ struct AppFeature {
             case .dismissSheet:
                 // appRoute 가 nil 이면 sheet 는 닫힌다.
                 state.appRoute = nil
-                return .none
-                
-            case .push(let route):
-                state.path.append(route)
-                return .none
-
-            case .popToRoot:
-                state.path.removeLast(state.path.count)
                 return .none
                 
             // MARK: - 유저 정보 확인
@@ -250,7 +226,6 @@ private func clearUserData(_ state: inout AppFeature.State) {
     state.userProfile = nil
     state.isLoadingUserProfile = false
     state.userProfileError = nil
-    state.path = NavigationPath()
     state.appRoute = nil
 }
 
