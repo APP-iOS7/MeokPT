@@ -23,18 +23,15 @@ struct AppView: View {
                     .tabItem {
                         Text("마이페이지")
                     }
-                )
-            ) {_ in
-                AppSheetContentView(store: store)
-                    .presentationDragIndicator(.visible)
-                    .presentationDetents([.fraction(0.8), .fraction(0.5)])  // 여기도 나중에 분기
             }
             .toolbarBackground(.visible, for: .tabBar)
             .toolbarBackground(Color(UIColor.systemBackground), for: .tabBar)
         }
         .tint(.primary)
-
-//         MARK: - fullScreenCover, sheet 또는 네비게이션 생성
+        .onAppear {
+            store.send(.onAppear)
+        }
+        // MARK: - fullScreenCover, sheet 또는 네비게이션 생성
         .fullScreenCover(
             item: Binding(
                 get: {
@@ -59,7 +56,7 @@ struct AppView: View {
         ) {_ in
             AppSheetContentView(store: store)
                 .presentationDragIndicator(.visible)
-                .presentationDetents([.large])  // 여기도 나중에 분기
+                .presentationDetents([.fraction(0.8), .fraction(0.5)])  // 여기도 나중에 분기
         }
     }
 }
@@ -77,6 +74,11 @@ struct AppSheetContentView: View {
                         state: \.loginState,
                         action: \.loginAction
                     ))
+                case .profileSettingView:
+                    ProfileSettingView(store: store.scope(
+                        state: \.profileSettingState,
+                        action: \.profileSettingAction
+                    ))
                 case .dietSelectionModalView:
                     DietSelectionModalView(store: store.scope(
                         state: \.dietSelectionModalState,
@@ -87,8 +89,6 @@ struct AppSheetContentView: View {
                         state: \.AIModalState,
                         action: \.AIModalAction
                     ))
-                default:
-                    EmptyView()
                 }
             }
         }
