@@ -4,6 +4,8 @@ import SwiftUI
 enum AppRoute: Identifiable {
     case loginView
     case dietDetailView
+    case dietSelectionModalView
+    case AIModalView
     
     var id: Self { self }
     
@@ -13,6 +15,10 @@ enum AppRoute: Identifiable {
             return "fullScreenCover"
         case .dietDetailView:
             return "navigation"
+        case .dietSelectionModalView:
+            return "fullScreenCover"
+        case .AIModalView:
+            return "sheet"
         }
     }
 }
@@ -23,13 +29,15 @@ struct AppFeature {
     @ObservableState
     struct State {
         var dietState = DietFeature.State()
-        var analyzeState = AnalyzeFeature.State()
+        var analyzeState = DailyNutritionDietInfoFeature.State()
         var communityState = CommunityFeature.State()
         var myPageState = MyPageFeature.State()
         var loginState = LoginFeature.State()
         var signUpState = SignUpFeature.State()
         var profileSettingState = ProfileSettingFeature.State()
         var dietDetailState = DietDetailFeature.State()
+        var dietSelectionModalState = DietSelectionModalFeature.State()
+        var AIModalState = AIModalFeature.State()
         
         var appRoute: AppRoute?
         
@@ -39,13 +47,15 @@ struct AppFeature {
     enum Action: BindableAction {
         case binding(BindingAction<State>)
         case dietAction(DietFeature.Action)
-        case analyzeAction(AnalyzeFeature.Action)
+        case analyzeAction(DailyNutritionDietInfoFeature.Action)
         case communityAction(CommunityFeature.Action)
         case myPageAction(MyPageFeature.Action)
         case loginAction(LoginFeature.Action)
         case signUpAction(SignUpFeature.Action)
         case profileSettingAction(ProfileSettingFeature.Action)
         case dietDetailAction(DietDetailFeature.Action)
+        case dietSelectionModalAction(DietSelectionModalFeature.Action)
+        case AIModalAction(AIModalFeature.Action)
         
         case setActiveSheet(AppRoute?)
         case dismissSheet
@@ -62,7 +72,7 @@ struct AppFeature {
         }
         
         Scope(state: \.analyzeState, action: \.analyzeAction) {
-            AnalyzeFeature()
+            DailyNutritionDietInfoFeature()
         }
         
         Scope(state: \.communityState, action: \.communityAction) {
@@ -89,10 +99,28 @@ struct AppFeature {
             DietDetailFeature()
         }
         
+        Scope(state: \.dietSelectionModalState, action: \.dietSelectionModalAction) {
+            DietSelectionModalFeature()
+        }
+        
+        Scope(state: \.AIModalState, action: \.AIModalAction) {
+            AIModalFeature()
+        }
+        
         Reduce { state, action in
             switch action {
-//            case .dietAction(.delegate(.goDietDetailView)):
-//                return .send(.push(.dietDetailView))
+                
+            case let .analyzeAction(action):
+                  switch action {
+                  case .dietSelectionDelegate(.toDietSelectionModalView):
+                      return .send(.setActiveSheet(.dietSelectionModalView))
+
+                  case .AIModalDelegate(.toAIModalView):
+                      return .send(.setActiveSheet(.AIModalView))
+
+                  default:
+                      return .none
+                  }
                 
             case .myPageAction(.delegate(.loginSignUpButtonTapped)):
                 return .send(.setActiveSheet(.loginView))
@@ -105,7 +133,6 @@ struct AppFeature {
                 return .none
                 
             case .dismissSheet:
-                // appRoute 가 nil 이면 sheet 는 닫힌다.
                 state.appRoute = nil
                 return .none
                 
