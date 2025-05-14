@@ -10,22 +10,20 @@ struct DailyNutritionDietInfoFeature {
         
         var isLoading = false
         var errorMessage: String?
+        
+        @Presents var dietSelectionSheet: DietSelectionSheetFeature.State?
+        @Presents var aiSheet: AISheetFeature.State?
     }
     
     enum Action: Equatable {
         case onAppear
         case nutritionResponse(Result<[NutritionItem]?, NutritionError>)
         
-        case toDietSelectionModalViewAction
-        case dietSelectionDelegate(DelegateAction)
+        case dietSelectionSheetAction(PresentationAction<DietSelectionSheetFeature.Action>)
+        case aiSheetAction(PresentationAction<AISheetFeature.Action>)
         
-        case toAIModalViewAction
-        case AIModalDelegate(DelegateAction)
-    }
-    
-    enum DelegateAction {
-        case toDietSelectionModalView
-        case toAIModalView
+        case presentDietSelectionSheet
+        case presentAISheet
     }
     
     enum NutritionError: Error, Equatable {
@@ -55,15 +53,24 @@ struct DailyNutritionDietInfoFeature {
                     state.errorMessage = "개인 맞춤 영양성분을 불러올 수 없습니다."
                 }
                 return .none
-            case .toDietSelectionModalViewAction:
-                return .send(.dietSelectionDelegate(.toDietSelectionModalView))
-            case .dietSelectionDelegate(_):
+                
+            case .presentDietSelectionSheet:
+                state.dietSelectionSheet = DietSelectionSheetFeature.State()
                 return .none
-            case .toAIModalViewAction:
-                return .send(.AIModalDelegate(.toAIModalView))
-            case .AIModalDelegate(_):
+                
+            case .presentAISheet:
+                state.aiSheet = AISheetFeature.State()
+                return .none
+
+            case .dietSelectionSheetAction, .aiSheetAction:
                 return .none
             }
+        }
+        .ifLet(\.$dietSelectionSheet, action: \.dietSelectionSheetAction) {
+            DietSelectionSheetFeature()
+        }
+        .ifLet(\.$aiSheet, action: \.aiSheetAction) {
+            AISheetFeature()
         }
     }
 }

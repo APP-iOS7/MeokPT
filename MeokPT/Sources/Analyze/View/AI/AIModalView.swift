@@ -2,7 +2,7 @@ import ComposableArchitecture
 import SwiftUI
 
 struct AIModalView: View {
-    @Bindable var store: StoreOf<AIModalFeature>
+    @Bindable var store: StoreOf<AISheetFeature>
 
     @Environment(\.dismiss) var dismiss
 

@@ -13,10 +13,8 @@ struct AppFeature {
         var communityState = CommunityFeature.State()
         var myPageState = MyPageFeature.State()
         
-        @Presents var loginModal: LoginFeature.State?
-        @Presents var profileSettingModal: ProfileSettingFeature.State?
-        @Presents var dietSelectionModal: DietSelectionModalFeature.State?
-        @Presents var aiModal: AIModalFeature.State?
+        @Presents var loginFullScreenCover: LoginFeature.State?
+        @Presents var profileSettingFullScreenCover: ProfileSettingFeature.State?
         
         var currentUser: User?
         var userProfile: UserProfile?
@@ -32,15 +30,11 @@ struct AppFeature {
         case communityAction(CommunityFeature.Action)
         case myPageAction(MyPageFeature.Action)
         
-        case loginModalAction(PresentationAction<LoginFeature.Action>)
-        case profileSettingModalAction(PresentationAction<ProfileSettingFeature.Action>)
-        case dietSelectionModalAction(PresentationAction<DietSelectionModalFeature.Action>)
-        case aiModalAction(PresentationAction<AIModalFeature.Action>)
+        case loginAction(PresentationAction<LoginFeature.Action>)
+        case profileSettingAction(PresentationAction<ProfileSettingFeature.Action>)
         
-        case presentLoginModal
-        case presentProfileSettingModal
-        case presentDietSelectionModal
-        case presentAIModal
+        case presentLoginFullScreenCover
+        case presentprofileSettingFullScreenCover
         
         case authStatusChanged(User?)
         case handleAuthenticatedUser(User)
@@ -70,54 +64,40 @@ struct AppFeature {
             case .dietAction(_):
                 return .none
                 
-            case .analyzeAction(.dietSelectionDelegate(.toDietSelectionModalView)):
-                return .send(.presentDietSelectionModal)
-                
-            case .analyzeAction(.AIModalDelegate(.toAIModalView)):
-                return .send(.presentAIModal)
-                
             case .communityAction(_):
                 return .none
                 
             case .myPageAction(.delegate(.loginSignUpButtonTapped)):
-                return .send(.presentLoginModal)
+                return .send(.presentLoginFullScreenCover)
                 
             // MARK: - 모달에 표시되는 뷰의 Action
-            case .loginModalAction(.presented(.delegate(.dismissLoginSheet))):
-                state.loginModal = nil
+            case .loginAction(.presented(.delegate(.dismissLoginSheet))):
+                state.loginFullScreenCover = nil
                 return .none
                 
-            case .loginModalAction(.presented(.delegate(.loginSuccessfully(let user)))):
-                state.loginModal = nil
+            case .loginAction(.presented(.delegate(.loginSuccessfully(let user)))):
+                state.loginFullScreenCover = nil
                 return .send(.handleAuthenticatedUser(user))
                 
-            case .loginModalAction(.presented(.delegate(.signUpFlowCompleted(let user)))):
-                state.loginModal = nil
+            case .loginAction(.presented(.delegate(.signUpFlowCompleted(let user)))):
+                state.loginFullScreenCover = nil
                 return .send(.handleAuthenticatedUser(user))
                 
-            case .profileSettingModalAction(.presented(.delegate(.profileSettingCompleted))):
-                state.profileSettingModal = nil
+            case .profileSettingAction(.presented(.delegate(.profileSettingCompleted))):
+                state.profileSettingFullScreenCover = nil
                 return state.currentUser != nil ? .send(.fetchUserProfile(state.currentUser!.uid)) : .none
                 
-            case .profileSettingModalAction(.presented(.saveProfileResponse(.success))):
-                state.profileSettingModal = nil
+            case .profileSettingAction(.presented(.saveProfileResponse(.success))):
+                state.profileSettingFullScreenCover = nil
                 return state.currentUser != nil ? .send(.fetchUserProfile(state.currentUser!.uid)) : .none
                 
             // MARK: - @Presents 사용으로 필수로 작성해야 하는 present Action
-            case .presentLoginModal:
-                state.loginModal = LoginFeature.State()
+            case .presentLoginFullScreenCover:
+                state.loginFullScreenCover = LoginFeature.State()
                 return .none
                 
-            case .presentProfileSettingModal:
-                state.profileSettingModal = ProfileSettingFeature.State()
-                return .none
-                
-            case .presentDietSelectionModal:
-                state.dietSelectionModal = DietSelectionModalFeature.State()
-                return .none
-                
-            case .presentAIModal:
-                state.aiModal = AIModalFeature.State()
+            case .presentprofileSettingFullScreenCover:
+                state.profileSettingFullScreenCover = ProfileSettingFeature.State()
                 return .none
                 
             // MARK: - 유저 정보 확인
@@ -185,21 +165,15 @@ struct AppFeature {
             case .binding(_):
                 return .none
                 
-            case .analyzeAction, .myPageAction, .loginModalAction, .profileSettingModalAction, .dietSelectionModalAction, .aiModalAction:
+            case .analyzeAction, .myPageAction, .loginAction, .profileSettingAction:
                 return .none
             }
         }
-        .ifLet(\.$loginModal, action: \.loginModalAction) {
+        .ifLet(\.$loginFullScreenCover, action: \.loginAction) {
             LoginFeature()
         }
-        .ifLet(\.$profileSettingModal, action: \.profileSettingModalAction) {
+        .ifLet(\.$profileSettingFullScreenCover, action: \.profileSettingAction) {
             ProfileSettingFeature()
-        }
-        .ifLet(\.$dietSelectionModal, action: \.dietSelectionModalAction) {
-            DietSelectionModalFeature()
-        }
-        .ifLet(\.$aiModal, action: \.aiModalAction) {
-            AIModalFeature()
         }
     }
 }
@@ -230,7 +204,7 @@ private func userProfileLoadedSuccess(_ state: inout AppFeature.State, _ profile
     state.isLoadingUserProfile = false
     state.userProfile = profile
     if profile.nickname == nil || profile.nickname?.isEmpty == true {
-        return .send(.presentProfileSettingModal)
+        return .send(.presentprofileSettingFullScreenCover)
     }
     return .none
 }
@@ -239,7 +213,7 @@ private func userProfileLoadedFailure(_ state: inout AppFeature.State, _ error: 
     state.isLoadingUserProfile = false
     state.userProfileError = "프로필 로드 실패: \(error.localizedDescription)"
     state.userProfile = nil
-    return .send(.presentProfileSettingModal)
+    return .send(.presentprofileSettingFullScreenCover)
 }
 
 private func clearUserData(_ state: inout AppFeature.State) -> Effect<AppFeature.Action> {
@@ -247,9 +221,8 @@ private func clearUserData(_ state: inout AppFeature.State) -> Effect<AppFeature
     state.userProfile = nil
     state.isLoadingUserProfile = false
     state.userProfileError = nil
-    state.loginModal = nil
-    state.profileSettingModal = nil
-    state.dietSelectionModal = nil
-    state.aiModal = nil
+    state.loginFullScreenCover = nil
+    state.profileSettingFullScreenCover = nil
+
     return .none
 }

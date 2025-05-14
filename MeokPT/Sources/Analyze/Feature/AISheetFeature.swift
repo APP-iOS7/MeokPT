@@ -1,6 +1,6 @@
 import ComposableArchitecture
 
-struct AIModalFeature: Reducer {
+struct AISheetFeature: Reducer {
     struct State: Equatable {
     }
 

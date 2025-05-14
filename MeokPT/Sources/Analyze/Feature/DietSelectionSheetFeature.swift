@@ -1,6 +1,6 @@
 import ComposableArchitecture
 
-struct DietSelectionModalFeature: Reducer {
+struct DietSelectionSheetFeature: Reducer {
     struct State: Equatable {
     }
 

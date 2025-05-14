@@ -26,7 +26,7 @@ struct DailyNutritionDietInfoView: View {
                     }
                     .safeAreaInset(edge: .bottom) {
                         Button {
-                            store.send(.toAIModalViewAction)
+                            store.send(.presentAISheet)
                         } label: {
                             Text("AI 식단 분석")
                                 .frame(maxWidth: .infinity)
@@ -40,7 +40,7 @@ struct DailyNutritionDietInfoView: View {
                     .toolbar {
                         ToolbarItem(placement: .confirmationAction) {
                             Button {
-                                store.send(.toDietSelectionModalViewAction)
+                                store.send(.presentDietSelectionSheet)
                             } label: {
                                 Text("식단 추가")
                                     .foregroundStyle(Color("AppTintColor"))
@@ -58,7 +58,22 @@ struct DailyNutritionDietInfoView: View {
                 }
             }
             .scrollContentBackground(.hidden)
-
+            .sheet(
+                store: store.scope(state: \.$dietSelectionSheet, action: \.dietSelectionSheetAction)
+            ) { modalStore in
+                NavigationStack {
+                    DietSelectionModalView(store: modalStore)
+                }
+                .presentationDragIndicator(.visible)
+            }
+            .sheet(
+                store: store.scope(state: \.$aiSheet, action: \.aiSheetAction)
+            ) { modalStore in
+                NavigationStack {
+                    AIModalView(store: modalStore)
+                }
+                .presentationDragIndicator(.visible)
+            }
         }
         .task {
             ViewStore(store, observe: { $0 }).send(.onAppear)
