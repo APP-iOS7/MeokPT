@@ -85,7 +85,8 @@ struct DailyNutritionDietInfoView: View {
         if viewStore.isLoading {
             ProgressView("로딩 중입니다…")
         } else if viewStore.nutritionItems != nil {
-            DailyNutritionInfoView(nutritionItems: mockNutritionItems)
+//            DailyNutritionInfoView(nutritionItems:
+//            ))
         } else if let errorMessage = viewStore.errorMessage {
             Text(errorMessage)
                 .font(.caption)

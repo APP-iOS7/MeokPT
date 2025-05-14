@@ -22,7 +22,7 @@ struct MeokPTApp: App {
         WindowGroup {
             AppView(store: MeokPTApp.store)
                 .tint(Color("AppTintColor"))
-                .modelContainer(for: [BodyInfo.self])
+                .modelContainer(for: [BodyInfo.self, NutritionItem.self])
         }
     }
 }
