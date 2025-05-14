@@ -31,66 +31,35 @@ struct AppView: View {
         .onAppear {
             store.send(.onAppear)
         }
-        // MARK: - fullScreenCover, sheet 또는 네비게이션 생성
         .fullScreenCover(
-            item: Binding(
-                get: {
-                    store.appRoute?.screenType == .fullScreenCover ? store.appRoute : nil
-                },
-                set: { newValue in
-                    store.send(.setActiveSheet(newValue))
-                }
-            )
-        ) {_ in
-            AppSheetContentView(store: store)
+            store: store.scope(state: \.$loginModal, action: \.loginModalAction)
+        ) { loginStore in
+            NavigationStack {
+                LoginView(store: loginStore)
+            }
+        }
+        .fullScreenCover(
+            store: store.scope(state: \.$profileSettingModal, action: \.profileSettingModalAction)
+        ) { profileStore in
+            NavigationStack {
+                ProfileSettingView(store: profileStore)
+            }
         }
         .sheet(
-            item: Binding(
-                get: {
-                    store.appRoute?.screenType == .sheet ? store.appRoute : nil
-                },
-                set: { newValue in
-                    store.send(.setActiveSheet(newValue))
-                }
-            )
-        ) {_ in
-            AppSheetContentView(store: store)
-                .presentationDragIndicator(.visible)
-                .presentationDetents([.fraction(0.8), .fraction(0.5)])  // 여기도 나중에 분기
-        }
-    }
-}
-
-// MARK: - Sheet에 들어갈 내용을 분기하는 뷰
-struct AppSheetContentView: View {
-    let store: StoreOf<AppFeature>
-
-    var body: some View {
-        if let sheet = store.appRoute {
+            store: store.scope(state: \.$dietSelectionModal, action: \.dietSelectionModalAction)
+        ) { modalStore in
             NavigationStack {
-                switch sheet {
-                case .loginView:
-                    LoginView(store: store.scope(
-                        state: \.loginState,
-                        action: \.loginAction
-                    ))
-                case .profileSettingView:
-                    ProfileSettingView(store: store.scope(
-                        state: \.profileSettingState,
-                        action: \.profileSettingAction
-                    ))
-                case .dietSelectionModalView:
-                    DietSelectionModalView(store: store.scope(
-                        state: \.dietSelectionModalState,
-                        action: \.dietSelectionModalAction
-                    ))
-                case .AIModalView:
-                    AIModalView(store: store.scope(
-                        state: \.AIModalState,
-                        action: \.AIModalAction
-                    ))
-                }
+                DietSelectionModalView(store: modalStore)
             }
+            .presentationDragIndicator(.visible)
+        }
+        .sheet(
+            store: store.scope(state: \.$aiModal, action: \.aiModalAction)
+        ) { modalStore in
+            NavigationStack {
+                AIModalView(store: modalStore)
+            }
+            .presentationDragIndicator(.visible)
         }
     }
 }

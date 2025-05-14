@@ -3,33 +3,6 @@ import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
 
-enum AppRoute: Identifiable {
-    case loginView
-    case profileSettingView
-    case dietSelectionModalView
-    case AIModalView
-    
-    var id: Self { self }
-    
-    var screenType: ScreenPresentationType {
-        switch self {
-        case .loginView:
-            return .fullScreenCover
-        case .profileSettingView:
-            return .fullScreenCover
-        case .dietSelectionModalView:
-            return .sheet
-        case .AIModalView:
-            return .sheet
-        }
-    }
-}
-
-enum ScreenPresentationType {
-    case sheet
-    case fullScreenCover
-}
-
 @Reducer
 struct AppFeature {
     
@@ -39,13 +12,12 @@ struct AppFeature {
         var analyzeState = DailyNutritionDietInfoFeature.State()
         var communityState = CommunityFeature.State()
         var myPageState = MyPageFeature.State()
-        var loginState = LoginFeature.State()
-        var profileSettingState = ProfileSettingFeature.State()
-        var dietSelectionModalState = DietSelectionModalFeature.State()
-        var AIModalState = AIModalFeature.State()
         
-        var appRoute: AppRoute?
-                
+        @Presents var loginModal: LoginFeature.State?
+        @Presents var profileSettingModal: ProfileSettingFeature.State?
+        @Presents var dietSelectionModal: DietSelectionModalFeature.State?
+        @Presents var aiModal: AIModalFeature.State?
+        
         var currentUser: User?
         var userProfile: UserProfile?
         var isLoadingUserProfile: Bool = false
@@ -59,18 +31,20 @@ struct AppFeature {
         case analyzeAction(DailyNutritionDietInfoFeature.Action)
         case communityAction(CommunityFeature.Action)
         case myPageAction(MyPageFeature.Action)
-        case loginAction(LoginFeature.Action)
-        case profileSettingAction(ProfileSettingFeature.Action)
-        case dietSelectionModalAction(DietSelectionModalFeature.Action)
-        case AIModalAction(AIModalFeature.Action)
         
-        case setActiveSheet(AppRoute?)
-        case dismissSheet
-                
+        case loginModalAction(PresentationAction<LoginFeature.Action>)
+        case profileSettingModalAction(PresentationAction<ProfileSettingFeature.Action>)
+        case dietSelectionModalAction(PresentationAction<DietSelectionModalFeature.Action>)
+        case aiModalAction(PresentationAction<AIModalFeature.Action>)
+        
+        case presentLoginModal
+        case presentProfileSettingModal
+        case presentDietSelectionModal
+        case presentAIModal
+        
         case authStatusChanged(User?)
         case handleAuthenticatedUser(User)
         case userProfileLoaded(Result<UserProfile, Error>)
-        case navigateToProfileSetting
         case clearUserData
         case fetchUserProfile(String)
         
@@ -84,85 +58,66 @@ struct AppFeature {
     
     var body: some ReducerOf<Self> {
         BindingReducer()
-
-        Scope(state: \.dietState, action: \.dietAction) {
-            DietFeature()
-        }
         
-        Scope(state: \.analyzeState, action: \.analyzeAction) {
-            DailyNutritionDietInfoFeature()
-        }
-        
-        Scope(state: \.communityState, action: \.communityAction) {
-            CommunityFeature()
-        }
-        
-        Scope(state: \.myPageState, action: \.myPageAction) {
-            MyPageFeature()
-        }
-        
-        Scope(state: \.loginState, action: \.loginAction) {
-            LoginFeature()
-        }
-        
-        Scope(state: \.profileSettingState, action: \.profileSettingAction) {
-            ProfileSettingFeature()
-        }
-        
-        Scope(state: \.dietSelectionModalState, action: \.dietSelectionModalAction) {
-            DietSelectionModalFeature()
-        }
-        
-        Scope(state: \.AIModalState, action: \.AIModalAction) {
-            AIModalFeature()
-        }
+        Scope(state: \.dietState, action: \.dietAction) { DietFeature() }
+        Scope(state: \.analyzeState, action: \.analyzeAction) { DailyNutritionDietInfoFeature() }
+        Scope(state: \.communityState, action: \.communityAction) { CommunityFeature() }
+        Scope(state: \.myPageState, action: \.myPageAction) { MyPageFeature() }
         
         Reduce { state, action in
             switch action {
+            // MARK: - TabView 에 포함된 뷰의 Action
+            case .dietAction(_):
+                return .none
                 
-            case let .analyzeAction(action):
-                  switch action {
-                  case .dietSelectionDelegate(.toDietSelectionModalView):
-                      return .send(.setActiveSheet(.dietSelectionModalView))
-
-                  case .AIModalDelegate(.toAIModalView):
-                      return .send(.setActiveSheet(.AIModalView))
-
-                  default:
-                      return .none
-                  }
+            case .analyzeAction(.dietSelectionDelegate(.toDietSelectionModalView)):
+                return .send(.presentDietSelectionModal)
+                
+            case .analyzeAction(.AIModalDelegate(.toAIModalView)):
+                return .send(.presentAIModal)
+                
+            case .communityAction(_):
+                return .none
                 
             case .myPageAction(.delegate(.loginSignUpButtonTapped)):
-                return .send(.setActiveSheet(.loginView))
+                return .send(.presentLoginModal)
                 
-            // MARK: - loginAction
-            case .loginAction(.delegate(.dismissLoginSheet)):
-                state.appRoute = nil
+            // MARK: - 모달에 표시되는 뷰의 Action
+            case .loginModalAction(.presented(.delegate(.dismissLoginSheet))):
+                state.loginModal = nil
                 return .none
-                            
-            case .loginAction(.delegate(.loginSuccessfully(let user))):
-                state.appRoute = nil
-                return .send(.handleAuthenticatedUser(user))
-            
-            case .loginAction(.delegate(.signUpFlowCompleted(let user))):
-                state.appRoute = nil
+                
+            case .loginModalAction(.presented(.delegate(.loginSuccessfully(let user)))):
+                state.loginModal = nil
                 return .send(.handleAuthenticatedUser(user))
                 
-            // MARK: - profileSettingAction
-            case .profileSettingAction(.delegate(.goProfileSettingView)):
-                return .send(.setActiveSheet(.profileSettingView))
-                            
-            case .profileSettingAction(.saveProfileResponse(.success)):
-                state.appRoute = nil
+            case .loginModalAction(.presented(.delegate(.signUpFlowCompleted(let user)))):
+                state.loginModal = nil
+                return .send(.handleAuthenticatedUser(user))
+                
+            case .profileSettingModalAction(.presented(.delegate(.profileSettingCompleted))):
+                state.profileSettingModal = nil
                 return state.currentUser != nil ? .send(.fetchUserProfile(state.currentUser!.uid)) : .none
                 
-            // MARK: - 시트/네비게이션 Action
-            case .setActiveSheet(let newSheet):
-                state.appRoute = newSheet
+            case .profileSettingModalAction(.presented(.saveProfileResponse(.success))):
+                state.profileSettingModal = nil
+                return state.currentUser != nil ? .send(.fetchUserProfile(state.currentUser!.uid)) : .none
+                
+            // MARK: - @Presents 사용으로 필수로 작성해야 하는 present Action
+            case .presentLoginModal:
+                state.loginModal = LoginFeature.State()
                 return .none
                 
-            case .dismissSheet:
-                state.appRoute = nil
+            case .presentProfileSettingModal:
+                state.profileSettingModal = ProfileSettingFeature.State()
+                return .none
+                
+            case .presentDietSelectionModal:
+                state.dietSelectionModal = DietSelectionModalFeature.State()
+                return .none
+                
+            case .presentAIModal:
+                state.aiModal = AIModalFeature.State()
                 return .none
                 
             // MARK: - 유저 정보 확인
@@ -178,13 +133,9 @@ struct AppFeature {
                             
             case .userProfileLoaded(.failure(let error)):
                 return userProfileLoadedFailure(&state, error)
-
-            case .navigateToProfileSetting:
-                return navigateToProfileSetting(state)
-
+                
             case .clearUserData:
-                clearUserData(&state)
-                return .none
+                return clearUserData(&state)
                 
             case .fetchUserProfile(let userId):
                 guard state.currentUser?.uid == userId else {
@@ -233,10 +184,22 @@ struct AppFeature {
             // MARK: - (_)
             case .binding(_):
                 return .none
-
-            case .dietAction(_), .communityAction(_), .myPageAction(_), .loginAction(_), .profileSettingAction(_), .dietSelectionModalAction(_), .AIModalAction(_):
-                 return .none
+                
+            case .analyzeAction, .myPageAction, .loginModalAction, .profileSettingModalAction, .dietSelectionModalAction, .aiModalAction:
+                return .none
             }
+        }
+        .ifLet(\.$loginModal, action: \.loginModalAction) {
+            LoginFeature()
+        }
+        .ifLet(\.$profileSettingModal, action: \.profileSettingModalAction) {
+            ProfileSettingFeature()
+        }
+        .ifLet(\.$dietSelectionModal, action: \.dietSelectionModalAction) {
+            DietSelectionModalFeature()
+        }
+        .ifLet(\.$aiModal, action: \.aiModalAction) {
+            AIModalFeature()
         }
     }
 }
@@ -245,60 +208,48 @@ struct AppFeature {
 // Firebase AuthStateDidChangeListenerHandle을 안전하게 저장하고 접근하기 위한 private 액터
 private actor ListenerHandleContainer {
     var handle: AuthStateDidChangeListenerHandle?
-
-    func setHandle(_ handle: AuthStateDidChangeListenerHandle?) {
-        self.handle = handle
-    }
-
-    func getHandle() -> AuthStateDidChangeListenerHandle? {
-        return handle
-    }
-}
-
-private func navigateToProfileSetting(_ state: AppFeature.State) -> Effect<AppFeature.Action> {
-    let currentUserIsNonNil = state.currentUser != nil
-    let appRouteIsNil = state.appRoute == nil
-    let profileNeedsSetting = (state.userProfile == nil || state.userProfile?.isNicknameActuallySet == false)
-    
-    if currentUserIsNonNil && appRouteIsNil && profileNeedsSetting {
-        return .send(.setActiveSheet(.profileSettingView))
-    } else {
-        return .none
-    }
-}
-
-private func clearUserData(_ state: inout AppFeature.State) {
-    state.currentUser = nil
-    state.userProfile = nil
-    state.isLoadingUserProfile = false
-    state.userProfileError = nil
-    state.appRoute = nil
-}
-
-private func userProfileLoadedFailure(_ state: inout AppFeature.State, _ error: any Error) -> Effect<AppFeature.Action> {
-    state.isLoadingUserProfile = false
-    state.userProfileError = "프로필 로드 실패: \(error.localizedDescription)"
-    state.userProfile = nil
-    return .send(.navigateToProfileSetting)
-}
-
-private func userProfileLoadedSuccess(_ state: inout AppFeature.State, _ profile: UserProfile) -> Effect<AppFeature.Action> {
-    state.isLoadingUserProfile = false
-    state.userProfile = profile
-    return .send(.navigateToProfileSetting)
+    func setHandle(_ handle: AuthStateDidChangeListenerHandle?) { self.handle = handle }
+    func getHandle() -> AuthStateDidChangeListenerHandle? { return handle }
 }
 
 private func authStatusChanged(_ firebaseUser: User?, _ state: AppFeature.State) -> Effect<AppFeature.Action> {
     if let user = firebaseUser {
         if state.currentUser?.uid != user.uid {
             return .send(.handleAuthenticatedUser(user))
-        } else {
-            return .none
         }
+        return .none
     } else {
         if state.currentUser != nil {
             return .send(.clearUserData)
         }
         return .none
     }
+}
+
+private func userProfileLoadedSuccess(_ state: inout AppFeature.State, _ profile: UserProfile) -> Effect<AppFeature.Action> {
+    state.isLoadingUserProfile = false
+    state.userProfile = profile
+    if profile.nickname == nil || profile.nickname?.isEmpty == true {
+        return .send(.presentProfileSettingModal)
+    }
+    return .none
+}
+
+private func userProfileLoadedFailure(_ state: inout AppFeature.State, _ error: any Error) -> Effect<AppFeature.Action> {
+    state.isLoadingUserProfile = false
+    state.userProfileError = "프로필 로드 실패: \(error.localizedDescription)"
+    state.userProfile = nil
+    return .send(.presentProfileSettingModal)
+}
+
+private func clearUserData(_ state: inout AppFeature.State) -> Effect<AppFeature.Action> {
+    state.currentUser = nil
+    state.userProfile = nil
+    state.isLoadingUserProfile = false
+    state.userProfileError = nil
+    state.loginModal = nil
+    state.profileSettingModal = nil
+    state.dietSelectionModal = nil
+    state.aiModal = nil
+    return .none
 }

@@ -76,7 +76,7 @@ struct SignUpFeature {
                 return .send(.delegate(.signUpCompletedSuccessfully(authResult.user)))
 
             case .signUpResponse(.failure(let error)):
-                SignUpFailure(&state, error)
+                signUpFailure(&state, error)
                 return .none
                 
             case .delegate(_):
@@ -131,7 +131,7 @@ struct SignUpFeature {
         }
     }
     
-    private func SignUpFailure(_ state: inout SignUpFeature.State, _ error: any Error) {
+    private func signUpFailure(_ state: inout SignUpFeature.State, _ error: any Error) {
         state.isLoading = false
         let nsError = error as NSError
         if nsError.domain == AuthErrorDomain, let errorCode = AuthErrorCode(rawValue: nsError.code) {
