@@ -3,6 +3,7 @@ import ComposableArchitecture
 
 struct DailyNutritionDietInfoView: View {
     @Bindable var store: StoreOf<DailyNutritionDietInfoFeature>
+    @Environment(\.modelContext) private var context
     
     var body: some View {
         ZStack {
@@ -15,7 +16,7 @@ struct DailyNutritionDietInfoView: View {
                             WithViewStore(self.store, observe: { $0 }) { viewStore in
                                 content(for: viewStore)
                                     .onAppear {
-                                        viewStore.send(.onAppear)
+                                        viewStore.send(.loadInfo(context))
                                     }
                                 
                             }
@@ -75,18 +76,17 @@ struct DailyNutritionDietInfoView: View {
                 .presentationDragIndicator(.visible)
             }
         }
-        .task {
-            ViewStore(store, observe: { $0 }).send(.onAppear)
-        }
+//        .task {
+//            ViewStore(store, observe: { $0 }).send(.onAppear)
+//        }
     }
     
     @ViewBuilder
     private func content(for viewStore: ViewStore<DailyNutritionDietInfoFeature.State, DailyNutritionDietInfoFeature.Action>) -> some View {
         if viewStore.isLoading {
             ProgressView("로딩 중입니다…")
-        } else if viewStore.nutritionItems != nil {
-//            DailyNutritionInfoView(nutritionItems:
-//            ))
+        } else if let nutrtionItems = viewStore.nutritionItems {
+            DailyNutritionInfoView(nutritionItems: nutrtionItems)
         } else if let errorMessage = viewStore.errorMessage {
             Text(errorMessage)
                 .font(.caption)
@@ -95,8 +95,3 @@ struct DailyNutritionDietInfoView: View {
         }
     }
 }
-
-//#Preview {
-//    DailyNutritionDietInfoView(store: DailyNutritionDietInfoFeature)
-//}
-
