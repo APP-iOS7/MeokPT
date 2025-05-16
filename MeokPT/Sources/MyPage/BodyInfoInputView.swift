@@ -17,6 +17,8 @@ struct BodyInfoInputView: View {
     
     let genderOptions = ["여성", "남성"]
     let goalOptions = ["체중감량", "근육량 증가", "기타"]
+    let activityLevelOptions = ["매우 적음", "적음", "보통", "많음", "매우 많음"]
+
     
     var body: some View {
         WithViewStore(store, observe: { $0 }) { viewStore in
@@ -82,8 +84,8 @@ struct BodyInfoInputView: View {
                         }
                         
                         HStack {
-                            Text("목표 설정")
-                                .font(.system(size: 16, weight: .semibold))
+                            Text("식단 목표")
+                                .font(.system(size: 24, weight: .semibold))
                                 .foregroundColor(Color("AppTertiaryColor"))
                             Spacer()
                             Picker("목표", selection: viewStore.binding(get: \.selectedGoal, send: BodyInfoInputFeature.Action.goalChanged)) {
@@ -93,7 +95,24 @@ struct BodyInfoInputView: View {
                             }
                             .pickerStyle(MenuPickerStyle())
                             .tint(Color("AppTintColor"))
+                            .font(.system(size:24))
                         }
+                        
+                        HStack {
+                            Text("평소 운동량")
+                                .font(.system(size: 24, weight: .semibold))
+                                .foregroundColor(Color("AppTertiaryColor"))
+                            Spacer()
+                            Picker("운동량", selection: viewStore.binding(get: \.selectedActivityLevel, send: BodyInfoInputFeature.Action.activityLevelChanged)) {
+                                ForEach(activityLevelOptions, id: \.self) { level in
+                                    Text(level).tag(level)
+                                }
+                            }
+                            .pickerStyle(MenuPickerStyle())
+                            .tint(Color("AppTintColor"))
+                            .font(.system(size: 24))
+                        }
+
                         
                         Spacer().frame(height: 120) // 버튼 공간 확보
                     }
