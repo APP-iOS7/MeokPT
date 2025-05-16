@@ -5,7 +5,7 @@ struct DailyNutritionInfoView: View {
     
     var body: some View {
         VStack {
-            ForEach(nutritionItems) { item in
+            ForEach(nutritionItems.filter { $0.max != 0 }) { item in
                 VStack {
                     HStack {
                         Text("\(item.name)")

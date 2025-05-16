@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import SwiftData
 import Foundation
 
 @Reducer
@@ -16,44 +17,24 @@ struct DailyNutritionDietInfoFeature {
     }
     
     enum Action: Equatable {
-        case onAppear
-        case nutritionResponse(Result<[NutritionItem]?, NutritionError>)
-        
         case dietSelectionSheetAction(PresentationAction<DietSelectionSheetFeature.Action>)
         case aiSheetAction(PresentationAction<AISheetFeature.Action>)
         
         case presentDietSelectionSheet
         case presentAISheet
+        
+        case loadInfo(ModelContext)
     }
     
     enum NutritionError: Error, Equatable {
         case fetchFailed
     }
 
-    @Dependency(\.fetchNutrition) var fetchNutrition
 
     var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
-            case .onAppear:
-                state.isLoading = true
-                state.errorMessage = nil
-                return .run { send in
-                    let result = await fetchNutrition()
-                    await send(.nutritionResponse(result))
-                }
-            case let .nutritionResponse(result):
-                state.isLoading = false
-                switch result {
-                case let .success(nutrition):
-                    state.nutritionItems = nutrition
-                    state.errorMessage = nil
-                case .failure:
-                    state.nutritionItems = nil
-                    state.errorMessage = "개인 맞춤 영양성분을 불러올 수 없습니다."
-                }
-                return .none
-                
+        
             case .presentDietSelectionSheet:
                 state.dietSelectionSheet = DietSelectionSheetFeature.State()
                 return .none
@@ -63,6 +44,33 @@ struct DailyNutritionDietInfoFeature {
                 return .none
 
             case .dietSelectionSheetAction, .aiSheetAction:
+                return .none
+                
+            case let .loadInfo(context):
+                do {
+                    let items = try context.fetch(FetchDescriptor<NutritionItem>())
+                    
+                    print("Nutriitem 개수: \(items.count)")
+                    
+                    for item in items {
+                        print("로드 : \(item.type.rawValue) - \(item.value)\(item.unit)")
+                    }
+                    
+                    let typeOrder = NutritionType.allCases
+                    let sorted = items.sorted {
+                        guard let first = typeOrder.firstIndex(of: $0.type),
+                              let second = typeOrder.firstIndex(of: $1.type) else {
+                            return false
+                        }
+                        return first < second
+                    }
+                    state.nutritionItems = sorted
+                    print("Nutrition 최대값 로딩 성공")
+                } catch {
+                    state.errorMessage = "Nutrition 정보 불러오기 실패"
+                    print("에러: \(error.localizedDescription)")
+                }
+                state.isLoading = false
                 return .none
             }
         }
@@ -75,22 +83,4 @@ struct DailyNutritionDietInfoFeature {
     }
 }
 
-enum FetchNutritionKey: DependencyKey {
-    static let liveValue: () async -> Result<[NutritionItem]?, DailyNutritionDietInfoFeature.NutritionError> = {
-        // 실제 구현
-        .failure(.fetchFailed) // 예시
-    }
-
-    static let testValue: () async -> Result<[NutritionItem]?, DailyNutritionDietInfoFeature.NutritionError> = {
-        try? await Task.sleep(nanoseconds: 1_000_000_000)
-        return .success(mockNutritionItems)
-    }
-}
-
-extension DependencyValues {
-    var fetchNutrition: () async -> Result<[NutritionItem]?, DailyNutritionDietInfoFeature.NutritionError> {
-        get { self[FetchNutritionKey.self] }
-        set { self[FetchNutritionKey.self] = newValue }
-    }
-}
 
