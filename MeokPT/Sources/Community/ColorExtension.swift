@@ -1,10 +1,3 @@
-//
-//  ColorExtension.swift
-//  MeokPT
-//
-//  Created by 변영찬 on 5/13/25.
-//
-
 import SwiftUI
 
 extension Color {
