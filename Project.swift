@@ -11,12 +11,16 @@ let project = Project(
         configurations: [
             .debug(
                 name: "Debug",
-                xcconfig: .relativeToRoot("Configurations/App/App-Debug.xcconfig")
+                settings: [
+                    "OTHER_LDFLAGS": "$(inherited) -ObjC"
+                ]
             ),
             .release(
                 name: "Release",
-                xcconfig: .relativeToRoot("Configurations/App/App-Release.xcconfig")
-            )
+                settings: [
+                    "OTHER_LDFLAGS": "$(inherited) -ObjC"
+                ]
+            ),
         ]
     ),
     targets: [
