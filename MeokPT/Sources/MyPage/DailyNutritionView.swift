@@ -16,7 +16,7 @@ struct DailyNutritionView: View {
                         VStack(spacing: 36) {
                             HStack {
                                 Text("수치 직접 입력")
-                                    .font(.system(size: 16, weight: .semibold))
+                                    .font(.headline)
                                 Spacer()
                                 Toggle("", isOn: viewStore.binding(get: \.isEditable, send: DailyNutritionFeature.Action.toggleChanged))
                                     .labelsHidden()
@@ -54,7 +54,7 @@ struct DailyNutritionView: View {
                         viewStore.send(.saveButtonTapped(context))
                         dismiss()
                     }
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.subheadline.bold())
                     .frame(maxWidth: .infinity)
                     .padding()
                     .background(Color("AppTintColor"))

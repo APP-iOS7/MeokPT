@@ -12,8 +12,22 @@ import FirebaseAuth
 import FirebaseFirestore
 import SwiftUI
 
-enum LoginRoute {
-    case signUp
+@Reducer
+struct Path {
+    @ObservableState
+    enum State: Equatable {
+        case signUp(SignUpFeature.State)
+    }
+
+    enum Action {
+        case signUp(SignUpFeature.Action)
+    }
+
+    var body: some Reducer<State, Action> {
+        Scope(state: \.signUp, action: \.signUp) {
+            SignUpFeature()
+        }
+    }
 }
 
 @Reducer
@@ -27,8 +41,7 @@ struct LoginFeature {
         var passwordErrorMessage: String = ""
         var loginErrorMessage: String = ""
         
-        var path = NavigationPath()
-        var signUpState = SignUpFeature.State()
+        var navigationStack = StackState<Path.State>()
         
         var isCreatingUserDB: Bool = false
         var createUserDBError: String?
@@ -38,6 +51,10 @@ struct LoginFeature {
     
     enum Action: BindableAction {
         case binding(BindingAction<State>)
+        
+        case navigationStack(StackAction<Path.State, Path.Action>)
+        case navigateToSignUpButtonTapped
+        
         case loginButtonTapped
         case loginResponse(Result<AuthDataResult, Error>)
         case appleLoginButtonTapped
@@ -45,10 +62,6 @@ struct LoginFeature {
         
         case closeButtonTapped
         case delegate(DelegateAction)
-        
-        case push(LoginRoute)
-        case popToRoot
-        case signUpAction(SignUpFeature.Action)
         
         case _createUserDBResponse(Result<Void, Error>)
         case _signUpCompleted
@@ -81,10 +94,6 @@ struct LoginFeature {
     
     var body: some ReducerOf<Self> {
         BindingReducer()
-        
-        Scope(state: \.signUpState, action: \.signUpAction) {
-            SignUpFeature()
-        }
         
         Reduce { state, action in
             switch action {
@@ -130,15 +139,7 @@ struct LoginFeature {
                 return .none
                 
             case .appleLoginButtonTapped:
-                return .run { _ in
-                    do {
-                        try Auth.auth().signOut()
-                        print("로그아웃 성공")
-                    }
-                    catch {
-                        print("로그아웃 실패: \(error)")
-                    }
-                }
+                return .none
                 
             case .kakaoLoginButtonTapped:
                 return .none
@@ -146,16 +147,10 @@ struct LoginFeature {
             case .closeButtonTapped:
                 return .send(.delegate(.dismissLoginSheet))
                 
-            case .push(.signUp):
-                state.path.append(LoginRoute.signUp)
+            case .navigateToSignUpButtonTapped:
+                state.navigationStack.append(.signUp(SignUpFeature.State()))
                 return .none
                 
-            case .popToRoot:
-                if !state.path.isEmpty {
-                    state.path.removeLast(state.path.count)
-                }
-                return .send(._signUpCompleted)
-
             case ._signUpCompleted:
                 guard let user = state.newSignUpUser else {
                     if let currentUser = Auth.auth().currentUser {
@@ -167,8 +162,8 @@ struct LoginFeature {
                 }
                 state.newSignUpUser = nil
                 return .send(.delegate(.signUpFlowCompleted(user)))
-                
-            case .signUpAction(.delegate(.signUpCompletedSuccessfully(let userFromSignUp))):
+            
+            case .navigationStack(.element(id: _, action: .signUp(.delegate(.signUpCompletedSuccessfully(let userFromSignUp))))):
                 state.newSignUpUser = userFromSignUp
                 state.isCreatingUserDB = true
                 state.createUserDBError = nil
@@ -197,21 +192,27 @@ struct LoginFeature {
             case ._createUserDBResponse(.success):
                 state.isCreatingUserDB = false
                 print("사용자 DB 생성 성공 처리 완료.")
-                return .send(.popToRoot)
+                // DB 생성 성공 후, SignUpView를 스택에서 제거하고 완료 알림
+                state.navigationStack.removeAll()
+                return .send(._signUpCompleted)
 
             case ._createUserDBResponse(.failure(let error)):
                 state.isCreatingUserDB = false
                 state.createUserDBError = "사용자 DB 생성 실패: \(error.localizedDescription)"
                 print("사용자 DB 생성 실패 처리: \(error.localizedDescription)")
-                return .send(.popToRoot)
+                state.navigationStack.removeAll()
+                return .send(._signUpCompleted)
                 
             case .delegate(_):
                 return .none
             case .binding(_):
                 return .none
-            case .signUpAction(_):
+            case .navigationStack:
                 return .none
             }
+        }
+        .forEach(\.navigationStack, action: \.navigationStack) {
+            Path()
         }
     }
 

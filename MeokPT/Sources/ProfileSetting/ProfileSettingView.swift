@@ -8,6 +8,7 @@
 import SwiftUI
 import ComposableArchitecture
 import _PhotosUI_SwiftUI
+import Kingfisher
 
 struct ProfileSettingView: View {
     @Bindable var store: StoreOf<ProfileSettingFeature>
@@ -18,57 +19,120 @@ struct ProfileSettingView: View {
         ScrollView {
             VStack {
                 Spacer().frame(height: 100)
-                if let selectedImage = store.selectedImage {
-                    Image(uiImage: selectedImage)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: 104, height: 104)
-                        .clipShape(Circle())
-                        .overlay(Circle().stroke(Color.gray, lineWidth: 1))
-                } else {
-                    Image(systemName: "person.circle.fill")
-                        .resizable()
-                        .frame(width: 104, height: 104)
-                        .foregroundStyle(Color("AppSecondaryColor"))
-                }
-                Spacer().frame(height: 26)
-                PhotosPicker(
-                    selection: $store.selectedItem, matching: .images, photoLibrary: .shared()) {
-                        Text("프로필 사진 변경")
-                            .font(.subheadline.bold())
-                            .foregroundStyle(.black)
-                            .frame(width: 176,height: 60)
-                            .background(Color("AppTintColor"))
-                            .clipShape(.rect(cornerRadius: 40))
+                Group {
+                    if let selectedImage = store.selectedImage {
+                        Image(uiImage: selectedImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    } else if let imageUrl = store.uploadedImageUrl {
+                        KFImage(imageUrl)
+                            .resizable()
+                            .placeholder {
+                                Image(systemName: "person.circle.fill")
+                                    .resizable()
+                                    .foregroundColor(Color("AppSecondaryColor").opacity(0.5))
+                            }
+                            .aspectRatio(contentMode: .fill)
+                    } else {
+                        Image(systemName: "person.circle.fill")
+                            .resizable()
+                            .foregroundStyle(Color("AppSecondaryColor").opacity(0.5))
                     }
-                Spacer().frame(height: 77)
-                TextField(
-                    "",
-                    text: $store.nickName,
-                    prompt: Text(verbatim: "닉네임")
-                )
-                .autocapitalization(.none)
-                .focused($nickNameFocused)
-                Rectangle()
-                    .frame(height: 1)
-                    .foregroundColor(Color(.placeholderText))
+                }
+                .frame(width: 104, height: 104)
+                .clipShape(Circle())
+                .overlay(Circle().stroke(Color.gray.opacity(0.5), lineWidth: 1))
+                
+                Spacer().frame(height: 20)
+
+                PhotosPicker(
+                    selection: $store.selectedItem,
+                    matching: .images,
+                    photoLibrary: .shared()
+                ) {
+                    Text("프로필 사진 변경")
+                        .font(.subheadline.bold())
+                        .foregroundColor(.black)
+                        .frame(width: 176, height: 50)
+                        .background(Color("AppTintColor"))
+                        .clipShape(.rect(cornerRadius: 25))
+                }
+                
+                if store.isUploading {
+                    ProgressView("업로드 중...", value: store.uploadProgress, total: 1.0)
+                        .padding(.top, 10)
+                        .frame(width: 176)
+                }
+                
+                if let errorMessage = store.errorMessage {
+                    Text(errorMessage)
+                        .font(.caption)
+                        .foregroundColor(.red)
+                        .padding(.top, 5)
+                }
+
+                Spacer().frame(height: 60)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("닉네임")
+                        .font(.callout)
+                        .foregroundColor(Color.gray)
+                    TextField(
+                        "",
+                        text: $store.nickName,
+                        prompt: Text(verbatim: "2자 이상 입력해주세요")
+                    )
+                    .autocapitalization(.none)
+                    .focused($nickNameFocused)
+                    .padding(.vertical, 10)
+                    Rectangle()
+                        .frame(height: 1)
+                        .foregroundColor(nickNameFocused ? Color("AppTintColor") : Color(.placeholderText))
+                }
+                if let saveError = store.saveProfileError {
+                    Text(saveError)
+                        .font(.caption)
+                        .foregroundColor(.red)
+                        .padding(.top, 10)
+                }
                 Spacer()
                 Button(action: {
                     store.send(.saveProfile)
                 }) {
-                    Text("프로필 저장")
-                        .font(.subheadline.bold())
-                        .frame(maxWidth: .infinity)
-                        .contentShape(Rectangle())
+                    HStack {
+                        Spacer()
+                        if store.isSavingProfile {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .black))
+                        } else {
+                            Text("프로필 저장")
+                        }
+                        Spacer()
+                    }
+                    .font(.headline.bold())
+                    .foregroundColor(.black)
+                    .frame(maxWidth: .infinity)
+                    .contentShape(Rectangle())
                 }
                 .frame(height: 60)
                 .background(Color("AppTintColor"))
-                .clipShape(.rect(cornerRadius: 40))
+                .clipShape(.rect(cornerRadius: 30))
                 .buttonStyle(PlainButtonStyle())
+                .disabled(store.isUploading || store.isSavingProfile)
+                .opacity((store.isUploading || store.isSavingProfile) ? 0.7 : 1.0)
+
+                Spacer().frame(height: 20)
             }
-            .padding(.horizontal, 24)
-            .navigationTitle("프로필 사진, 닉네임 설정")
+            .padding(.horizontal, 30)
+            .navigationTitle("프로필 설정")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("취소") {
+                        store.send(.cancelButtonTapped)
+                    }
+                }
+            }
             .containerRelativeFrame([.horizontal, .vertical])
             .contentShape(Rectangle())
             .onTapGesture {
@@ -77,13 +141,19 @@ struct ProfileSettingView: View {
         }
         .scrollDisabled(true)
         .background(Color("AppBackgroundColor"))
+        .onAppear {
+            store.send(.onAppear)
+        }
     }
 }
 
 #Preview {
-    ProfileSettingView(
-        store: Store(initialState: ProfileSettingFeature.State()) {
-            ProfileSettingFeature()
-        }
-    )
+    NavigationStack {
+        ProfileSettingView(
+            store: Store(
+                initialState: ProfileSettingFeature.State()) {
+                ProfileSettingFeature()
+            }
+        )
+    }
 }
