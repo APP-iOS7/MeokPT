@@ -1,9 +1,3 @@
-//
-//  BodyInfoInputView.swift
-//  MeokPT
-//
-//  Created by vKv on 5/9/25.
-//
 import ComposableArchitecture
 import SwiftUI
 import SwiftData
@@ -30,10 +24,6 @@ struct BodyInfoInputView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 24) {
                         Spacer().frame(height: 18)
-                        
-                        Text("정보 입력")
-                            .font(.system(size: 20, weight: .bold))
-                            .frame(maxWidth: .infinity, alignment: .center)
                         
                         Group {
                             VStack(alignment: .leading, spacing: 4) {
@@ -91,26 +81,18 @@ struct BodyInfoInputView: View {
                             }
                         }
                         
-                        VStack(alignment: .leading, spacing: 8) {
+                        HStack {
                             Text("목표 설정")
                                 .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(Color("AppTintColor"))
-                            
-                            HStack(spacing: 8) {
+                                .foregroundColor(Color("AppTertiaryColor"))
+                            Spacer()
+                            Picker("목표", selection: viewStore.binding(get: \.selectedGoal, send: BodyInfoInputFeature.Action.goalChanged)) {
                                 ForEach(goalOptions, id: \.self) { goal in
-                                    Button(action: {
-                                        viewStore.send(.goalChanged(goal))
-                                    }) {
-                                        Text(goal)
-                                            .font(.system(size: 14))
-                                            .foregroundColor(.black)
-                                            .padding(.vertical, 8)
-                                            .padding(.horizontal, 12)
-                                            .background(viewStore.selectedGoal == goal ? Color("AppTintColor") : Color.gray.opacity(0.4))
-                                            .cornerRadius(16)
-                                    }
+                                    Text(goal).tag(goal)
                                 }
                             }
+                            .pickerStyle(MenuPickerStyle())
+                            .tint(Color("AppTintColor"))
                         }
                         
                         Spacer().frame(height: 120) // 버튼 공간 확보
@@ -182,3 +164,4 @@ struct BodyInfoInputView: View {
         )
     )
 }
+
