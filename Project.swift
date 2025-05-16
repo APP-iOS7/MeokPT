@@ -21,9 +21,6 @@ let project = Project(
                         "UIColorName": "",
                         "UIImageName": "",
                     ],
-                    "NSAppTransportSecurity": [
-                        "NSAllowsArbitraryLoads": true
-                    ],
                 ]
             ),
             sources: ["MeokPT/Sources/**"],
