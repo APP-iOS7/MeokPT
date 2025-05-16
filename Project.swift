@@ -7,21 +7,7 @@ let project = Project(
         developmentRegion: "ko"
     ),
     settings: .settings(
-        base: [:],
-        configurations: [
-            .debug(
-                name: "Debug",
-                settings: [
-                    "OTHER_LDFLAGS": "$(inherited) -ObjC"
-                ]
-            ),
-            .release(
-                name: "Release",
-                settings: [
-                    "OTHER_LDFLAGS": "$(inherited) -ObjC"
-                ]
-            ),
-        ]
+        base: ["OTHER_LDFLAGS": "$(inherited) -ObjC"]
     ),
     targets: [
         .target(
