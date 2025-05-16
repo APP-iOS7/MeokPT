@@ -1,5 +1,6 @@
 import SwiftUI
 import ComposableArchitecture
+import Kingfisher
 
 struct MyPageView: View {
     
@@ -12,23 +13,34 @@ struct MyPageView: View {
             VStack(alignment: .leading) {
                 Spacer().frame(height: 24)
                 Button(action: {
-                    store.send(.loginSignUpButtonTapped)
+                    if store.userProfile == nil {
+                        store.send(.loginSignUpButtonTapped)
+                    } else {
+                        store.send(.profileEditButtonTapped)
+                    }
                 }) {
                     HStack {
                         HStack {
-                            ZStack {
-                                Circle()
-                                    .fill(Color("AppBackgroundColor"))
-                                    .frame(width: 100, height: 100)
-                                Image(systemName: "person.circle.fill")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 108, height: 108)
-                                    .foregroundColor(Color("AppSecondaryColor"))
-                            }
+                            KFImage(URL(string: store.userProfile?.profileImageUrl ?? ""))
+                                .placeholder {
+                                    ZStack {
+                                        Circle()
+                                            .fill(Color("AppBackgroundColor"))
+                                            .frame(width: 100, height: 100)
+                                        Image(systemName: "person.circle.fill")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 108, height: 108)
+                                            .foregroundColor(Color("AppTertiaryColor"))
+                                    }
+                                }
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 108, height: 108)
+                                .clipShape(Circle())
                             Spacer().frame(width: 26)
                             HStack {
-                                Text("회원가입 / 로그인")
+                                Text(store.userProfile?.nickname ?? "회원가입 / 로그인")
                                     .foregroundColor(.white)
                                     .font(.title2.bold())
                                 Spacer()
@@ -39,10 +51,11 @@ struct MyPageView: View {
                         .padding()
                     }
                     .frame(maxWidth: .infinity, minHeight: 157)
-                    .background(Color("AppTertiaryColor"))
+                    .background(Color("AppSecondaryColor"))
                     .cornerRadius(20)
                     .padding(.horizontal, 24)
                 }
+//                .disabled(store.userProfile != nil)
                 Spacer().frame(height: 16)
                 
                 HStack {
@@ -66,7 +79,7 @@ struct MyPageView: View {
                                 }
                                 .padding()
                                 .frame(maxWidth: 145, minHeight: 145)
-                                .background(Color("AppTertiaryColor"))
+                                .background(Color("AppSecondaryColor"))
                                 .cornerRadius(20)
                             }
                         }
@@ -88,7 +101,7 @@ struct MyPageView: View {
                                 .padding()
                             }
                             .frame(maxWidth: 192, minHeight: 145)
-                            .background(Color("AppTertiaryColor"))
+                            .background(Color("AppSecondaryColor"))
                             .cornerRadius(20)
                         }
                     }
@@ -98,26 +111,31 @@ struct MyPageView: View {
                 
                 Spacer().frame(height: 40)
                 
-                VStack(alignment: .leading, spacing: 24) {
-                    NavigationLink(destination: MyPostsView()) {
-                        Text("내가 쓴 글")
-                            .font(.headline)
+                if store.currentUser != nil {
+                    VStack(alignment: .leading, spacing: 24) {
+                        NavigationLink(destination: MyPostsView()) {
+                            Text("내가 쓴 글")
+                                .font(.headline)
+                        }
+                        Button(action: {
+                            store.send(.logoutButtonTapped)
+                        }) {
+                            Text("로그아웃")
+                                .font(.headline)
+                        }
+                        Button(action: {
+                            store.send(.withDrawalButtonTapped)
+                        }) {
+                            Text("회원탈퇴")
+                                .font(.headline)
+                        }
                     }
-                    NavigationLink(destination: Text("로그아웃")) {
-                        Text("로그아웃")
-                            .font(.headline)
-                    }
-                    NavigationLink(destination: Text("회원탈퇴")) {
-                        Text("회원탈퇴")
-                            .font(.headline)
-                    }
+                    .foregroundColor(Color("AppTertiaryColor"))
+                    .font(.system(size: 16, weight: .semibold))
+                    .padding(.horizontal, 32)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 8)
                 }
-                .foregroundColor(Color("AppTertiaryColor"))
-                .font(.system(size: 16, weight: .semibold))
-                .padding(.horizontal, 32)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.top, 8)
-                
                 Spacer()
             }
             .navigationTitle("마이페이지")
