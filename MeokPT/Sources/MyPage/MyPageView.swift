@@ -8,6 +8,8 @@ struct MyPageView: View {
     
     let store: StoreOf<MyPageFeature>
     
+    @State private var showAlert = false
+    
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading) {
@@ -118,10 +120,16 @@ struct MyPageView: View {
                                 .font(.headline)
                         }
                         Button(action: {
-                            store.send(.logoutButtonTapped)
+                            showAlert = true
                         }) {
                             Text("로그아웃")
                                 .font(.headline)
+                        }
+                        .alert("로그아웃", isPresented: $showAlert) {
+                            Button("취소", role: .cancel) {}
+                            Button("로그아웃", role: .destructive) {
+                                store.send(.logoutButtonTapped)
+                            }
                         }
                         Button(action: {
                             store.send(.withDrawalButtonTapped)
@@ -146,6 +154,7 @@ struct MyPageView: View {
             }
             .background(Color("AppBackgroundColor"))
         }
+        .tint(Color(hex: "FF8F00"))
     }
 }
 
