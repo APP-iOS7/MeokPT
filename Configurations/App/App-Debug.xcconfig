@@ -1,3 +1,0 @@
-#include "Base.xcconfig"
-
-OTHER_LDFLAGS[config=Debug] = $(inherited)

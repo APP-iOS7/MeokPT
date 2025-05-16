@@ -7,17 +7,7 @@ let project = Project(
         developmentRegion: "ko"
     ),
     settings: .settings(
-        base: [:],
-        configurations: [
-            .debug(
-                name: "Debug",
-                xcconfig: .relativeToRoot("Configurations/App/App-Debug.xcconfig")
-            ),
-            .release(
-                name: "Release",
-                xcconfig: .relativeToRoot("Configurations/App/App-Release.xcconfig")
-            )
-        ]
+        base: ["OTHER_LDFLAGS": "$(inherited) -ObjC"]
     ),
     targets: [
         .target(
@@ -30,9 +20,6 @@ let project = Project(
                     "UILaunchScreen": [
                         "UIColorName": "",
                         "UIImageName": "",
-                    ],
-                    "NSAppTransportSecurity": [
-                        "NSAllowsArbitraryLoads": true
                     ],
                 ]
             ),
@@ -57,23 +44,5 @@ let project = Project(
             resources: [],
             dependencies: [.target(name: "MeokPT")]
         ),
-    ],
-    schemes: [
-        Scheme.scheme(
-            name: "MeokPT-Preview",
-            shared: true,
-            hidden: false,
-            buildAction: BuildAction.buildAction(targets: ["MeokPT"]),
-            runAction: RunAction.runAction(configuration: "Debug")
-        ),
-
-        Scheme.scheme(
-            name: "MeokPT",
-            shared: true,
-            hidden: false,
-            buildAction: BuildAction.buildAction(targets: ["MeokPT"]),
-            runAction: RunAction.runAction(configuration: "Release"),
-            archiveAction: ArchiveAction.archiveAction(configuration: "Release")
-        )
     ]
 )
