@@ -18,7 +18,7 @@ struct BodyInfoInputView: View {
     let genderOptions = ["여성", "남성"]
     let goalOptions = ["체중감량", "근육량 증가", "기타"]
     let activityLevelOptions = ["매우 적음", "적음", "보통", "많음", "매우 많음"]
-
+    
     
     var body: some View {
         WithViewStore(store, observe: { $0 }) { viewStore in
@@ -112,7 +112,19 @@ struct BodyInfoInputView: View {
                             .tint(Color("AppTintColor"))
                             .font(.system(size: 24))
                         }
-
+                        
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 12) {
+                                ActivityLevelCard(title: "매우 적음", description: "주로 앉아서 보내며,\n신체적 활동이 거의 없는 일상.\n예: 사무직, TV 시청이 많음.")
+                                ActivityLevelCard(title: "적음", description: "가벼운 운동이나 일상적인 활동.\n예: 가벼운 산책, 주 1~2회 운동.")
+                                ActivityLevelCard(title: "보통", description: "주 3~5회 운동.")
+                                ActivityLevelCard(title: "많음", description: "매일 운동. 주 6~7회.")
+                                ActivityLevelCard(title: "매우 많음", description: "격렬한 운동 및 육체노동 직업.")
+                            }
+                            .padding(.vertical, 4)
+                        }
+                        
+                        
                         
                         Spacer().frame(height: 120) // 버튼 공간 확보
                     }
@@ -172,6 +184,31 @@ struct BodyInfoInputView: View {
         }
     }
 }
+
+struct ActivityLevelCard: View {
+    var title: String
+    var description: String
+    
+    var body: some View {
+        VStack(alignment: .center, spacing: 6) {
+            Text(title)
+                .font(.headline)
+                .bold()
+            Text(description)
+                .font(.caption)
+                .foregroundColor(.gray)
+                .multilineTextAlignment(.center)
+        }
+        .padding()
+        .frame(width: 200, height: 100, alignment: .center)
+        .background(Color.white)
+        .cornerRadius(12)
+        .overlay(RoundedRectangle(cornerRadius: 12)
+            .stroke(Color.gray.opacity(0.5), lineWidth: 1))
+//        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+    }
+}
+
 
 #Preview {
     BodyInfoInputView(
