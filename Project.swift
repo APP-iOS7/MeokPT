@@ -46,15 +46,5 @@ let project = Project(
             resources: [],
             dependencies: [.target(name: "MeokPT")]
         ),
-    ],
-    schemes: [
-        Scheme.scheme(
-            name: "MeokPT",
-            shared: true,
-            hidden: false,
-            buildAction: BuildAction.buildAction(targets: ["MeokPT"]),
-            runAction: RunAction.runAction(configuration: "Debug"),
-            archiveAction: ArchiveAction.archiveAction(configuration: "Release")
-        )
     ]
 )
