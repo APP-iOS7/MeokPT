@@ -139,15 +139,7 @@ struct LoginFeature {
                 return .none
                 
             case .appleLoginButtonTapped:
-                return .run { _ in
-                    do {
-                        try Auth.auth().signOut()
-                        print("로그아웃 성공")
-                    }
-                    catch {
-                        print("로그아웃 실패: \(error)")
-                    }
-                }
+                return .none
                 
             case .kakaoLoginButtonTapped:
                 return .none

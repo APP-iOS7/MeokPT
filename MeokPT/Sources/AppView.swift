@@ -29,7 +29,10 @@ struct AppView: View {
         }
         .tint(.primary)
         .onAppear {
-            store.send(.onAppear)
+            // "XCODE_RUNNING_FOR_PREVIEWS" 환경 변수가 "1"이면 프리뷰 환경입니다.
+            if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" {
+                store.send(.onAppear) // 프리뷰가 아닐 때만 onAppear 액션 전송
+            }
         }
         .fullScreenCover(
             store: store.scope(state: \.$loginFullScreenCover, action: \.loginAction)
