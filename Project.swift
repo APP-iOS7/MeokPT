@@ -59,19 +59,11 @@ let project = Project(
     ],
     schemes: [
         Scheme.scheme(
-            name: "MeokPT-Preview",
-            shared: true,
-            hidden: false,
-            buildAction: BuildAction.buildAction(targets: ["MeokPT"]),
-            runAction: RunAction.runAction(configuration: "Debug")
-        ),
-
-        Scheme.scheme(
             name: "MeokPT",
             shared: true,
             hidden: false,
             buildAction: BuildAction.buildAction(targets: ["MeokPT"]),
-            runAction: RunAction.runAction(configuration: "Release"),
+            runAction: RunAction.runAction(configuration: "Debug"),
             archiveAction: ArchiveAction.archiveAction(configuration: "Release")
         )
     ]
