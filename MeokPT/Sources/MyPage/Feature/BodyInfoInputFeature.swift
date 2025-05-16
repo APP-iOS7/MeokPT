@@ -9,19 +9,21 @@ struct BodyInfoInputFeature: Reducer {
         var weight: String = ""
         var selectedGender: String = "여성"
         var selectedGoal: String = "체중감량"
+        var selectedActivityLevel: String = "보통"
         var error: String?
     }
-
+    
     enum Action: Equatable {
         case heightChanged(String)
         case ageChanged(String)
         case weightChanged(String)
         case genderChanged(String)
         case goalChanged(String)
+        case activityLevelChanged(String)
         case saveButtonTapped(ModelContext)
         case loadSavedData(ModelContext)
     }
-        
+    
     var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
@@ -40,6 +42,10 @@ struct BodyInfoInputFeature: Reducer {
             case let .goalChanged(text):
                 state.selectedGoal = text
                 return .none
+            case let .activityLevelChanged(text):
+                state.selectedActivityLevel = text
+                return .none
+                
             case let .loadSavedData(context):
                 print("\n데이터 로드 시작")
                 if let existing = try? context.fetch(FetchDescriptor<BodyInfo>()).first {
@@ -48,6 +54,7 @@ struct BodyInfoInputFeature: Reducer {
                     state.weight = String(existing.weight)
                     state.selectedGender = existing.gender
                     state.selectedGoal = existing.goal
+                    state.selectedActivityLevel = existing.activityLevel
                     print("데이터 로드 성공")
                 } else {
                     print("저장된 데이터가 없습니다.")
@@ -63,13 +70,15 @@ struct BodyInfoInputFeature: Reducer {
                         existing.weight = Double(state.weight) ?? 0
                         existing.gender = state.selectedGender
                         existing.goal = state.selectedGoal
+                        existing.activityLevel = state.selectedActivityLevel
                     } else {
                         let newInfo = BodyInfo(
                             height: Double(state.height) ?? 0,
                             age: Int(state.age) ?? 0,
                             weight: Double(state.weight) ?? 0,
                             gender: state.selectedGender,
-                            goal: state.selectedGoal
+                            goal: state.selectedGoal,
+                            activityLevel: state.selectedActivityLevel
                         )
                         context.insert(newInfo)
                         print("새로운 데이터 생성")
