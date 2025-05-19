@@ -229,11 +229,11 @@ struct LoginFeature {
                 state.currentNonce = randomNonceString()
                 print("Kakao 로그인 버튼 선택됨. Nonce 생성: \(state.currentNonce ?? "알 수 없음")")
 
-                return .run { [nonce = state.currentNonce!] send in
+                return .run { [capturedNonce = state.currentNonce!] send in
                     let kakaoLoginResult: Result<OAuthToken, Error> = await Task { @MainActor in
                         await withCheckedContinuation { continuation in
                             if UserApi.isKakaoTalkLoginAvailable() {
-                                UserApi.shared.loginWithKakaoTalk { (oauthToken, error) in
+                                UserApi.shared.loginWithKakaoTalk(nonce: capturedNonce) { (oauthToken, error) in
                                     if let error = error {
                                         continuation.resume(returning: .failure(error))
                                     } else if let oauthToken = oauthToken {
@@ -244,7 +244,7 @@ struct LoginFeature {
                                     }
                                 }
                             } else {
-                                UserApi.shared.loginWithKakaoAccount { (oauthToken, error) in
+                                UserApi.shared.loginWithKakaoAccount(nonce: capturedNonce) { (oauthToken, error) in
                                     if let error = error {
                                         continuation.resume(returning: .failure(error))
                                     } else if let oauthToken = oauthToken {
@@ -262,7 +262,7 @@ struct LoginFeature {
                     case .success(let oauthToken):
                         guard let idTokenString = oauthToken.idToken else {
                             let errorMessage = "카카오 로그인에 성공했으나 ID 토큰을 받지 못했습니다. (Kakao Developers에서 OIDC 설정 및 동의항목 확인 필요)"
-                            print("Kakao login error: \(errorMessage)")
+                            print("Kakao 로그인 오류: \(errorMessage)")
                             let error = NSError(domain: "KakaoSDKError", code: -2, userInfo: [NSLocalizedDescriptionKey: errorMessage])
                             await send(.loginResponse(.failure(error)))
                             return
@@ -273,7 +273,7 @@ struct LoginFeature {
                         let credential = OAuthProvider.credential(
                             providerID: .custom(providerID),
                             idToken: idTokenString,
-                            rawNonce: nonce,
+                            rawNonce: capturedNonce,
                             accessToken: oauthToken.accessToken
                         )
                         
