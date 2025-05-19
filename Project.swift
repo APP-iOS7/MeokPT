@@ -7,7 +7,9 @@ let project = Project(
         developmentRegion: "ko"
     ),
     settings: .settings(
-        base: [:],
+        base: [
+            "DEVELOPMENT_TEAM": "59FP2PXRXK",
+        ],
         configurations: [
             .debug(
                 name: "Debug",
@@ -41,6 +43,7 @@ let project = Project(
             ),
             sources: ["MeokPT/Sources/**"],
             resources: ["MeokPT/Resources/**"],
+            entitlements: .file(path: "MeokPT.entitlements"),
             dependencies: [
                 .external(name: "ComposableArchitecture"),
                 .external(name: "FirebaseCore"),
