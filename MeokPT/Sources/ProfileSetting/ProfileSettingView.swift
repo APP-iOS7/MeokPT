@@ -18,7 +18,7 @@ struct ProfileSettingView: View {
     var body: some View {
         ScrollView {
             VStack {
-                Spacer().frame(height: 100)
+                Spacer().frame(height: 70)
                 Group {
                     if let selectedImage = store.selectedImage {
                         Image(uiImage: selectedImage)
