@@ -178,22 +178,22 @@ struct LoginFeature {
                 state.isLoading = true
                 state.loginErrorMessage = ""
                 state.currentNonce = randomNonceString()
-                print("Apple Login Tapped. Nonce generated: \(state.currentNonce ?? "nil")")
+                print("Apple 로그인 버튼 선택됨. Nonce 생성: \(state.currentNonce ?? "알 수 없음")")
                 return .none
                 
             case .appleSignInResultReceived(.success(let appleIDCredential)):
                 guard let nonce = state.currentNonce else {
                     state.isLoading = false
-                    state.loginErrorMessage = "Apple Sign In failed: Nonce was missing."
-                    print("Error: Nonce is nil during Apple Sign In callback.")
+                    state.loginErrorMessage = "Apple 로그인 실패: 보안 정보(Nonce)가 누락되었습니다."
+                    print("오류: Apple 로그인 콜백 중 Nonce가 nil입니다.")
                     return .none
                 }
                 
                 guard let appleIDToken = appleIDCredential.identityToken,
                       let idTokenString = String(data: appleIDToken, encoding: .utf8) else {
                     state.isLoading = false
-                    state.loginErrorMessage = "Apple Sign In failed: Unable to retrieve ID token."
-                    print("Error: Could not get ID token string from Apple credential.")
+                    state.loginErrorMessage = "Apple 로그인 실패: ID 토큰을 가져올 수 없습니다."
+                    print("오류: Apple 인증 정보에서 ID 토큰 문자열을 가져올 수 없습니다.")
                     return .none
                 }
                 
@@ -215,11 +215,11 @@ struct LoginFeature {
                 state.isLoading = false
                 state.currentNonce = nil
                 if let authError = error as? ASAuthorizationError, authError.code == .canceled {
-                    state.loginErrorMessage = "Apple Sign In cancelled."
-                    print("Apple Sign In cancelled by user.")
+                    state.loginErrorMessage = "애플 로그인이 취소되었습니다."
+                    print("Apple 로그인이 사용자에 의해 취소되었습니다.")
                 } else {
-                    state.loginErrorMessage = "Apple Sign In failed: \(error.localizedDescription)"
-                    print("Apple Sign In failed. Error: \(error.localizedDescription)")
+                    state.loginErrorMessage = "애플 로그인에 실패했습니다.: \(error.localizedDescription)"
+                    print("Apple 로그인 실패. 오류: \(error.localizedDescription)")
                 }
                 return .none
                 
@@ -227,7 +227,7 @@ struct LoginFeature {
                 state.isLoading = true
                 state.loginErrorMessage = ""
                 state.currentNonce = randomNonceString()
-                print("Kakao Login Tapped. Nonce generated: \(state.currentNonce ?? "nil")")
+                print("Kakao 로그인 버튼 선택됨. Nonce 생성: \(state.currentNonce ?? "알 수 없음")")
 
                 return .run { [nonce = state.currentNonce!] send in
                     let kakaoLoginResult: Result<OAuthToken, Error> = await Task { @MainActor in
@@ -283,7 +283,7 @@ struct LoginFeature {
                         await send(.loginResponse(firebaseResult))
                         
                     case .failure(let error):
-                        print("Kakao login error: \(error.localizedDescription)")
+                        print("Kakao 로그인 오류: \(error.localizedDescription)")
                         await send(.loginResponse(.failure(error)))
                     }
                 }
@@ -429,9 +429,9 @@ struct LoginFeature {
              state.loginErrorMessage = nsError.localizedDescription
         }
         else {
-            state.loginErrorMessage = "예상치 못한 오류가 발생했습니다: \(error.localizedDescription)"
+            state.loginErrorMessage = "로그인을 다시 시도해주세요."
         }
-        print("LoginFeature Error: \(state.loginErrorMessage) | Original: \(error.localizedDescription)")
+        print("LoginFeature 오류: \(state.loginErrorMessage) | 원본 오류: \(error.localizedDescription)")
     }
 }
 
@@ -447,7 +447,7 @@ private func randomNonceString(length: Int = 32) -> String {
             var random: UInt8 = 0
             let errorCode = SecRandomCopyBytes(kSecRandomDefault, 1, &random)
             if errorCode != errSecSuccess {
-                fatalError("Unable to generate random bytes. SecRandomCopyBytes failed with OSStatus \(errorCode)")
+                fatalError("임의의 바이트를 생성할 수 없습니다. SecRandomCopyBytes가 OSStatus \(errorCode)로 실패했습니다.")
             }
             return random
         }
