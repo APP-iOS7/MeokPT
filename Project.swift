@@ -24,7 +24,7 @@ let project = Project(
             name: "MeokPT",
             destinations: .iOS,
             product: .app,
-            bundleId: "kr.co.codegrove.MeokPT",
+            bundleId: "kr.co.codegrove.MeokPTApp",
             infoPlist: .extendingDefault(
                 with: [
                     "UILaunchScreen": [
@@ -51,7 +51,7 @@ let project = Project(
             name: "MeokPTTests",
             destinations: .iOS,
             product: .unitTests,
-            bundleId: "kr.co.codegrove.MeokPTTests",
+            bundleId: "kr.co.codegrove.MeokPTAppTests",
             infoPlist: .default,
             sources: ["MeokPT/Tests/**"],
             resources: [],
