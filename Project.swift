@@ -34,6 +34,9 @@ let project = Project(
                     "NSAppTransportSecurity": [
                         "NSAllowsArbitraryLoads": true
                     ],
+                    "LSApplicationQueriesSchemes": [
+                        "kakaokompassauth": true
+                    ]
                 ]
             ),
             sources: ["MeokPT/Sources/**"],
@@ -44,7 +47,9 @@ let project = Project(
                 .external(name: "FirebaseFirestore"),
                 .external(name: "FirebaseAuth"),
                 .external(name: "FirebaseStorage"),
-                .external(name: "Kingfisher")
+                .external(name: "Kingfisher"),
+                .external(name: "KakaoSDKAuth"),
+                .external(name: "KakaoSDKUser")
             ]
         ),
         .target(

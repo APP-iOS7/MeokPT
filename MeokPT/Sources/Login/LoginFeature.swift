@@ -12,6 +12,9 @@ import FirebaseAuth
 import FirebaseFirestore
 import SwiftUI
 import AuthenticationServices
+import KakaoSDKCommon
+import KakaoSDKAuth
+import KakaoSDKUser
 
 @Reducer
 struct Path {
@@ -34,7 +37,7 @@ struct Path {
 @Reducer
 struct LoginFeature {
     @ObservableState
-    struct State: Equatable {
+    struct State {
         var emailText: String = ""
         var passWord: String = ""
         var isLoading: Bool = false
@@ -47,7 +50,7 @@ struct LoginFeature {
         var isCreatingUserDB: Bool = false
         var createUserDBError: String?
         
-        var newSignUpUser: User?
+        var newSignUpUser: FirebaseAuth.User?
         
         var currentNonce: String?
     }
@@ -87,14 +90,15 @@ struct LoginFeature {
         }
         
         case dismissLoginSheet
-        case loginSuccessfully(User)
-        case signUpFlowCompleted(User)
+        case loginSuccessfully(FirebaseAuth.User)
+        case signUpFlowCompleted(FirebaseAuth.User)
     }
     
     enum CancelID {
         case loginRequest
         case createUserDBRequest
         case appleSignInRequest
+        case kakaoSignInRequest
     }
     
     var body: some ReducerOf<Self> {
@@ -178,7 +182,6 @@ struct LoginFeature {
                 return .none
                 
             case .appleSignInResultReceived(.success(let appleIDCredential)):
-                print("성공")
                 guard let nonce = state.currentNonce else {
                     state.isLoading = false
                     state.loginErrorMessage = "Apple Sign In failed: Nonce was missing."
@@ -221,8 +224,71 @@ struct LoginFeature {
                 return .none
                 
             case .kakaoLoginButtonTapped:
-                return .none
-                
+                state.isLoading = true
+                state.loginErrorMessage = ""
+                state.currentNonce = randomNonceString()
+                print("Kakao Login Tapped. Nonce generated: \(state.currentNonce ?? "nil")")
+
+                return .run { [nonce = state.currentNonce!] send in
+                    let kakaoLoginResult: Result<OAuthToken, Error> = await Task { @MainActor in
+                        await withCheckedContinuation { continuation in
+                            if UserApi.isKakaoTalkLoginAvailable() {
+                                UserApi.shared.loginWithKakaoTalk { (oauthToken, error) in
+                                    if let error = error {
+                                        continuation.resume(returning: .failure(error))
+                                    } else if let oauthToken = oauthToken {
+                                        continuation.resume(returning: .success(oauthToken))
+                                    } else {
+                                        let unknownError = NSError(domain: "com.kakao.sdk", code: -999, userInfo: [NSLocalizedDescriptionKey: "알 수 없는 카카오 로그인 오류입니다."])
+                                        continuation.resume(returning: .failure(unknownError))
+                                    }
+                                }
+                            } else {
+                                UserApi.shared.loginWithKakaoAccount { (oauthToken, error) in
+                                    if let error = error {
+                                        continuation.resume(returning: .failure(error))
+                                    } else if let oauthToken = oauthToken {
+                                        continuation.resume(returning: .success(oauthToken))
+                                    } else {
+                                        let unknownError = NSError(domain: "com.kakao.sdk", code: -999, userInfo: [NSLocalizedDescriptionKey: "알 수 없는 카카오 계정 로그인 오류입니다."])
+                                        continuation.resume(returning: .failure(unknownError))
+                                    }
+                                }
+                            }
+                        }
+                    }.value
+
+                    switch kakaoLoginResult {
+                    case .success(let oauthToken):
+                        guard let idTokenString = oauthToken.idToken else {
+                            let errorMessage = "카카오 로그인에 성공했으나 ID 토큰을 받지 못했습니다. (Kakao Developers에서 OIDC 설정 및 동의항목 확인 필요)"
+                            print("Kakao login error: \(errorMessage)")
+                            let error = NSError(domain: "KakaoSDKError", code: -2, userInfo: [NSLocalizedDescriptionKey: errorMessage])
+                            await send(.loginResponse(.failure(error)))
+                            return
+                        }
+                        
+                        let providerID = "oidc.kakao_login"
+                        
+                        let credential = OAuthProvider.credential(
+                            providerID: .custom(providerID),
+                            idToken: idTokenString,
+                            rawNonce: nonce,
+                            accessToken: oauthToken.accessToken
+                        )
+                        
+                        let firebaseResult: Result<AuthDataResult, Error> = await Result {
+                            try await Auth.auth().signIn(with: credential)
+                        }
+                        await send(.loginResponse(firebaseResult))
+                        
+                    case .failure(let error):
+                        print("Kakao login error: \(error.localizedDescription)")
+                        await send(.loginResponse(.failure(error)))
+                    }
+                }
+                .cancellable(id: CancelID.kakaoSignInRequest, cancelInFlight: true)
+
             case .closeButtonTapped:
                 return .send(.delegate(.dismissLoginSheet))
                 
@@ -325,6 +391,7 @@ struct LoginFeature {
 
     private func loginSuccess(_ state: inout LoginFeature.State, _ authResult: AuthDataResult) {
         state.isLoading = false
+        state.currentNonce = nil
         state.loginErrorMessage = ""
         state.emailErrorMessage = ""
         state.passwordErrorMessage = ""
@@ -347,7 +414,7 @@ struct LoginFeature {
                 case .tooManyRequests:
                     state.loginErrorMessage = "로그인 시도 실패가 많아 이 계정에 대한 액세스가 일시적으로 비활성화되었습니다."
                 case .credentialAlreadyInUse:
-                    state.loginErrorMessage = "이 Apple 계정은 이미 다른 사용자와 연결되어 있습니다."
+                    state.loginErrorMessage = "이 소셜 계정은 이미 다른 사용자와 연결되어 있습니다."
                 default:
                     state.loginErrorMessage = "로그인 중 예상치 못한 오류가 발생했습니다. (코드: \(nsError.code))"
                 }
@@ -357,6 +424,9 @@ struct LoginFeature {
         }
         else if let authError = error as? ASAuthorizationError, authError.code == .canceled {
             state.loginErrorMessage = "Apple Sign In이 사용자에 의해 취소되었습니다."
+        }
+        else if nsError.domain == "KakaoSDK.ClientError" && nsError.code == KakaoSDKCommon.ClientFailureReason.Cancelled.hashValue {
+             state.loginErrorMessage = nsError.localizedDescription
         }
         else {
             state.loginErrorMessage = "예상치 못한 오류가 발생했습니다: \(error.localizedDescription)"
