@@ -11,6 +11,7 @@ import FirebaseCore
 import FirebaseAuth
 import FirebaseFirestore
 import SwiftUI
+import AuthenticationServices
 
 @Reducer
 struct Path {
@@ -47,6 +48,8 @@ struct LoginFeature {
         var createUserDBError: String?
         
         var newSignUpUser: User?
+        
+        var currentNonce: String?
     }
     
     enum Action: BindableAction {
@@ -58,6 +61,7 @@ struct LoginFeature {
         case loginButtonTapped
         case loginResponse(Result<AuthDataResult, Error>)
         case appleLoginButtonTapped
+        case appleSignInResultReceived(Result<ASAuthorizationAppleIDCredential, Error>)
         case kakaoLoginButtonTapped
         
         case closeButtonTapped
@@ -90,6 +94,7 @@ struct LoginFeature {
     enum CancelID {
         case loginRequest
         case createUserDBRequest
+        case appleSignInRequest
     }
     
     var body: some ReducerOf<Self> {
@@ -131,14 +136,88 @@ struct LoginFeature {
                 .cancellable(id: CancelID.loginRequest, cancelInFlight: true)
                 
             case .loginResponse(.success(let authResult)):
-                loginSuccess(&state, authResult)
-                return .send(.delegate(.loginSuccessfully(authResult.user)))
+                state.isLoading = false
+                if authResult.additionalUserInfo?.isNewUser == true {
+                    state.newSignUpUser = authResult.user
+                    state.isCreatingUserDB = true
+                    state.createUserDBError = nil
+                    
+                    let userId = authResult.user.uid
+                    let initialUserData: [String: Any] = [
+                        "nickname": NSNull(),
+                        "profileImageUrl": NSNull(),
+                        "postItems": []
+                    ]
+                    
+                    return .run { send in
+                        do {
+                            let db = Firestore.firestore()
+                            try await db.collection("users").document(userId).setData(initialUserData)
+                            print("Firestore에 신규 사용자 초기 데이터 생성 완료. UID: \(userId)")
+                            await send(._createUserDBResponse(.success(())))
+                        } catch {
+                            print("Firestore 신규 사용자 데이터 생성 실패: \(error.localizedDescription)")
+                            await send(._createUserDBResponse(.failure(error)))
+                        }
+                    }
+                    .cancellable(id: CancelID.createUserDBRequest)
+                } else {
+                    loginSuccess(&state, authResult)
+                    return .send(.delegate(.loginSuccessfully(authResult.user)))
+                }
                 
             case .loginResponse(.failure(let error)):
                 loginFailure(&state, error)
                 return .none
                 
             case .appleLoginButtonTapped:
+                state.isLoading = true
+                state.loginErrorMessage = ""
+                state.currentNonce = randomNonceString()
+                print("Apple Login Tapped. Nonce generated: \(state.currentNonce ?? "nil")")
+                return .none
+                
+            case .appleSignInResultReceived(.success(let appleIDCredential)):
+                print("성공")
+                guard let nonce = state.currentNonce else {
+                    state.isLoading = false
+                    state.loginErrorMessage = "Apple Sign In failed: Nonce was missing."
+                    print("Error: Nonce is nil during Apple Sign In callback.")
+                    return .none
+                }
+                
+                guard let appleIDToken = appleIDCredential.identityToken,
+                      let idTokenString = String(data: appleIDToken, encoding: .utf8) else {
+                    state.isLoading = false
+                    state.loginErrorMessage = "Apple Sign In failed: Unable to retrieve ID token."
+                    print("Error: Could not get ID token string from Apple credential.")
+                    return .none
+                }
+                
+                let credential = OAuthProvider.credential(providerID: .apple,
+                                                          idToken: idTokenString,
+                                                          rawNonce: nonce,
+                                                          accessToken: appleIDCredential.authorizationCode.flatMap { String(data: $0, encoding: .utf8) })
+                state.currentNonce = nil
+                
+                return .run { send in
+                    let result: Result<AuthDataResult, Error> = await Result {
+                        try await Auth.auth().signIn(with: credential)
+                    }
+                    await send(.loginResponse(result))
+                }
+                .cancellable(id: CancelID.appleSignInRequest, cancelInFlight: true)
+                
+            case .appleSignInResultReceived(.failure(let error)):
+                state.isLoading = false
+                state.currentNonce = nil
+                if let authError = error as? ASAuthorizationError, authError.code == .canceled {
+                    state.loginErrorMessage = "Apple Sign In cancelled."
+                    print("Apple Sign In cancelled by user.")
+                } else {
+                    state.loginErrorMessage = "Apple Sign In failed: \(error.localizedDescription)"
+                    print("Apple Sign In failed. Error: \(error.localizedDescription)")
+                }
                 return .none
                 
             case .kakaoLoginButtonTapped:
@@ -158,6 +237,7 @@ struct LoginFeature {
                         return .send(.delegate(.signUpFlowCompleted(currentUser)))
                     }
                     state.newSignUpUser = nil
+                    state.isLoading = false
                     return .none
                 }
                 state.newSignUpUser = nil
@@ -192,15 +272,18 @@ struct LoginFeature {
             case ._createUserDBResponse(.success):
                 state.isCreatingUserDB = false
                 print("사용자 DB 생성 성공 처리 완료.")
-                // DB 생성 성공 후, SignUpView를 스택에서 제거하고 완료 알림
-                state.navigationStack.removeAll()
+                if !state.navigationStack.isEmpty {
+                    state.navigationStack.removeAll()
+                }
                 return .send(._signUpCompleted)
 
             case ._createUserDBResponse(.failure(let error)):
                 state.isCreatingUserDB = false
                 state.createUserDBError = "사용자 DB 생성 실패: \(error.localizedDescription)"
                 print("사용자 DB 생성 실패 처리: \(error.localizedDescription)")
-                state.navigationStack.removeAll()
+                if !state.navigationStack.isEmpty {
+                    state.navigationStack.removeAll()
+                }
                 return .send(._signUpCompleted)
                 
             case .delegate(_):
@@ -249,6 +332,7 @@ struct LoginFeature {
 
     private func loginFailure(_ state: inout LoginFeature.State, _ error: any Error) {
         state.isLoading = false
+        state.currentNonce = nil
         let nsError = error as NSError
         
         if nsError.domain == AuthErrorDomain {
@@ -262,15 +346,52 @@ struct LoginFeature {
                     state.loginErrorMessage = "네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요."
                 case .tooManyRequests:
                     state.loginErrorMessage = "로그인 시도 실패가 많아 이 계정에 대한 액세스가 일시적으로 비활성화되었습니다."
+                case .credentialAlreadyInUse:
+                    state.loginErrorMessage = "이 Apple 계정은 이미 다른 사용자와 연결되어 있습니다."
                 default:
                     state.loginErrorMessage = "로그인 중 예상치 못한 오류가 발생했습니다. (코드: \(nsError.code))"
                 }
             } else {
                 state.loginErrorMessage = "알 수 없는 Firebase 인증 오류입니다. (코드: \(nsError.code))"
             }
-        } else {
-            state.loginErrorMessage = "예상치 못한 오류가 발생했습니다."
+        }
+        else if let authError = error as? ASAuthorizationError, authError.code == .canceled {
+            state.loginErrorMessage = "Apple Sign In이 사용자에 의해 취소되었습니다."
+        }
+        else {
+            state.loginErrorMessage = "예상치 못한 오류가 발생했습니다: \(error.localizedDescription)"
         }
         print("LoginFeature Error: \(state.loginErrorMessage) | Original: \(error.localizedDescription)")
     }
+}
+
+private func randomNonceString(length: Int = 32) -> String {
+    precondition(length > 0)
+    let charset: [Character] =
+    Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
+    var result = ""
+    var remainingLength = length
+    
+    while remainingLength > 0 {
+        let randoms: [UInt8] = (0 ..< 16).map { _ in
+            var random: UInt8 = 0
+            let errorCode = SecRandomCopyBytes(kSecRandomDefault, 1, &random)
+            if errorCode != errSecSuccess {
+                fatalError("Unable to generate random bytes. SecRandomCopyBytes failed with OSStatus \(errorCode)")
+            }
+            return random
+        }
+        
+        randoms.forEach { random in
+            if remainingLength == 0 {
+                return
+            }
+            
+            if random < charset.count {
+                result.append(charset[Int(random)])
+                remainingLength -= 1
+            }
+        }
+    }
+    return result
 }

@@ -123,32 +123,7 @@ struct LoginView: View {
                     
                     Divider().frame(width: 320).padding(8)
                     
-                    Button(action: {
-                        store.send(.appleLoginButtonTapped)
-                    }) {
-                        ZStack {
-                            HStack {
-                                Spacer().frame(width: 36)
-                                Image(systemName: "apple.logo")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(height: 28)
-                                    .foregroundStyle(.background)
-                                Spacer()
-                            }
-                            HStack {
-                                Spacer().frame(width: 36)
-                                Text("Apple로 로그인")
-                                    .font(.body)
-                                    .foregroundStyle(.background)
-                            }
-                        }
-                        .contentShape(Rectangle())
-                    }
-                    .frame(width: 320, height: 60)
-                    .background(.primary)
-                    .clipShape(.rect(cornerRadius: 40))
-                    .buttonStyle(PlainButtonStyle())
+                    CustomAppleSignInButton(store: store)
                     
                     Spacer().frame(height: 16)
                     
@@ -259,5 +234,49 @@ extension Color {
                   green: Double(g) / 255,
                   blue: Double(b) / 255,
                   opacity: Double(a) / 255)
+    }
+}
+
+struct CustomAppleSignInButton: View {
+    @Bindable var store: StoreOf<LoginFeature>
+    @State private var coordinator: AppleSignInCoordinator?
+
+    var body: some View {
+        Button(action: {
+            store.send(.appleLoginButtonTapped)
+
+            self.coordinator = AppleSignInCoordinator { result in
+                switch result {
+                case .success(let credential):
+                    store.send(.appleSignInResultReceived(.success(credential)))
+                case .failure(let error):
+                    store.send(.appleSignInResultReceived(.failure(error)))
+                }
+            }
+            self.coordinator?.startSignInWithAppleFlow()
+        }) {
+            ZStack {
+                HStack {
+                    Spacer().frame(width: 36)
+                    Image(systemName: "apple.logo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 28)
+                        .foregroundStyle(.background)
+                    Spacer()
+                }
+                HStack {
+                    Spacer().frame(width: 36)
+                    Text("Apple로 로그인")
+                        .font(.body)
+                        .foregroundStyle(.background)
+                }
+            }
+            .contentShape(Rectangle())
+        }
+        .frame(width: 320, height: 60)
+        .background(Color(uiColor: .label))
+        .clipShape(.rect(cornerRadius: 40))
+        .buttonStyle(PlainButtonStyle())
     }
 }
