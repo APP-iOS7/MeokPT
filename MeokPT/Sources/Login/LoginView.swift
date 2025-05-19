@@ -15,7 +15,7 @@ struct LoginView: View {
     @FocusState private var passwordFocusedField: Bool
     
     var body: some View {
-        NavigationStack(path: $store.path) {
+        NavigationStack(path: $store.scope(state: \.navigationStack, action: \.navigationStack)) {
             ScrollView{
                 VStack {
                     VStack(alignment: .leading) {
@@ -166,7 +166,7 @@ struct LoginView: View {
                             }
                             HStack {
                                 Spacer().frame(width: 36)
-                                Text("카카오톡으로 로그인")
+                                Text("카카오로 시작하기")
                                     .font(.body)
                                     .foregroundStyle(.black)
                             }
@@ -174,14 +174,14 @@ struct LoginView: View {
                         .contentShape(Rectangle())
                     }
                     .frame(width: 320, height: 60)
-                    .background(.yellow)
+                    .background(Color(hex:"fee500"))
                     .clipShape(.rect(cornerRadius: 40))
                     .buttonStyle(PlainButtonStyle())
                     
                     Spacer().frame(height: 40)
                     
                     Button(action: {
-                        store.send(.push(.signUp))
+                        store.send(.navigateToSignUpButtonTapped)
                     }) {
                         Text("회원가입")
                             .font(.headline)
@@ -200,15 +200,11 @@ struct LoginView: View {
             }
             .scrollDisabled(true)
             .background(Color("AppBackgroundColor"))
-            .navigationDestination(for: LoginRoute.self) { route in
-                switch route {
-                case .signUp:
-                    SignUpView(
-                        store: store.scope(
-                            state: \.signUpState,
-                            action: \.signUpAction
-                        )
-                    )
+        } destination: { storeForElement in
+            switch storeForElement.state {
+            case .signUp:
+                if let SignUpStore = storeForElement.scope(state: \.signUp, action: \.signUp) {
+                    SignUpView(store: SignUpStore)
                 }
             }
         }
@@ -228,5 +224,40 @@ struct LoginView: View {
                 LoginFeature()
             }
         )
+    }
+}
+
+extension Color {
+    init(hex: String) {
+        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int = UInt64()
+        Scanner(string: hex).scanHexInt64(&int)
+
+        let a, r, g, b: UInt64
+        switch hex.count {
+        case 3:
+            (a, r, g, b) = (255,
+                            (int >> 8) * 17,
+                            (int >> 4 & 0xF) * 17,
+                            (int & 0xF) * 17)
+        case 6:
+            (a, r, g, b) = (255,
+                            int >> 16,
+                            int >> 8 & 0xFF,
+                            int & 0xFF)
+        case 8:
+            (a, r, g, b) = (int >> 24,
+                            int >> 16 & 0xFF,
+                            int >> 8 & 0xFF,
+                            int & 0xFF)
+        default:
+            (a, r, g, b) = (255, 0, 0, 0)
+        }
+
+        self.init(.sRGB,
+                  red: Double(r) / 255,
+                  green: Double(g) / 255,
+                  blue: Double(b) / 255,
+                  opacity: Double(a) / 255)
     }
 }

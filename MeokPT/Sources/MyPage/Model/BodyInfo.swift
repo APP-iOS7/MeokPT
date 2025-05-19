@@ -11,12 +11,13 @@ class BodyInfo {
     var goal: Goal
     var createdDate: Date
     
-    init(height: Double, age: Int, weight: Double, gender: Gender, goal: Goal) {
+    init(height: Double, age: Int, weight: Double, gender: String, goal: String) {
         self.height = height
         self.age = age
         self.weight = weight
         self.gender = gender
         self.goal = goal
+        self.activityLevel = activityLevel
         self.createdDate = Date()
     }
 }

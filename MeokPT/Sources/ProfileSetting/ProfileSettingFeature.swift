@@ -15,7 +15,10 @@ import FirebaseFirestore
 @Reducer
 struct ProfileSettingFeature {
     @ObservableState
-    struct State {
+    struct State: Equatable {
+        var currentUser: User?
+        var userProfile: UserProfile?
+        
         var selectedImage: UIImage?
         var selectedItem: PhotosPickerItem?
         var isUploading = false
@@ -31,6 +34,17 @@ struct ProfileSettingFeature {
         var isSavingProfile = false
         var saveProfileError: String?
         var profileSaveSuccess = false
+        
+        init(currentUser: User? = nil, userProfile: UserProfile? = nil) {
+            self.currentUser = currentUser
+            self.userProfile = userProfile
+            self.nickName = userProfile?.nickname ?? ""
+            self.initialNickName = userProfile?.nickname ?? ""
+            if let profileUrlString = userProfile?.profileImageUrl, let url = URL(string: profileUrlString) {
+                self.uploadedImageUrl = url
+                self.initialUploadedImageUrl = url
+            }
+        }
     }
     
     enum Action: BindableAction {
@@ -39,7 +53,6 @@ struct ProfileSettingFeature {
         
         case loadImageResponse(Result<UIImage, Error>)
         case initiateImageUpload
-        case imageUploadProgress(Double)
         case imageUploadCompleted(Result<URL, Error>)
 
         case saveProfile
@@ -98,10 +111,22 @@ struct ProfileSettingFeature {
                  return .none
 
             case .initiateImageUpload:
-                guard let imageToUpload = state.selectedImage else { return .none }
+                guard let imageToUpload = state.selectedImage else {
+                    state.errorMessage = "업로드할 이미지가 선택되지 않았습니다."
+                    return .none
+                }
                 state.isUploading = true
                 state.uploadProgress = 0.0
                 state.errorMessage = nil
+                state.saveProfileError = nil // 이전 저장 에러 메시지 초기화
+                
+                // 사용자 UID 가져오기
+                guard (state.currentUser?.uid ?? Auth.auth().currentUser?.uid) != nil else {
+                    state.isUploading = false
+                    state.errorMessage = "사용자 인증 정보가 없어 이미지 업로드를 시작할 수 없습니다."
+                    return .none
+                }
+                
                 return .run { send in
                     let result: Result<URL, Error> = await Result {
                         guard let imageData = imageToUpload.jpegData(compressionQuality: 0.8) else {
@@ -133,23 +158,30 @@ struct ProfileSettingFeature {
                     state.saveProfileError = "닉네임을 입력해주세요."
                     return .none
                 }
-
+                
+                if state.isUploading {
+                    state.saveProfileError = "프로필 사진이 업로드 중입니다. 잠시 후 다시 시도해주세요."
+                    return .none
+                }
+                
                 state.isSavingProfile = true
                 state.saveProfileError = nil
-                return .run { [nickName = state.nickName, imageUrl = state.uploadedImageUrl?.absoluteString, userId = Auth.auth().currentUser?.uid] send in
-                    guard let uid = userId else {
-                        await send(.saveProfileResponse(.failure(NSError(domain: "ProfileSaveError", code: 0, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"]))))
-                        return
-                    }
-                    let profileData: [String: Any] = [
-                        "nickname": nickName,
-                        "profileImageUrl": imageUrl ?? NSNull()
-                    ]
+                
+                guard let uid = state.currentUser?.uid ?? Auth.auth().currentUser?.uid else {
+                    state.isSavingProfile = false
+                    state.saveProfileError = "사용자 인증 정보가 없습니다. 다시 로그인해주세요."
+                    return .none
+                }
+
+                let profileData: [String: Any] = [
+                    "nickname": state.nickName,
+                    "profileImageUrl": state.uploadedImageUrl?.absoluteString ?? NSNull()
+                ]
+                
+                return .run { send in
                     do {
                         try await Firestore.firestore().collection("users").document(uid).setData(profileData, merge: true)
                         await send(.saveProfileResponse(.success(())))
-                        await send(.delegate(.profileSettingCompleted))
-                        await self.dismiss()
                     } catch {
                         await send(.saveProfileResponse(.failure(error)))
                     }
@@ -163,7 +195,10 @@ struct ProfileSettingFeature {
                 state.profileSaveSuccess = true
                 state.initialNickName = state.nickName
                 state.initialUploadedImageUrl = state.uploadedImageUrl
-                return .none
+                return .run { send in
+                    await send(.delegate(.profileSettingCompleted))
+                    await self.dismiss()
+                }
                 
             case .saveProfileResponse(.failure(let error)):
                 state.isSavingProfile = false
@@ -178,7 +213,7 @@ struct ProfileSettingFeature {
                 state.errorMessage = nil
                 state.saveProfileError = nil
                 state.isUploading = false
-                state.uploadProgress = 0.0
+                state.profileSaveSuccess = false
                 return .run { send in
                     await send(.delegate(.profileSettingCancelled))
                     await self.dismiss()
@@ -187,14 +222,24 @@ struct ProfileSettingFeature {
             case .closeButtonTapped:
                 return .run { send in await self.dismiss() }
 
-            case .onAppear: return .none
+            case .onAppear:
+                state.nickName = state.userProfile?.nickname ?? state.initialNickName
+                if let urlString = state.userProfile?.profileImageUrl, let url = URL(string: urlString) {
+                    state.uploadedImageUrl = url
+                    state.initialUploadedImageUrl = url
+                }
+                state.profileSaveSuccess = false
+                state.saveProfileError = nil
+                state.errorMessage = nil
+                return .none
+                
             case .resetSaveStatus:
-                 state.profileSaveSuccess = false
-                 state.saveProfileError = nil
-                 return .none
-            case .delegate(_): return .none
-            case .binding(_): return .none
-            case .imageUploadProgress(_): return .none
+                state.profileSaveSuccess = false
+                state.saveProfileError = nil
+                return .none
+                
+            case .delegate: return .none
+            case .binding: return .none
             }
         }
     }

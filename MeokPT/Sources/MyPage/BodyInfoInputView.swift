@@ -96,6 +96,31 @@ struct BodyInfoInputView: View {
     }
 }
 
+struct ActivityLevelCard: View {
+    var title: String
+    var description: String
+    
+    var body: some View {
+        VStack(alignment: .center, spacing: 6) {
+            Text(title)
+                .font(.headline)
+                .bold()
+            Text(description)
+                .font(.caption)
+                .foregroundColor(.gray)
+                .multilineTextAlignment(.center)
+        }
+        .padding()
+        .frame(width: 200, height: 100, alignment: .center)
+        .background(Color.white)
+        .cornerRadius(12)
+        .overlay(RoundedRectangle(cornerRadius: 12)
+            .stroke(Color.gray.opacity(0.5), lineWidth: 1))
+//        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+    }
+}
+
+
 #Preview {
     BodyInfoInputView(
         store: Store<BodyInfoInputFeature.State, BodyInfoInputFeature.Action>(
@@ -106,3 +131,4 @@ struct BodyInfoInputView: View {
         )
     )
 }
+

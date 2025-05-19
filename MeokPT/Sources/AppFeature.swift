@@ -41,6 +41,8 @@ struct AppFeature {
         case userProfileLoaded(Result<UserProfile, Error>)
         case clearUserData
         case fetchUserProfile(String)
+        case performLogout
+        case performWithdrawal
         
         case onAppear
     }
@@ -48,6 +50,8 @@ struct AppFeature {
     enum CancelID {
         case userProfileFetch
         case authStateListener
+        case logoutRequest
+        case withdrawalRequest
     }
     
     var body: some ReducerOf<Self> {
@@ -60,15 +64,18 @@ struct AppFeature {
         
         Reduce { state, action in
             switch action {
-            // MARK: - TabView 에 포함된 뷰의 Action
-            case .dietAction(_):
-                return .none
-                
-            case .communityAction(_):
-                return .none
-                
-            case .myPageAction(.delegate(.loginSignUpButtonTapped)):
-                return .send(.presentLoginFullScreenCover)
+            case .myPageAction(.delegate(let myPageDelegateAction)):
+                switch myPageDelegateAction {
+                case .loginSignUpButtonTapped:
+                    return .send(.presentLoginFullScreenCover)
+                case .profileSettingButtonTapped:
+                    return .send(.presentprofileSettingFullScreenCover)
+                case .requestLogout:
+                    return .send(.performLogout)
+                case .requestWithdrawal:
+                    print("회원탈퇴 요청 받음 - 확인 절차 및 실제 탈퇴 로직 구현 필요")
+                    return .none
+                }
                 
             // MARK: - 모달에 표시되는 뷰의 Action
             case .loginAction(.presented(.delegate(.dismissLoginSheet))):
@@ -93,29 +100,88 @@ struct AppFeature {
                 
             // MARK: - @Presents 사용으로 필수로 작성해야 하는 present Action
             case .presentLoginFullScreenCover:
+                if state.profileSettingFullScreenCover != nil {
+                    return .none
+                }
                 state.loginFullScreenCover = LoginFeature.State()
                 return .none
                 
             case .presentprofileSettingFullScreenCover:
-                state.profileSettingFullScreenCover = ProfileSettingFeature.State()
+                if state.loginFullScreenCover != nil {
+                    return .none
+                }
+                state.profileSettingFullScreenCover = ProfileSettingFeature.State(
+                     currentUser: state.currentUser,
+                     userProfile: state.userProfile
+                )
                 return .none
                 
-            // MARK: - 유저 정보 확인
+            // MARK: - 유저 정보 확인 및 관리
             case .authStatusChanged(let firebaseUser):
-                return authStatusChanged(firebaseUser, state)
+                var effects: [Effect<Action>] = []
+
+                if let user = firebaseUser {
+                    if state.currentUser == nil || state.currentUser?.uid != user.uid {
+                        effects.append(.send(.handleAuthenticatedUser(user)))
+                    }
+                    state.myPageState.currentUser = user
+                    state.myPageState.userProfile = state.userProfile
+                } else {
+                    if state.currentUser != nil {
+                        clearUserData(&state)
+                        
+                        effects.append(.cancel(id: CancelID.userProfileFetch))
+                    } else {
+                        state.myPageState.currentUser = nil
+                        state.myPageState.userProfile = nil
+                    }
+                }
+                return .merge(effects)
                 
             case .handleAuthenticatedUser(let user):
                 state.currentUser = user
+                state.userProfile = nil
+                state.isLoadingUserProfile = false
+                state.userProfileError = nil
+                
+                // MyPageFeature 상태 업데이트
+                state.myPageState.currentUser = user
+                state.myPageState.userProfile = nil
+                
                 return .send(.fetchUserProfile(user.uid))
                             
             case .userProfileLoaded(.success(let profile)):
-                return userProfileLoadedSuccess(&state, profile)
-                            
+                state.isLoadingUserProfile = false
+                state.userProfile = profile
+                // MyPageFeature 상태 업데이트
+                state.myPageState.userProfile = profile
+                
+                if state.currentUser != nil && (profile.nickname == nil || profile.nickname?.isEmpty == true) {
+                    return .run { send in
+                        await Task.yield()
+                        await send(.presentprofileSettingFullScreenCover)
+                    }
+                }
+                return .none
+                                
             case .userProfileLoaded(.failure(let error)):
-                return userProfileLoadedFailure(&state, error)
+                state.isLoadingUserProfile = false
+                state.userProfileError = "프로필 로드 실패: \(error.localizedDescription)"
+                state.userProfile = nil
+                // MyPageFeature 상태 업데이트
+                state.myPageState.userProfile = nil
+                
+                if state.currentUser != nil {
+                     return .run { send in
+                        await Task.yield()
+                        await send(.presentprofileSettingFullScreenCover)
+                    }
+                }
+                return .none
                 
             case .clearUserData:
-                return clearUserData(&state)
+                clearUserData(&state)
+                return .cancel(id: CancelID.userProfileFetch)
                 
             case .fetchUserProfile(let userId):
                 guard state.currentUser?.uid == userId else {
@@ -137,6 +203,23 @@ struct AppFeature {
                     }
                 }
                 .cancellable(id: CancelID.userProfileFetch)
+
+            case .performLogout:
+                state.isLoadingUserProfile = true
+                return .run { send in
+                    do {
+                        try Auth.auth().signOut()
+                        print("로그아웃 성공 (Firebase)")
+                    } catch let signOutError as NSError {
+                        print("Error signing out: %@", signOutError)
+                    }
+                }
+                .cancellable(id: CancelID.logoutRequest)
+
+            case .performWithdrawal:
+                print("회원탈퇴 로직 수행 - 구현 필요")
+                return .none
+                .cancellable(id: CancelID.withdrawalRequest)
                 
             case .onAppear:
                 // 앱 시작 시 한 번만 인증 상태 리스너 등록
@@ -161,11 +244,7 @@ struct AppFeature {
                 }
                 .cancellable(id: CancelID.authStateListener)
                 
-            // MARK: - (_)
-            case .binding(_):
-                return .none
-                
-            case .analyzeAction, .myPageAction, .loginAction, .profileSettingAction:
+            case .binding, .dietAction, .analyzeAction, .communityAction, .myPageAction, .loginAction, .profileSettingAction:
                 return .none
             }
         }
@@ -186,43 +265,14 @@ private actor ListenerHandleContainer {
     func getHandle() -> AuthStateDidChangeListenerHandle? { return handle }
 }
 
-private func authStatusChanged(_ firebaseUser: User?, _ state: AppFeature.State) -> Effect<AppFeature.Action> {
-    if let user = firebaseUser {
-        if state.currentUser?.uid != user.uid {
-            return .send(.handleAuthenticatedUser(user))
-        }
-        return .none
-    } else {
-        if state.currentUser != nil {
-            return .send(.clearUserData)
-        }
-        return .none
-    }
-}
-
-private func userProfileLoadedSuccess(_ state: inout AppFeature.State, _ profile: UserProfile) -> Effect<AppFeature.Action> {
-    state.isLoadingUserProfile = false
-    state.userProfile = profile
-    if profile.nickname == nil || profile.nickname?.isEmpty == true {
-        return .send(.presentprofileSettingFullScreenCover)
-    }
-    return .none
-}
-
-private func userProfileLoadedFailure(_ state: inout AppFeature.State, _ error: any Error) -> Effect<AppFeature.Action> {
-    state.isLoadingUserProfile = false
-    state.userProfileError = "프로필 로드 실패: \(error.localizedDescription)"
-    state.userProfile = nil
-    return .send(.presentprofileSettingFullScreenCover)
-}
-
-private func clearUserData(_ state: inout AppFeature.State) -> Effect<AppFeature.Action> {
+private func clearUserData(_ state: inout AppFeature.State) {
     state.currentUser = nil
     state.userProfile = nil
     state.isLoadingUserProfile = false
     state.userProfileError = nil
     state.loginFullScreenCover = nil
     state.profileSettingFullScreenCover = nil
-
-    return .none
+    
+    state.myPageState.currentUser = nil
+    state.myPageState.userProfile = nil
 }
