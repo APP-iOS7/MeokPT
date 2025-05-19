@@ -1,9 +1,3 @@
-//
-//  BodyInfoInputView.swift
-//  MeokPT
-//
-//  Created by vKv on 5/9/25.
-//
 import ComposableArchitecture
 import SwiftUI
 import SwiftData
@@ -21,102 +15,39 @@ struct BodyInfoInputView: View {
     
     @State private var showResetAlert = false
     
-    let genderOptions = ["여성", "남성"]
-    let goalOptions = ["체중감량", "근육량 증가", "기타"]
-    
     var body: some View {
         WithViewStore(store, observe: { $0 }) { viewStore in
             ZStack {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 24) {
-                        Spacer().frame(height: 18)
-                        
-                        Text("정보 입력")
-                            .font(.system(size: 20, weight: .bold))
-                            .frame(maxWidth: .infinity, alignment: .center)
-                        
-                        Group {
-                            VStack(alignment: .leading, spacing: 4) {
-                                HStack {
-                                    TextField("키", text: viewStore.binding(get: \.height, send: BodyInfoInputFeature.Action.heightChanged))
-                                        .keyboardType(.numberPad)
-                                        .focused($focusedField, equals: .height)
-                                    Text("cm")
-                                        .foregroundColor(.gray)
-                                }
-                                Rectangle()
-                                    .frame(height: 1)
-                                    .foregroundColor(.gray.opacity(0.4))
-                            }
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                HStack {
-                                    TextField("나이", text: viewStore.binding(get: \.age, send: BodyInfoInputFeature.Action.ageChanged))
-                                        .keyboardType(.numberPad)
-                                        .focused($focusedField, equals: .age)
-                                    Text("세")
-                                        .foregroundColor(.gray)
-                                }
-                                Rectangle()
-                                    .frame(height: 1)
-                                    .foregroundColor(.gray.opacity(0.4))
-                            }
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                HStack {
-                                    TextField("몸무게", text: viewStore.binding(get: \.weight, send: BodyInfoInputFeature.Action.weightChanged))
-                                        .keyboardType(.decimalPad)
-                                        .focused($focusedField, equals: .weight)
-                                    Text("kg")
-                                        .foregroundColor(.gray)
-                                }
-                                Rectangle()
-                                    .frame(height: 1)
-                                    .foregroundColor(.gray.opacity(0.4))
-                            }
+                VStack(alignment: .leading, spacing: 24) {
+                    
+                    TextField("신장 (cm)", text: viewStore.binding(get: \.height, send:
+                        BodyInfoInputFeature.Action.heightChanged))
+                    .keyboardType(.numberPad)
+                    .focused($focusedField, equals: .height)
+                    
+                    TextField("나이", text: viewStore.binding(get: \.age, send:
+                        BodyInfoInputFeature.Action.ageChanged))
+                    .keyboardType(.numberPad)
+                    .focused($focusedField, equals: .age)
+                    
+                    TextField("체중 (kg)", text: viewStore.binding(get: \.weight, send:
+                        BodyInfoInputFeature.Action.weightChanged))
+                    .keyboardType(.numberPad)
+                    .focused($focusedField, equals: .weight)
+                
+                    
+                    Picker("성별 선택", selection: viewStore.binding(get: \.selectedGender, send:
+                        BodyInfoInputFeature.Action.genderChanged)) {
+                        ForEach(Gender.allCases, id: \.self) { option in
+                            Text(option.rawValue).tag(option)
                         }
-                        
-                        HStack(spacing: 8) {
-                            ForEach(genderOptions, id: \.self) { gender in
-                                Button(action: {
-                                    viewStore.send(.genderChanged(gender))
-                                }) {
-                                    Text(gender)
-                                        .foregroundColor(.black)
-                                        .padding()
-                                        .frame(maxWidth: .infinity)
-                                        .background(viewStore.selectedGender == gender ? Color.white : Color(UIColor.systemGray4))
-                                        .cornerRadius(8)
-                                }
-                            }
-                        }
-                        
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("목표 설정")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(Color("AppTintColor"))
-                            
-                            HStack(spacing: 8) {
-                                ForEach(goalOptions, id: \.self) { goal in
-                                    Button(action: {
-                                        viewStore.send(.goalChanged(goal))
-                                    }) {
-                                        Text(goal)
-                                            .font(.system(size: 14))
-                                            .foregroundColor(.black)
-                                            .padding(.vertical, 8)
-                                            .padding(.horizontal, 12)
-                                            .background(viewStore.selectedGoal == goal ? Color("AppTintColor") : Color.gray.opacity(0.4))
-                                            .cornerRadius(16)
-                                    }
-                                }
-                            }
-                        }
-                        
-                        Spacer().frame(height: 120) // 버튼 공간 확보
                     }
+                    .frame(width: 194, height: 25)
+                    .pickerStyle(SegmentedPickerStyle())
                     .padding()
+                    Spacer().frame(height: 120)
                 }
+                .padding()
                 
                 VStack {
                     Spacer()
@@ -138,33 +69,26 @@ struct BodyInfoInputView: View {
             }
             .ignoresSafeArea(.keyboard)
             .background(Color("AppBackgroundColor").ignoresSafeArea())
-            .navigationTitle("신체정보 입력")
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("재설정") {
-                        showResetAlert = true
-                    }
-                }
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
-                    Button("완료") {
+                    Button("저장") {
                         focusedField = nil
                     }
                 }
             }
-            .alert("입력값을 초기화할까요?", isPresented: $showResetAlert) {
-                Button("초기화", role: .destructive) {
-                    viewStore.send(.heightChanged(""))
-                    viewStore.send(.ageChanged(""))
-                    viewStore.send(.weightChanged(""))
-                    viewStore.send(.genderChanged("여성"))
-                    viewStore.send(.goalChanged("체중감량"))
-                }
-                Button("취소", role: .cancel) { }
-            } message: {
-                Text("모든 입력값이 초기화됩니다.")
-            }
+//            .alert("입력값을 초기화할까요?", isPresented: $showResetAlert) {
+//                Button("초기화", role: .destructive) {
+//                    viewStore.send(.heightChanged(""))
+//                    viewStore.send(.ageChanged(""))
+//                    viewStore.send(.weightChanged(""))
+//                    viewStore.send(.genderChanged(.female))
+//                    viewStore.send(.goalChanged(.loseWeight))
+//                }
+//                Button("취소", role: .cancel) { }
+//            } message: {
+//                Text("모든 입력값이 초기화됩니다.")
+//            }
             .onAppear {
                 viewStore.send(.loadSavedData(modelContext))
             }
