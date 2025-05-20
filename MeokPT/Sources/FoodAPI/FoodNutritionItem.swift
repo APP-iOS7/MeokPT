@@ -21,7 +21,7 @@ struct FoodNutritionItem: Decodable, Equatable, Identifiable {
     
     var id: String { ITEM_REPORT_NO ?? UUID().uuidString }
     
-    var foodName: String { FOOD_NM_KR?.replacingOccurrences(of: "_", with: ",") ?? "" }
+    var foodName: String { FOOD_NM_KR?.replacingOccurrences(of: "_", with: ", ") ?? "" }
     var calorie: Double { Double(AMT_NUM1?.replacingOccurrences(of: ",", with: "") ?? "0.0") ?? 0.0 }
     var protein: Double { Double(AMT_NUM3?.replacingOccurrences(of: ",", with: "") ?? "0.0") ?? 0.0 }
     var fat: Double { Double(AMT_NUM4?.replacingOccurrences(of: ",", with: "") ?? "0.0") ?? 0.0 }
