@@ -35,16 +35,38 @@ struct FoodNutritionFeature {
                 return .none
                 
             case .searchButtonTapped:
-                guard !state.foodNameInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                let searchText = state.foodNameInput.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !searchText.isEmpty else {
                     print("Food name is empty.")
                     return .none
                 }
                 state.isLoading = true
                 state.fetchedFoodInfo = nil
                 
-                return .run { [foodName = state.foodNameInput, pageNo = state.pageNo, numOfRows = state.numOfRows] send in
+                let searchMethod: FoodNutritionClient.SearchType
+                var foundReportNo: String? = nil
+
+                if let reportNoFromExactMatch = foodNameToReportIdMap[searchText] {
+                    foundReportNo = reportNoFromExactMatch
+                } else {
+                    for (keyInMap, reportNoValue) in foodNameToReportIdMap {
+                        if keyInMap.contains(searchText) {
+                            foundReportNo = reportNoValue
+                            print("Found via contains: '\(searchText)' in '\(keyInMap)', using reportNo: \(reportNoValue)")
+                            break
+                        }
+                    }
+                }
+                
+                if let reportNo = foundReportNo {
+                    searchMethod = .byItemReportNo(reportNo)
+                } else {
+                    searchMethod = .byFoodName(searchText)
+                }
+                
+                return .run { [searchMethod = searchMethod, pageNo = state.pageNo, numOfRows = state.numOfRows] send in
                     let result: Result<FoodNutritionAPIResponse, Error> = await Result {
-                        try await apiClient.fetch(foodName, pageNo, numOfRows, APIConstants.serviceKey)
+                        try await apiClient.fetch(searchMethod, pageNo, numOfRows, APIConstants.serviceKey)
                     }
                     await send(.foodNutritionResponse(result))
                 }

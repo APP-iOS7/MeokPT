@@ -15,7 +15,11 @@ enum APIConstants {
 }
 
 struct FoodNutritionClient {
-    var fetch: (_ foodName: String, _ pageNo: Int, _ numOfRows: Int, _ serviceKey: String) async throws -> FoodNutritionAPIResponse
+    enum SearchType {
+        case byFoodName(String)
+        case byItemReportNo(String)
+    }
+    var fetch: (_ searchType: SearchType, _ pageNo: Int, _ numOfRows: Int, _ serviceKey: String) async throws -> FoodNutritionAPIResponse
 }
 
 struct FoodNutritionAPIResponse: Decodable, Equatable {
@@ -37,15 +41,22 @@ struct FoodNutritionAPIResponse: Decodable, Equatable {
 
 extension FoodNutritionClient: DependencyKey {
     static let liveValue = Self(
-        fetch: { foodName, pageNo, numOfRows, serviceKey in
+        fetch: { searchType, pageNo, numOfRows, serviceKey in
             var components = URLComponents(string: APIConstants.baseURL)
-            let queryItems: [URLQueryItem] = [
+            var queryItems: [URLQueryItem] = [
                 URLQueryItem(name: "serviceKey", value: serviceKey),
                 URLQueryItem(name: "pageNo", value: String(pageNo)),
                 URLQueryItem(name: "numOfRows", value: String(numOfRows)),
-                URLQueryItem(name: "type", value: "json"),
-                URLQueryItem(name: "FOOD_NM_KR", value: foodName),
+                URLQueryItem(name: "type", value: "json")
             ]
+            
+            switch searchType {
+            case .byFoodName(let foodName):
+                queryItems.append(URLQueryItem(name: "FOOD_NM_KR", value: foodName))
+            case .byItemReportNo(let itemReportNo):
+                queryItems.append(URLQueryItem(name: "ITEM_REPORT_NO", value: itemReportNo))
+            }
+            
             components?.queryItems = queryItems
             
             guard let url = components?.url else {
