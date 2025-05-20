@@ -14,21 +14,12 @@ struct FoodNutritionView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("검색 정보")) {
-                    TextField(
-                        "식품 이름 (예: 고구마)",
-                        text: $store.foodNameInput.sending(\.foodNameInputChanged)
-                    )
-                    .autocapitalization(.none)
-                    
-                    HStack {
-                        Text("DB 구분명")
-                        Spacer()
-                        Text(store.dbClassNameInput)
-                            .foregroundColor(.gray)
-                    }
-                }
-
+                TextField(
+                    "식품 이름 (예: 고구마)",
+                    text: $store.foodNameInput.sending(\.foodNameInputChanged)
+                )
+                .autocapitalization(.none)
+                
                 Section {
                     Button(action: {
                         store.send(.searchButtonTapped)
@@ -47,16 +38,19 @@ struct FoodNutritionView: View {
                 }
 
                 if let foodInfo = store.fetchedFoodInfo {
-                    Section(header: Text("영양 정보 (\(foodInfo.FOOD_NM_KR ?? "알 수 없음"))")) {
-                        NutritionDetailRow(label: "식품명", value: foodInfo.FOOD_NM_KR)
-                        NutritionDetailRow(label: "DB 구분", value: foodInfo.DB_CLASS_NM)
-                        NutritionDetailRow(label: "열량", value: foodInfo.displayCalorie)
-                        NutritionDetailRow(label: "단백질", value: foodInfo.displayProtein)
-                        NutritionDetailRow(label: "지방", value: foodInfo.displayFat)
-                        NutritionDetailRow(label: "탄수화물", value: foodInfo.displayCarbohydrate)
-                        NutritionDetailRow(label: "총식이섬유", value: foodInfo.dietaryFiber)
-                        NutritionDetailRow(label: "나트륨", value: foodInfo.sodium)
-                        NutritionDetailRow(label: "1회 제공량", value: foodInfo.servingSize)
+                    if(foodInfo.DB_CLASS_NM == "품목대표") {
+                        Section(header: Text("품목대표")) {
+                            Text(foodInfo.foodName)
+                            Text("\(foodInfo.calorie, specifier: "%.1f") kcal")
+                            NutrientView(carbohydrate: foodInfo.carbohydrate, protein: foodInfo.protein, fat: foodInfo.fat).padding()
+                        }
+                    }
+                    if(foodInfo.DB_CLASS_NM == "상용제품") {
+                        Section(header: Text("상용제품")) {
+                            NutritionDetailRow(label: "식품명", value: foodInfo.FOOD_NM_KR)
+                            NutritionDetailRow(label: "열량", value: "\(foodInfo.calorie) kcal")
+                            NutrientView(carbohydrate: foodInfo.carbohydrate, protein: foodInfo.protein, fat: foodInfo.fat).padding()
+                        }
                     }
                 }
             }
@@ -83,7 +77,7 @@ struct NutritionDetailRow: View {
 #Preview {
     FoodNutritionView(
         store: Store(
-            initialState: FoodNutritionFeature.State(foodNameInput: "사과", dbClassNameInput: "품목대표"),
+            initialState: FoodNutritionFeature.State(foodNameInput: "사과"),
             reducer: { FoodNutritionFeature()._printChanges() }
         )
     )

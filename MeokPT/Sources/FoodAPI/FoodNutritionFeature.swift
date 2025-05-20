@@ -1,13 +1,17 @@
+//
+//  FoodNutritionFeature.swift
+//  MeokPT
+//
+//  Created by 김동영 on 5/19/25.
+//
+
 import ComposableArchitecture
-import SwiftUI
-import Alamofire
 
 @Reducer
 struct FoodNutritionFeature {
     @ObservableState
     struct State: Equatable {
         var foodNameInput: String = "고구마"
-        var dbClassNameInput: String = "품목대표"
         var pageNo: Int = 1
         var numOfRows: Int = 1
         
@@ -17,7 +21,6 @@ struct FoodNutritionFeature {
     
     enum Action {
         case foodNameInputChanged(String)
-        case dbClassNameInputChanged(String)
         case searchButtonTapped
         case foodNutritionResponse(Result<FoodNutritionAPIResponse, Error>)
     }
@@ -31,10 +34,6 @@ struct FoodNutritionFeature {
                 state.foodNameInput = name
                 return .none
                 
-            case .dbClassNameInputChanged(let className):
-                state.dbClassNameInput = className
-                return .none
-                
             case .searchButtonTapped:
                 guard !state.foodNameInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
                     print("Food name is empty.")
@@ -43,9 +42,9 @@ struct FoodNutritionFeature {
                 state.isLoading = true
                 state.fetchedFoodInfo = nil
                 
-                return .run { [foodName = state.foodNameInput, dbClassName = state.dbClassNameInput, pageNo = state.pageNo, numOfRows = state.numOfRows] send in
+                return .run { [foodName = state.foodNameInput, pageNo = state.pageNo, numOfRows = state.numOfRows] send in
                     let result: Result<FoodNutritionAPIResponse, Error> = await Result {
-                        try await apiClient.fetch(foodName, dbClassName, pageNo, numOfRows, APIConstants.serviceKey)
+                        try await apiClient.fetch(foodName, pageNo, numOfRows, APIConstants.serviceKey)
                     }
                     await send(.foodNutritionResponse(result))
                 }

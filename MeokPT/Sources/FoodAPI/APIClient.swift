@@ -1,5 +1,5 @@
 //
-//  APIConstants.swift
+//  APIClient.swift
 //  MeokPT
 //
 //  Created by 김동영 on 5/20/25.
@@ -15,12 +15,29 @@ enum APIConstants {
 }
 
 struct FoodNutritionClient {
-    var fetch: (_ foodName: String, _ dbClassName: String, _ pageNo: Int, _ numOfRows: Int, _ serviceKey: String) async throws -> FoodNutritionAPIResponse
+    var fetch: (_ foodName: String, _ pageNo: Int, _ numOfRows: Int, _ serviceKey: String) async throws -> FoodNutritionAPIResponse
+}
+
+struct FoodNutritionAPIResponse: Decodable, Equatable {
+    let header: Header
+    let body: Body?
+    
+    struct Header: Decodable, Equatable {
+        let resultCode: String
+        let resultMsg: String
+    }
+    
+    struct Body: Decodable, Equatable {
+        let pageNo: Int?
+        let totalCount: Int?
+        let numOfRows: Int?
+        let items: [FoodNutritionItem]?
+    }
 }
 
 extension FoodNutritionClient: DependencyKey {
     static let liveValue = Self(
-        fetch: { foodName, dbClassName, pageNo, numOfRows, serviceKey in
+        fetch: { foodName, pageNo, numOfRows, serviceKey in
             var components = URLComponents(string: APIConstants.baseURL)
             let queryItems: [URLQueryItem] = [
                 URLQueryItem(name: "serviceKey", value: serviceKey),
@@ -28,7 +45,6 @@ extension FoodNutritionClient: DependencyKey {
                 URLQueryItem(name: "numOfRows", value: String(numOfRows)),
                 URLQueryItem(name: "type", value: "json"),
                 URLQueryItem(name: "FOOD_NM_KR", value: foodName),
-                URLQueryItem(name: "DB_CLASS_NM", value: dbClassName)
             ]
             components?.queryItems = queryItems
             
