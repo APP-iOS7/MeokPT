@@ -7,7 +7,8 @@ struct DailyNutritionView: View {
     @Environment(\.modelContext) private var context
     
     let store: StoreOf<DailyNutritionFeature>
-    
+    var onSaveTapped: (_ store: StoreOf<DailyNutritionFeature>, _ modelContext: ModelContext) -> Void
+
     var body: some View {
         WithViewStore(store, observe: { $0 }) { viewStore in
             ZStack {
@@ -61,8 +62,7 @@ struct DailyNutritionView: View {
                 VStack {
                     Spacer()
                     Button("완료") {
-                        viewStore.send(.saveButtonTapped(context))
-                        dismiss()
+                        onSaveTapped(store, context)
                     }
                     .font(.subheadline.bold())
                     .frame(maxWidth: .infinity)

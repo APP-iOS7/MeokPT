@@ -7,7 +7,7 @@ struct BodyInfoInputView: View {
     @Environment(\.modelContext) private var modelContext
     @FocusState private var focusedField: Field?
     
-    let store: StoreOf<BodyInfoInputFeature> // TCA 1.0+
+    let store: StoreOf<BodyInfoInputFeature>
 
     enum Field {
         case height, age, weight
