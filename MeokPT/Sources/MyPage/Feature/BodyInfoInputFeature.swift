@@ -82,9 +82,9 @@ struct BodyInfoInputFeature: Reducer {
             case let .saveButtonTapped(context):
                  print("데이터 저장 시작")
                  do {
-                     let heightValue = Double(state.height) ?? 0
+                     let heightValue = Int(state.height) ?? 0
                      let ageValue = Int(state.age) ?? 0
-                     let weightValue = Double(state.weight) ?? 0
+                     let weightValue = Int(state.weight) ?? 0
                      let genderRawValue = state.selectedGender.rawValue
                      let goalRawValue = state.selectedGoal.rawValue
                      let activityLevelRawValue = state.selectedActivityLevel.rawValue

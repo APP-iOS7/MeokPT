@@ -42,14 +42,20 @@ func adjustCalories(for gender: Gender, goal: Goal, tdee: Double, bmr: Double, b
     switch goal {
     case .loseWeight:
         let baseDeficitPercent = gender == .female ? 0.15 : 0.20
-        if bmi < 18.5 { bmiCategoryFactor = 0.25 }
-        else if bmi < 25.0 { bmiCategoryFactor = 0.8 }
-        else if bmi < 30.0 { bmiCategoryFactor = 1.0 }
-        else { bmiCategoryFactor = 1.1 }
-        
+        if bmi < 18.5 {
+            bmiCategoryFactor = 0.25
+        } else if bmi < 25.0 {
+            bmiCategoryFactor = 0.8
+        } else if bmi < 30.0 {
+            bmiCategoryFactor = 1.0
+        } else {
+            bmiCategoryFactor = 1.1
+        }
         let targetDeficit = tdee * baseDeficitPercent * bmiCategoryFactor
         let proposedCalories = tdee - targetDeficit
-        let minimumCalories = gender == .female ? max(bmr * 1.05, 1200.0) : max(bmr * 1.05, 1500.0)
+        
+        let minimumCalories = gender == .female ? max(bmr, 1200.0) : max(bmr, 1500.0)
+        
         return max(proposedCalories, minimumCalories)
         
     case .gainMuscle:
@@ -158,8 +164,60 @@ func calculateNutrition(weight: Double, height: Double, age: Int, gender: Gender
     )
 }
 
-func generateNutritionItems(from nutrition: NutritionValues) -> [NutritionItem] {
+func calculateIdealWeight(heightCm: Double, targetBMI: Double = 22.0) -> Double {
+    guard heightCm > 0 else { return 0 }
+    let heightM = heightCm / 100
+    return targetBMI * heightM * heightM
+}
 
+func calculateNutritionForIdealWeight(
+    heightCm: Double,
+    age: Int,
+    gender: Gender,
+    activityLevel: ActivityLevel,
+    targetBMIForIdealWeight: Double = 22.0
+) -> NutritionValues {
+    
+    let idealWeight = calculateIdealWeight(heightCm: heightCm, targetBMI: targetBMIForIdealWeight)
+    
+    let bmrForIdealWeight = calculateBMR(gender: gender, weight: idealWeight, height: heightCm, age: age)
+    let tdeeForIdealWeight = calculateTDEE(bmr: bmrForIdealWeight, activityLevel: activityLevel)
+    let bmiForIdealWeight = calculateBMI(weightKg: idealWeight, heightCm: heightCm)
+
+    let adjustedCalories = adjustCalories(
+        for: gender,
+        goal: .maintainWeight,
+        tdee: tdeeForIdealWeight,
+        bmr: bmrForIdealWeight,
+        bmi: bmiForIdealWeight
+    )
+
+    let ratios = getRatios(
+        for: gender,
+        goal: .maintainWeight,
+        bmi: bmiForIdealWeight
+    )
+
+    let proteinGrams = (adjustedCalories * ratios.proteinPercent) / 4.0
+    let fatGrams = (adjustedCalories * ratios.fatPercent) / 9.0
+    let carbsGrams = (adjustedCalories * ratios.carbPercent) / 4.0
+    
+    let sugarGrams = (adjustedCalories * 0.1) / 4.0
+    let sodiumMilligrams = 1500.0
+    
+    return NutritionValues(
+        calories: adjustedCalories,
+        carbs: carbsGrams,
+        protein: proteinGrams,
+        fat: fatGrams,
+        fiber: ratios.fiberGrams,
+        sugar: sugarGrams,
+        sodium: sodiumMilligrams
+    )
+}
+
+
+func generateNutritionItems(from nutrition: NutritionValues) -> [NutritionItem] {
     return [
         NutritionItem(type: .calorie, value: 0, max: Int(nutrition.calories.rounded())),
         NutritionItem(type: .carbohydrate, value: 0, max: Int(nutrition.carbs.rounded())),
@@ -170,4 +228,3 @@ func generateNutritionItems(from nutrition: NutritionValues) -> [NutritionItem] 
         NutritionItem(type: .sodium, value: 0, max: Int(nutrition.sodium.rounded()))
     ]
 }
-

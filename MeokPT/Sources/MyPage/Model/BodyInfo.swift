@@ -3,16 +3,16 @@ import SwiftData
 
 @Model
 final class BodyInfo {
-    var height: Double
+    var height: Int
     var age: Int
-    var weight: Double
+    var weight: Int
     var genderRawValue: String
     var goalRawValue: String
     var activityLevelRawValue: Double
     
-    init(height: Double,
+    init(height: Int,
          age: Int,
-         weight: Double,
+         weight: Int,
          genderRawValue: String,
          goalRawValue: String,
          activityLevelRawValue: Double) {
