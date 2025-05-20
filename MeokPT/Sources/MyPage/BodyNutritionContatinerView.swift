@@ -22,7 +22,8 @@ struct BodyNutritionContainerView: View {
                     Text(segment.rawValue).tag(segment)
                 }
             }
-            .pickerStyle(.segmented)
+            .frame(width: 194, height: 25)
+            .pickerStyle(SegmentedPickerStyle())
             .padding()
             
             switch selectedTab {
@@ -32,7 +33,6 @@ struct BodyNutritionContainerView: View {
                 DailyNutritionView(store: nutritionStore)
             }
         }
-        .navigationTitle("건강 목표 설정")
-        .background(Color("AppbackgroundColor"))
+        .background(Color("AppBackgroundColor"))
     }
 }

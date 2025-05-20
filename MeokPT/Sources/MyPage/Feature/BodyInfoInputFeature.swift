@@ -9,6 +9,7 @@ struct BodyInfoInputFeature: Reducer {
         var weight: String = ""
         var selectedGender: Gender = .female
         var selectedGoal: Goal = .loseWeight
+        var selectedActivityLevel: ActivityLevel = .veryLow
         var error: String?
     }
     
@@ -16,8 +17,9 @@ struct BodyInfoInputFeature: Reducer {
         case heightChanged(String)
         case ageChanged(String)
         case weightChanged(String)
-        case genderChanged(String)
-        case goalChanged(String)
+        case genderChanged(Gender)
+        case goalChanged(Goal)
+        case activityLevelChanged(ActivityLevel)
         case saveButtonTapped(ModelContext)
         case loadSavedData(ModelContext)
     }
@@ -34,14 +36,14 @@ struct BodyInfoInputFeature: Reducer {
             case let .weightChanged(text):
                 state.weight = text
                 return .none
-            case let .genderChanged(text):
-                state.selectedGender = text
+            case let .genderChanged(selectedCase):
+                state.selectedGender = selectedCase
                 return .none
-            case let .goalChanged(text):
-                state.selectedGoal = text
+            case let .goalChanged(selectedCase):
+                state.selectedGoal = selectedCase
                 return .none
-            case let .activityLevelChanged(text):
-                state.selectedActivityLevel = text
+            case let .activityLevelChanged(selectedCase):
+                state.selectedActivityLevel = selectedCase
                 return .none
                 
             case let .loadSavedData(context):
