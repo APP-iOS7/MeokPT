@@ -31,7 +31,7 @@ struct FoodNutritionView: View {
 
                 Section {
                     Button(action: {
-                        store.send(.fetchButtonTapped)
+                        store.send(.searchButtonTapped)
                     }) {
                         HStack {
                             Spacer()
@@ -50,13 +50,13 @@ struct FoodNutritionView: View {
                     Section(header: Text("영양 정보 (\(foodInfo.FOOD_NM_KR ?? "알 수 없음"))")) {
                         NutritionDetailRow(label: "식품명", value: foodInfo.FOOD_NM_KR)
                         NutritionDetailRow(label: "DB 구분", value: foodInfo.DB_CLASS_NM)
-                        NutritionDetailRow(label: "1회 제공량", value: foodInfo.displayServingSize)
                         NutritionDetailRow(label: "열량", value: foodInfo.displayCalorie)
                         NutritionDetailRow(label: "단백질", value: foodInfo.displayProtein)
                         NutritionDetailRow(label: "지방", value: foodInfo.displayFat)
                         NutritionDetailRow(label: "탄수화물", value: foodInfo.displayCarbohydrate)
-                        NutritionDetailRow(label: "총식이섬유", value: foodInfo.displayDietaryFiber)
-                        NutritionDetailRow(label: "나트륨", value: foodInfo.displaySodium)
+                        NutritionDetailRow(label: "총식이섬유", value: foodInfo.dietaryFiber)
+                        NutritionDetailRow(label: "나트륨", value: foodInfo.sodium)
+                        NutritionDetailRow(label: "1회 제공량", value: foodInfo.servingSize)
                     }
                 }
             }
