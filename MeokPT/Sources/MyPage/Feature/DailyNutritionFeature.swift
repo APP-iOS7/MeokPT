@@ -1,13 +1,17 @@
 import ComposableArchitecture
+import Foundation
 import SwiftData
 
 @Reducer
 struct DailyNutritionFeature: Reducer {
+    
+    private static let isEditableKey = "dailyNutritionIsEditablePreference"
+
     struct State: Equatable {
         var rows: [NutritionRowData] = NutritionType.allCases.map {
             NutritionRowData(type: $0, value: "")
         }
-        var isEditable: Bool = true
+        var isEditable: Bool = false
     }
 
     enum Action: Equatable {
@@ -17,11 +21,34 @@ struct DailyNutritionFeature: Reducer {
         
         case setSaveNutritionRows([NutritionRowData], ModelContext)
         case saveCurrentManualEntries(ModelContext)
+        
+        case onAppear
+        case _isEditablePreferenceLoaded(Bool)
     }
 
     var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
+            case .onAppear:
+                return .run { send in
+                   let storedValue: Bool
+                   // 키가 존재하는지 확인하여, "한 번도 설정되지 않은 상태"와 "false로 설정된 상태"를 구분합니다.
+                   if UserDefaults.standard.object(forKey: Self.isEditableKey) != nil {
+                       storedValue = UserDefaults.standard.bool(forKey: Self.isEditableKey)
+                   } else {
+                       // 키가 존재하지 않으면 (앱 첫 실행 등), 기본값(예: true)으로 설정하고 UserDefaults에도 저장합니다.
+                       storedValue = true // 기본값을 true로 설정
+                       UserDefaults.standard.set(storedValue, forKey: Self.isEditableKey)
+                   }
+                   // MainActor에서 상태를 업데이트하도록 보장 (TCA v1.x에서 send는 기본적으로 MainActor에서 실행)
+                   await send(._isEditablePreferenceLoaded(storedValue))
+               }
+                
+            case let ._isEditablePreferenceLoaded(loadedValue):
+                state.isEditable = loadedValue
+                print("UserDefaults에서 isEditable 로드: \(loadedValue)")
+                return .none
+                
             case let .valueChanged(type, text):
                 if let index = state.rows.firstIndex(where: { $0.type == type }) {
                     state.rows[index].value = text
@@ -42,7 +69,7 @@ struct DailyNutritionFeature: Reducer {
                     
                     state.rows = NutritionType.allCases.map { type in
                         if let matchedItem = items.first(where: { $0.type == type} ) {
-                            return NutritionRowData(type: type, value: String(matchedItem.value))
+                            return NutritionRowData(type: type, value: String(matchedItem.max))
                         } else {
                             return NutritionRowData(type: type, value: "")
                         }
@@ -56,7 +83,10 @@ struct DailyNutritionFeature: Reducer {
                 return .none
             case let .toggleChanged(value):
                 state.isEditable = value
-                return .none
+                return .run { _ in
+                   print("UserDefaults에 isEditable 저장: \(value)")
+                   UserDefaults.standard.set(value, forKey: Self.isEditableKey)
+                }
                 
             case let .setSaveNutritionRows(newRows, context):
                 state.rows = newRows

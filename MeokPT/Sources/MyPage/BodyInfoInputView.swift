@@ -8,6 +8,7 @@ struct BodyInfoInputView: View {
     @FocusState private var focusedField: Field?
     
     let store: StoreOf<BodyInfoInputFeature>
+    let onSaveCompleted: (BodyInfoInputFeature.State) -> Void
 
     enum Field {
         case height, age, weight
@@ -88,7 +89,7 @@ struct BodyInfoInputView: View {
                 
                 Button(action: {
                     viewStore.send(.saveButtonTapped(modelContext))
-                    dismiss()
+                    onSaveCompleted(viewStore.state)
                 }) {
                     Text("완료")
                         .font(.system(size: 16, weight: .semibold))

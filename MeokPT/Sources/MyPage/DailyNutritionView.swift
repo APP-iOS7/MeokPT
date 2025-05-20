@@ -78,6 +78,7 @@ struct DailyNutritionView: View {
             .ignoresSafeArea(.keyboard)
             .background(Color("AppBackgroundColor"))
             .onAppear {
+                viewStore.send(.onAppear)
                 viewStore.send(.loadSavedData(context))
             }
         }
