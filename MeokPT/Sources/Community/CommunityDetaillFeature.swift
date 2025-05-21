@@ -1,14 +1,23 @@
+//
+//  CommunityDetaillFeature.swift
+//  MeokPT
+//
+//  Created by 김동영 on 5/21/25.
+//
+
 import ComposableArchitecture
-import Foundation
+import SwiftUI
 
 @Reducer
-struct CommunityFeature {
+struct CommunityDetaillFeature {
     @ObservableState
     struct State {
-        var searchText: String = ""
+        var postTitle: String
+        var postBody: String
+        var imageColor: Color
     }
     
-    enum Action: BindableAction{
+    enum Action: BindableAction {
         case binding(BindingAction<State>)
         case onAppear
     }
@@ -17,15 +26,14 @@ struct CommunityFeature {
     
     var body: some ReducerOf<Self> {
         BindingReducer()
+
         Reduce { state, action in
             switch action {
             case .onAppear:
                 return .none
-                
             case .binding(_):
                 return .none
             }
-
         }
     }
 }

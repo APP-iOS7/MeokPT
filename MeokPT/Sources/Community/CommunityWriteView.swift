@@ -1,10 +1,10 @@
 import SwiftUI
+import ComposableArchitecture
 
 struct CommunityWriteView: View {
     @Environment(\.dismiss) var dismiss
+    @Bindable var store: StoreOf<CommunityDetaillFeature>
 
-    @State private var title: String = ""
-    @State private var content: String = ""
 
     var body: some View {
         VStack(spacing: 16) {
@@ -30,7 +30,7 @@ struct CommunityWriteView: View {
 
             // 제목 입력
             VStack(alignment: .leading, spacing: 4) {
-                TextField("제목을 입력해주세요.", text: $title)
+                TextField("제목을 입력해주세요.", text: $store.title)
                     .padding(.horizontal, 4)
                     .foregroundColor(.black)
 
@@ -43,14 +43,14 @@ struct CommunityWriteView: View {
             // 내용 입력
             VStack(alignment: .leading) {
                 ZStack(alignment: .topLeading) {
-                    if content.isEmpty {
+                    if store.content.isEmpty {
                         Text("내용을 입력해주세요.")
                             .foregroundColor(.gray)
                             .padding(.top, 12)
                             .padding(.leading, 10)
                     }
 
-                    TextEditor(text: $content)
+                    TextEditor(text: $store.content)
                         .padding(8)
                         .background(Color.white)
                         .cornerRadius(10)

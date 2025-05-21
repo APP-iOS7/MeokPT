@@ -1,11 +1,10 @@
 import SwiftUI
+import ComposableArchitecture
 
 struct CommunityDetailView: View {
-    @Environment(\.dismiss) var dismiss
+    @Bindable var store: StoreOf<CommunityDetaillFeature>
 
-    var postTitle: String
-    var postBody: String
-    var imageColor: Color
+    @Environment(\.dismiss) var dismiss
 
     var body: some View {
         VStack(spacing: 0) {
@@ -47,12 +46,12 @@ struct CommunityDetailView: View {
                     }
 
                     // 📷 이미지
-                    imageColor
+                    store.imageColor
                         .frame(height: 210)
                         .cornerRadius(20)
 
                     // 📝 본문
-                    Text(postBody)
+                    Text(store.postBody)
                         .font(.body)
 
                     // 🍱 식단 카드
