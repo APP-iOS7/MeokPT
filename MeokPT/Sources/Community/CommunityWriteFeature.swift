@@ -4,7 +4,7 @@ import Foundation
 @Reducer
 struct CommunityWriteFeature {
     @ObservableState
-    struct State {
+    struct State: Equatable {
         var title: String = ""
         var content: String = ""
     }

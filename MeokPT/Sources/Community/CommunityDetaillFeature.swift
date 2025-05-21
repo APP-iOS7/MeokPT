@@ -4,7 +4,7 @@ import SwiftUI
 @Reducer
 struct CommunityDetaillFeature {
     @ObservableState
-    struct State {
+    struct State: Equatable{
         var postTitle: String
         var postBody: String
         var imageColor: Color

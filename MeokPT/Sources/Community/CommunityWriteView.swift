@@ -60,7 +60,7 @@ struct CommunityWriteView: View {
             .padding(.horizontal)
 
             // 식단 선택
-            NavigationLink(destination: MealSelectionView()) {
+            NavigationLink(destination: MealSelectionView()) {  // TODO: NavigationLink 가 아닌 TCA 네비게이션 방식으로 변경
                 RoundedRectangle(cornerRadius: 20)
                     .fill(Color.white)
                     .frame(height: 160)

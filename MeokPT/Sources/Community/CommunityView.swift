@@ -15,7 +15,7 @@ struct CommunityView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        NavigationStack (path: $store.scope(state: \.path, action: \.path)){
             VStack(spacing: 0) {
                 // 🔍 검색창
                 TextField("검색", text: $store.searchText)
@@ -49,11 +49,20 @@ struct CommunityView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
+                    Button (action: { store.send(.navigateToAddButtonTapped) }) {
                         Image(systemName: "plus")
                             .foregroundColor(.black)
+                    }
                 }
             }
             .background(Color("AppBackgroundColor"))
+        } destination: { storeForElement in
+            switch storeForElement.state {
+            case .addPost:
+                if let AddStore = storeForElement.scope(state: \.addPost, action: \.addPost) {
+                    CommunityWriteView(store: AddStore)
+                }
+            }
         }
     }
 }
