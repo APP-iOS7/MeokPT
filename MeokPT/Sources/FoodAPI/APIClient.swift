@@ -15,7 +15,7 @@ enum APIConstants {
 }
 
 struct FoodNutritionClient {
-    enum SearchType {
+    enum SearchType: Equatable {
         case byFoodName(String)
         case byItemReportNo(String)
     }
