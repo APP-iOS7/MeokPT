@@ -18,6 +18,8 @@ struct FoodNutritionItem: Decodable, Equatable, Identifiable {
     let AMT_NUM8: String?
     let AMT_NUM13: String?
     let Z10500: String?
+    let MAKER_NM: String?
+
     
     private let _generatedId: UUID
     
@@ -32,6 +34,7 @@ struct FoodNutritionItem: Decodable, Equatable, Identifiable {
         case AMT_NUM8
         case AMT_NUM13
         case Z10500
+        case MAKER_NM
     }
     
     init(from decoder: Decoder) throws {
@@ -46,6 +49,7 @@ struct FoodNutritionItem: Decodable, Equatable, Identifiable {
         AMT_NUM8 = try container.decodeIfPresent(String.self, forKey: .AMT_NUM8)
         AMT_NUM13 = try container.decodeIfPresent(String.self, forKey: .AMT_NUM13)
         Z10500 = try container.decodeIfPresent(String.self, forKey: .Z10500)
+        MAKER_NM = try container.decodeIfPresent(String.self, forKey: .MAKER_NM)
         
         _generatedId = UUID()
     }
@@ -71,6 +75,7 @@ struct FoodNutritionItem: Decodable, Equatable, Identifiable {
     var dietaryFiber: Double { Double(AMT_NUM8?.replacingOccurrences(of: ",", with: "") ?? "0.0") ?? 0.0 }
     var sodium: Double { Double(AMT_NUM13?.replacingOccurrences(of: ",", with: "") ?? "0.0") ?? 0.0 }
     var servingSize: Double { Double(Z10500?.replacingOccurrences(of: ",", with: "") ?? "0.0") ?? 0.0 }
+    var makerName: String { MAKER_NM?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "" }
 }
 
 private let foodNameCorrections: [String: String] = [

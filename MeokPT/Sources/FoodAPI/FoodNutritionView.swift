@@ -97,9 +97,17 @@ struct FoodItemRowView: View {
 
     var body: some View {
         VStack(alignment: .leading) {
-            Text(foodInfo.foodName).font(.headline).fontWeight(.bold)
+            HStack {
+                Text(foodInfo.foodName).font(.headline).fontWeight(.bold)
+                Spacer()
+                if foodInfo.DB_CLASS_NM == "상용제품" {
+                    Text(foodInfo.makerName)
+                        .font(.caption)
+                        .foregroundColor(Color("AppSecondaryColor"))
+                }
+            }
             Spacer().frame(height:4)
-            Text("\(foodInfo.calorie, specifier: "%.0f")kcal").font(.body)
+            Text("\(foodInfo.calorie, specifier: "%.0f") kcal").font(.body)
             Spacer().frame(height: 20)
             NutrientView(carbohydrate: foodInfo.carbohydrate, protein: foodInfo.protein, fat: foodInfo.fat)
                 .frame(height: 47)
