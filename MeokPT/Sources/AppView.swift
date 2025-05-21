@@ -1,9 +1,8 @@
 import ComposableArchitecture
 import SwiftUI
 
-
 struct AppView: View {
-    let store: StoreOf<AppFeature>
+    @Bindable var store: StoreOf<AppFeature>
     
     var body: some View {
         TabView {
@@ -12,7 +11,7 @@ struct AppView: View {
                     .tabItem {
                         Text("식단")
                     }
-                AnalyzeView(store: store.scope(state: \.analyzeState, action: \.analyzeAction))
+                DailyNutritionDietInfoView(store: store.scope(state: \.analyzeState, action: \.analyzeAction))
                     .tabItem {
                         Text("분석")
                     }
@@ -27,6 +26,27 @@ struct AppView: View {
             }
             .toolbarBackground(.visible, for: .tabBar)
             .toolbarBackground(Color(UIColor.systemBackground), for: .tabBar)
+        }
+        .tint(.primary)
+        .onAppear {
+            // "XCODE_RUNNING_FOR_PREVIEWS" 환경 변수가 "1"이면 프리뷰 환경입니다.
+            if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" {
+                store.send(.onAppear) // 프리뷰가 아닐 때만 onAppear 액션 전송
+            }
+        }
+        .fullScreenCover(
+            store: store.scope(state: \.$loginFullScreenCover, action: \.loginAction)
+        ) { loginStore in
+            NavigationStack {
+                LoginView(store: loginStore)
+            }
+        }
+        .fullScreenCover(
+            store: store.scope(state: \.$profileSettingFullScreenCover, action: \.profileSettingAction)
+        ) { profileStore in
+            NavigationStack {
+                ProfileSettingView(store: profileStore)
+            }
         }
     }
 }
