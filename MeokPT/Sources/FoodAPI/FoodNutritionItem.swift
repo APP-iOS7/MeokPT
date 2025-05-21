@@ -76,8 +76,8 @@ struct FoodNutritionItem: Decodable, Equatable, Identifiable {
 private let foodNameCorrections: [String: String] = [
     "머핀케��": "머핀케잌",
     "까폼 랭��": "까폼 랭쎕",
-    "식당용케�": "식당용케챂",
-    "토마토케�": "토마토케챂",
+    "식당용케�R": "식당용케챂",
+    "토마토케�R": "토마토케챂",
     "C콘�� 골드": "C콘칲 골드",
     "켄터키 직화 �-빠": "켄터키 직화 핟-빠",
     "프��츠 콜드브루": "프릳츠 콜드브루",
@@ -96,6 +96,7 @@ private let foodNameCorrections: [String: String] = [
 // 검색어 -> 품목제조보고번호 매핑 (예시: "콘칲" or "콘칩" -> "C콘칲 골드"의 보고번호)
 let foodNameToReportIdMap: [String: String] = [
     "콘칩": "19870461068157",
+    "콘칲": "19870461068157",
     "C콘칲 골드": "19870461068157",
     "머핀케잌": "2001036244422",
     "까폼 랭쎕": "202403711232",

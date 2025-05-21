@@ -72,20 +72,8 @@ struct FoodNutritionFeature {
                 state.fetchedFoodItems = []
                 
                 let searchMethod: FoodNutritionClient.SearchType
-                var foundReportNo: String? = nil
-
-                if let reportNoFromExactMatch = foodNameToReportIdMap[searchText] {
-                    foundReportNo = reportNoFromExactMatch
-                } else {
-                    for (keyInMap, reportNoValue) in foodNameToReportIdMap {
-                        if keyInMap.contains(searchText) {
-                            foundReportNo = reportNoValue
-                            break
-                        }
-                    }
-                }
                 
-                if let reportNo = foundReportNo {
+                if let reportNo = foodNameToReportIdMap[searchText] {
                     searchMethod = .byItemReportNo(reportNo)
                 } else {
                     searchMethod = .byFoodName(searchText)
