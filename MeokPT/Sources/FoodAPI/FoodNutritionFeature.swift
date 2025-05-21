@@ -5,7 +5,18 @@
 //  Created by 김동영 on 5/19/25.
 //
 
+import Foundation
 import ComposableArchitecture
+
+struct CategorizedFoodSection: Identifiable, Equatable {
+    let id = UUID()
+    let categoryName: String
+    let items: [FoodNutritionItem]
+    
+    static func == (lhs: CategorizedFoodSection, rhs: CategorizedFoodSection) -> Bool {
+        return lhs.id == rhs.id && lhs.categoryName == rhs.categoryName && lhs.items == rhs.items
+    }
+}
 
 @Reducer
 struct FoodNutritionFeature {
@@ -13,10 +24,29 @@ struct FoodNutritionFeature {
     struct State: Equatable {
         var foodNameInput: String = "고구마"
         var pageNo: Int = 1
-        var numOfRows: Int = 1
-        
-        var fetchedFoodInfo: FoodNutritionItem?
+        var numOfRows: Int = 50
+        var fetchedFoodItems: [FoodNutritionItem] = []
         var isLoading: Bool = false
+        
+        var categorizedSections: [CategorizedFoodSection] {
+            let grouped = Dictionary(grouping: fetchedFoodItems, by: { $0.DB_CLASS_NM ?? "기타" })
+            let desiredOrder = ["품목대표", "상용제품"]
+            var sections: [CategorizedFoodSection] = []
+
+            for categoryName in desiredOrder {
+                if let items = grouped[categoryName], !items.isEmpty {
+                    sections.append(CategorizedFoodSection(categoryName: categoryName, items: items))
+                }
+            }
+            
+            let remainingCategories = grouped.keys.filter { !desiredOrder.contains($0) }.sorted()
+            for categoryName in remainingCategories {
+                if let items = grouped[categoryName], !items.isEmpty {
+                    sections.append(CategorizedFoodSection(categoryName: categoryName, items: items))
+                }
+            }
+            return sections
+        }
     }
     
     enum Action {
@@ -36,12 +66,10 @@ struct FoodNutritionFeature {
                 
             case .searchButtonTapped:
                 let searchText = state.foodNameInput.trimmingCharacters(in: .whitespacesAndNewlines)
-                guard !searchText.isEmpty else {
-                    print("Food name is empty.")
-                    return .none
-                }
+                guard !searchText.isEmpty else { return .none }
+                
                 state.isLoading = true
-                state.fetchedFoodInfo = nil
+                state.fetchedFoodItems = []
                 
                 let searchMethod: FoodNutritionClient.SearchType
                 var foundReportNo: String? = nil
@@ -52,7 +80,6 @@ struct FoodNutritionFeature {
                     for (keyInMap, reportNoValue) in foodNameToReportIdMap {
                         if keyInMap.contains(searchText) {
                             foundReportNo = reportNoValue
-                            print("Found via contains: '\(searchText)' in '\(keyInMap)', using reportNo: \(reportNoValue)")
                             break
                         }
                     }
@@ -74,33 +101,32 @@ struct FoodNutritionFeature {
             case .foodNutritionResponse(.success(let response)):
                 state.isLoading = false
                 if response.header.resultCode == "00" {
-                    if let item = response.body?.items?.first {
-                        state.fetchedFoodInfo = item
+                    if let items = response.body?.items, !items.isEmpty {
+                        var uniqueItems = [FoodNutritionItem]()
+                        var seenReportNumbers = Set<String>()
+
+                        for item in items {
+                            if let reportNo = item.ITEM_REPORT_NO, !reportNo.isEmpty {
+                                if !seenReportNumbers.contains(reportNo) {
+                                    uniqueItems.append(item)
+                                    seenReportNumbers.insert(reportNo)
+                                }
+                            } else {
+                                uniqueItems.append(item)
+                            }
+                        }
+                        state.fetchedFoodItems = uniqueItems
                     } else {
-                        state.fetchedFoodInfo = nil
-                        print(APIError.noData.localizedDescription)
+                        state.fetchedFoodItems = []
                     }
                 } else {
-                    let serviceError = APIError.apiServiceError(resultCode: response.header.resultCode, originalMsg: response.header.resultMsg)
-                    print("API Service Error: \(serviceError.localizedDescription)")
+                    state.fetchedFoodItems = []
                 }
                 return .none
                 
-            case .foodNutritionResponse(.failure(let error)):
+            case .foodNutritionResponse(.failure(_)):
                 state.isLoading = false
-                
-                if error is CancellationError {
-                    print("Request was cancelled.")
-                    return .none
-                }
-
-                let errorToReport: APIError
-                if let castedError = error as? APIError {
-                    errorToReport = castedError
-                } else {
-                    errorToReport = .requestFailed(error.localizedDescription)
-                }
-                print("An error occurred: \(errorToReport.localizedDescription)")
+                state.fetchedFoodItems = []
                 return .none
             }
         }

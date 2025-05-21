@@ -19,7 +19,43 @@ struct FoodNutritionItem: Decodable, Equatable, Identifiable {
     let AMT_NUM13: String?
     let Z10500: String?
     
-    var id: String { ITEM_REPORT_NO ?? UUID().uuidString }
+    private let _generatedId: UUID
+    
+    private enum CodingKeys: String, CodingKey {
+        case ITEM_REPORT_NO
+        case FOOD_NM_KR
+        case DB_CLASS_NM
+        case AMT_NUM1
+        case AMT_NUM3
+        case AMT_NUM4
+        case AMT_NUM6
+        case AMT_NUM8
+        case AMT_NUM13
+        case Z10500
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        ITEM_REPORT_NO = try container.decodeIfPresent(String.self, forKey: .ITEM_REPORT_NO)
+        FOOD_NM_KR = try container.decodeIfPresent(String.self, forKey: .FOOD_NM_KR)
+        DB_CLASS_NM = try container.decodeIfPresent(String.self, forKey: .DB_CLASS_NM)
+        AMT_NUM1 = try container.decodeIfPresent(String.self, forKey: .AMT_NUM1)
+        AMT_NUM3 = try container.decodeIfPresent(String.self, forKey: .AMT_NUM3)
+        AMT_NUM4 = try container.decodeIfPresent(String.self, forKey: .AMT_NUM4)
+        AMT_NUM6 = try container.decodeIfPresent(String.self, forKey: .AMT_NUM6)
+        AMT_NUM8 = try container.decodeIfPresent(String.self, forKey: .AMT_NUM8)
+        AMT_NUM13 = try container.decodeIfPresent(String.self, forKey: .AMT_NUM13)
+        Z10500 = try container.decodeIfPresent(String.self, forKey: .Z10500)
+        
+        _generatedId = UUID()
+    }
+    
+    var id: String {
+        if let reportNo = ITEM_REPORT_NO, !reportNo.isEmpty {
+            return reportNo
+        }
+        return _generatedId.uuidString
+    }
     
     var foodName: String {
         if let correctedName = foodNameCorrections[FOOD_NM_KR ?? ""] {

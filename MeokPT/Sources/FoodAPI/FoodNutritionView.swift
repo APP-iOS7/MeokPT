@@ -24,14 +24,15 @@ struct FoodNutritionView: View {
                             prompt: Text("식품 이름 (예: 고구마)")
                         )
                         .focused($focusedField)
-                        .keyboardType(.emailAddress)
                         .autocapitalization(.none)
+                        .onSubmit { store.send(.searchButtonTapped) }
                         Rectangle()
                             .frame(height: 1)
                             .foregroundColor(Color(.placeholderText))
                     }
                     Spacer()
                     Button(action: {
+                        focusedField = false
                         store.send(.searchButtonTapped)
                     }) {
                         if store.isLoading {
@@ -42,63 +43,38 @@ struct FoodNutritionView: View {
                     }
                     .disabled(store.isLoading)
                 }
-                Spacer().frame(height:24)
-                if let foodInfo = store.fetchedFoodInfo {
-                    if(foodInfo.DB_CLASS_NM == "품목대표") {
-                        VStack {
-                            HStack{
-                                Text("품목대표")
-                                Spacer()
-                                Text("영양성분은 100g 기준입니다.")
-                                    .fontWeight(.bold)
-                            }
-                            .font(.subheadline)
-                            .foregroundStyle(Color("AppSecondaryColor"))
-                            VStack(alignment: .leading) {
-                                Text(foodInfo.foodName).font(.headline).fontWeight(.bold)
-                                Spacer().frame(height:4)
-                                Text("\(foodInfo.calorie, specifier: "%.0f")kcal").font(.body)
-                                Spacer().frame(height: 20)
-                                NutrientView(carbohydrate: foodInfo.carbohydrate, protein: foodInfo.protein, fat: foodInfo.fat)
-                                    .frame(height: 47)
-                                    .padding(.horizontal)
-                            }
-                            .padding(24)
-                            .background(.white)
-                            .clipShape(RoundedRectangle(cornerRadius: 20))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 20)
-                                    .stroke(Color(UIColor.separator), lineWidth: 1)
-                            )
+                Spacer().frame(height:8)
+                
+                ScrollView {
+                    ForEach(store.categorizedSections) { sectionData in
+                        HStack {
+                            Text(sectionData.categoryName)
+                                .font(.subheadline)
+                            Spacer()
+                            Text("영양성분은 100g 기준입니다.")
+                                .font(.subheadline.bold())
                         }
-                    }
-                    if(foodInfo.DB_CLASS_NM == "상용제품") {
-                        VStack {
-                            HStack{
-                                Text("상용제품")
-                                Spacer()
-                                Text("영양성분은 100g 기준입니다.")
-                                    .fontWeight(.bold)
-                            }
-                            .font(.subheadline)
-                            .foregroundStyle(Color("AppSecondaryColor"))
+                        .foregroundStyle(Color("AppSecondaryColor"))
+                        .padding([.top])
+                        VStack(alignment: .leading) {
                             VStack(alignment: .leading) {
-                                Text(foodInfo.foodName).font(.headline).fontWeight(.bold)
-                                Spacer().frame(height:4)
-                                Text("\(foodInfo.calorie, specifier: "%.0f")kcal").font(.body)
-                                Spacer().frame(height: 20)
-                                NutrientView(carbohydrate: foodInfo.carbohydrate, protein: foodInfo.protein, fat: foodInfo.fat)
-                                    .frame(height: 47)
-                                    .padding(.horizontal)
+                                ForEach(sectionData.items) { foodInfo in
+                                    FoodItemRowView(foodInfo: foodInfo)
+                                        .padding(.horizontal)
+                                    
+                                    if foodInfo.id != sectionData.items.last?.id {
+                                        Divider()
+                                    }
+                                }
                             }
-                            .padding(24)
-                            .background(.white)
-                            .clipShape(RoundedRectangle(cornerRadius: 20))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 20)
-                                    .stroke(Color(UIColor.separator), lineWidth: 1)
-                            )
                         }
+                        .padding(.vertical)
+                        .background(Color(UIColor.secondarySystemGroupedBackground))
+                        .cornerRadius(20)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 20)
+                                .stroke(Color(UIColor.separator), lineWidth: 1)
+                        )
                     }
                 }
                 Spacer()
@@ -108,26 +84,28 @@ struct FoodNutritionView: View {
             .navigationBarTitleDisplayMode(.inline)
             .containerRelativeFrame([.horizontal, .vertical])
             .contentShape(Rectangle())
+            .background(Color("AppBackgroundColor"))
             .onTapGesture {
                 focusedField = false
             }
-            .background(Color("AppBackgroundColor"))
         }
     }
 }
 
-struct NutritionDetailRow: View {
-    let label: String
-    let value: String?
+struct FoodItemRowView: View {
+    let foodInfo: FoodNutritionItem
 
     var body: some View {
-        HStack {
-            Text(label)
-                .font(.headline)
-            Spacer()
-            Text(value ?? "N/A")
-                .multilineTextAlignment(.trailing)
+        VStack(alignment: .leading) {
+            Text(foodInfo.foodName).font(.headline).fontWeight(.bold)
+            Spacer().frame(height:4)
+            Text("\(foodInfo.calorie, specifier: "%.0f")kcal").font(.body)
+            Spacer().frame(height: 20)
+            NutrientView(carbohydrate: foodInfo.carbohydrate, protein: foodInfo.protein, fat: foodInfo.fat)
+                .frame(height: 47)
+                .padding(.horizontal)
         }
+        .padding(.vertical, 12)
     }
 }
 
