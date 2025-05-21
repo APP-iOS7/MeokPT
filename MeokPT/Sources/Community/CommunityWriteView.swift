@@ -2,9 +2,8 @@ import SwiftUI
 import ComposableArchitecture
 
 struct CommunityWriteView: View {
+    @Bindable var store: StoreOf<CommunityWriteFeature>
     @Environment(\.dismiss) var dismiss
-    @Bindable var store: StoreOf<CommunityDetaillFeature>
-
 
     var body: some View {
         VStack(spacing: 16) {
@@ -127,4 +126,12 @@ struct CommunityWriteView: View {
         .navigationBarBackButtonHidden(true)    // ✅ 시스템 뒤로가기 숨김
         .navigationBarTitle("")                 // ✅ 시스템 제목 제거
     }
+}
+
+#Preview {
+    CommunityWriteView(
+        store: Store(initialState: CommunityWriteFeature.State()) {
+            CommunityWriteFeature()
+        }
+    )
 }

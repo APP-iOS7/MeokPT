@@ -28,11 +28,6 @@ struct CommunityView: View {
                 ScrollView {
                     LazyVGrid(columns: columns, spacing: 16) {
                         ForEach(filteredPosts) { post in
-                            NavigationLink(destination: CommunityDetailView(
-                                postTitle: post.title,
-                                postBody: post.body,
-                                imageColor: post.imageColor
-                            )) {
                                 VStack(alignment: .leading, spacing: 8) {
                                     GeometryReader { geometry in
                                         post.imageColor
@@ -45,7 +40,6 @@ struct CommunityView: View {
                                         .font(.headline)
                                         .foregroundColor(.primary)
                                 }
-                            }
                         }
                     }
                     .padding()
@@ -55,10 +49,8 @@ struct CommunityView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    NavigationLink(destination: CommunityWriteView()) {
                         Image(systemName: "plus")
                             .foregroundColor(.black)
-                    }
                 }
             }
             .background(Color("AppBackgroundColor"))

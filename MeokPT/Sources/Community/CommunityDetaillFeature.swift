@@ -1,10 +1,3 @@
-//
-//  CommunityDetaillFeature.swift
-//  MeokPT
-//
-//  Created by 김동영 on 5/21/25.
-//
-
 import ComposableArchitecture
 import SwiftUI
 
@@ -29,6 +22,8 @@ struct CommunityDetaillFeature {
 
         Reduce { state, action in
             switch action {
+            case .binding(\.postTitle):
+                return .none
             case .onAppear:
                 return .none
             case .binding(_):

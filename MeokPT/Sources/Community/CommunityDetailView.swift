@@ -3,7 +3,6 @@ import ComposableArchitecture
 
 struct CommunityDetailView: View {
     @Bindable var store: StoreOf<CommunityDetaillFeature>
-
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
@@ -78,4 +77,12 @@ struct CommunityDetailView: View {
         .navigationBarBackButtonHidden(true)
         .navigationBarHidden(true)
     }
+}
+
+#Preview {
+    CommunityDetailView(
+        store: Store(initialState: CommunityDetaillFeature.State(
+            postTitle: "오늘의 식단", postBody: "오늘은 샐러드와 닭가슴살을 먹었습니다", imageColor: .gray.opacity(0.3))
+        ) { CommunityDetaillFeature() }
+    )
 }

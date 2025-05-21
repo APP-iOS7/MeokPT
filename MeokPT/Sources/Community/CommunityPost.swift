@@ -1,10 +1,3 @@
-//
-//  CommunityPost.swift
-//  MeokPT
-//
-//  Created by 김동영 on 5/21/25.
-//
-
 import SwiftUI
 
 struct CommunityPost: Identifiable {
