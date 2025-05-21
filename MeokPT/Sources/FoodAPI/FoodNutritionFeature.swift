@@ -22,9 +22,13 @@ struct CategorizedFoodSection: Identifiable, Equatable {
 struct FoodNutritionFeature {
     @ObservableState
     struct State: Equatable {
-        var foodNameInput: String = "고구마"
-        var pageNo: Int = 1
+        var foodNameInput: String = ""
+        var lastSearchType: FoodNutritionClient.SearchType? = nil
+
+        var currentPage: Int = 1
         var numOfRows: Int = 50
+        var totalItemsCount: Int = 0
+        
         var fetchedFoodItems: [FoodNutritionItem] = []
         var isLoading: Bool = false
         
@@ -47,12 +51,18 @@ struct FoodNutritionFeature {
             }
             return sections
         }
+
+        var totalPages: Int {
+            guard numOfRows > 0 else { return 0 }
+            return (totalItemsCount + numOfRows - 1) / numOfRows // 올림 계산
+        }
     }
     
     enum Action {
         case foodNameInputChanged(String)
         case searchButtonTapped
         case foodNutritionResponse(Result<FoodNutritionAPIResponse, Error>)
+        case goToPage(Int)
     }
     
     @Dependency(\.foodNutritionClient) var apiClient
@@ -70,18 +80,34 @@ struct FoodNutritionFeature {
                 
                 state.isLoading = true
                 state.fetchedFoodItems = []
-                
+                state.currentPage = 1
+                state.totalItemsCount = 0
+
                 let searchMethod: FoodNutritionClient.SearchType
-                
+                var foundReportNo: String? = nil
+
                 if let reportNo = foodNameToReportIdMap[searchText] {
+                    foundReportNo = reportNo
+                } else {
+                    for (keyInMap, reportNoValue) in foodNameToReportIdMap {
+                        if keyInMap.contains(searchText) {
+                            foundReportNo = reportNoValue
+                            break
+                        }
+                    }
+                }
+                
+                if let reportNo = foundReportNo {
                     searchMethod = .byItemReportNo(reportNo)
                 } else {
                     searchMethod = .byFoodName(searchText)
                 }
                 
-                return .run { [searchMethod = searchMethod, pageNo = state.pageNo, numOfRows = state.numOfRows] send in
+                state.lastSearchType = searchMethod
+
+                return .run { [searchType = searchMethod, pageNo = state.currentPage, numOfRows = state.numOfRows] send in
                     let result: Result<FoodNutritionAPIResponse, Error> = await Result {
-                        try await apiClient.fetch(searchMethod, pageNo, numOfRows, APIConstants.serviceKey)
+                        try await apiClient.fetch(searchType, pageNo, numOfRows, APIConstants.serviceKey)
                     }
                     await send(.foodNutritionResponse(result))
                 }
@@ -89,6 +115,8 @@ struct FoodNutritionFeature {
             case .foodNutritionResponse(.success(let response)):
                 state.isLoading = false
                 if response.header.resultCode == "00" {
+                    state.totalItemsCount = response.body?.totalCount ?? 0
+                    
                     if let items = response.body?.items, !items.isEmpty {
                         var uniqueItems = [FoodNutritionItem]()
                         var seenReportNumbers = Set<String>()
@@ -109,13 +137,33 @@ struct FoodNutritionFeature {
                     }
                 } else {
                     state.fetchedFoodItems = []
+                    state.totalItemsCount = 0
                 }
                 return .none
                 
             case .foodNutritionResponse(.failure(_)):
                 state.isLoading = false
                 state.fetchedFoodItems = []
+                state.totalItemsCount = 0
                 return .none
+                
+            case .goToPage(let targetPage):
+                guard let lastSearchType = state.lastSearchType,
+                      targetPage >= 1 && targetPage <= state.totalPages && targetPage != state.currentPage,
+                      !state.isLoading else {
+                    return .none
+                }
+                
+                state.isLoading = true
+                state.fetchedFoodItems = []
+                state.currentPage = targetPage
+                
+                return .run { [searchType = lastSearchType, pageNo = state.currentPage, numOfRows = state.numOfRows] send in
+                    let result: Result<FoodNutritionAPIResponse, Error> = await Result {
+                        try await apiClient.fetch(searchType, pageNo, numOfRows, APIConstants.serviceKey)
+                    }
+                    await send(.foodNutritionResponse(result))
+                }
             }
         }
     }

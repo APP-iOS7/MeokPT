@@ -45,37 +45,80 @@ struct FoodNutritionView: View {
                 }
                 Spacer().frame(height:8)
                 
-                ScrollView {
-                    ForEach(store.categorizedSections) { sectionData in
-                        HStack {
-                            Text(sectionData.categoryName)
-                                .font(.subheadline)
-                            Spacer()
-                            Text("영양성분은 100g 기준입니다.")
-                                .font(.subheadline.bold())
-                        }
-                        .foregroundStyle(Color("AppSecondaryColor"))
-                        .padding([.top])
-                        VStack(alignment: .leading) {
-                            VStack(alignment: .leading) {
-                                ForEach(sectionData.items) { foodInfo in
-                                    FoodItemRowView(foodInfo: foodInfo)
-                                        .padding(.horizontal)
-                                    
-                                    if foodInfo.id != sectionData.items.last?.id {
-                                        Divider()
+                if store.isLoading {
+                    VStack (alignment: .center){
+                        Spacer()
+                        ProgressView()
+                            .frame(maxWidth: .infinity, alignment: .center)
+                        Spacer()
+
+                    }
+                } else {
+                    if !store.fetchedFoodItems.isEmpty {
+                        ScrollView {
+                            ForEach(store.categorizedSections) { sectionData in
+                                HStack {
+                                    Text(sectionData.categoryName)
+                                        .font(.subheadline)
+                                    Spacer()
+                                    Text("영양성분은 100g 기준입니다.")
+                                        .font(.subheadline.bold())
+                                }
+                                .foregroundStyle(Color("AppSecondaryColor"))
+                                .padding([.top])
+                                VStack(alignment: .leading) {
+                                    VStack(alignment: .leading) {
+                                        ForEach(sectionData.items) { foodInfo in
+                                            FoodItemRowView(foodInfo: foodInfo)
+                                                .padding(.horizontal)
+                                            
+                                            if foodInfo.id != sectionData.items.last?.id {
+                                                Divider()
+                                            }
+                                        }
                                     }
                                 }
+                                .padding(.vertical)
+                                .background(Color(UIColor.secondarySystemGroupedBackground))
+                                .cornerRadius(20)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 20)
+                                        .stroke(Color(UIColor.separator), lineWidth: 1)
+                                )
                             }
                         }
-                        .padding(.vertical)
-                        .background(Color(UIColor.secondarySystemGroupedBackground))
-                        .cornerRadius(20)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(Color(UIColor.separator), lineWidth: 1)
-                        )
+                    } else if store.lastSearchType != nil { // 검색결과가 없는 경우
+                        VStack {
+                            Spacer()
+                            Text("검색 결과가 없습니다.")
+                                .foregroundColor(.gray)
+                                .frame(maxWidth: .infinity, alignment: .center)
+                            Spacer()
+                        }
+                    } else {
+                         Spacer()
                     }
+                }
+                // 페이지네이션
+                if store.totalPages > 1 {
+                    HStack {
+                        Button(action: { store.send(.goToPage(store.currentPage - 1)) }) {
+                            Text("이전")
+                        }
+                        .foregroundStyle(Color("TextButtonColor"))
+                        
+                        Spacer()
+                        Text("\(store.currentPage) / \(store.totalPages)")
+                            .font(.footnote)
+                            .foregroundStyle(Color("AppSecondaryColor"))
+                        Spacer()
+                        Button(action: { store.send(.goToPage(store.currentPage + 1)) }) {
+                            Text("다음")
+                        }
+                        .foregroundStyle(Color("TextButtonColor"))
+                        .disabled(store.currentPage >= store.totalPages)
+                    }
+                    .padding(.top, 8)
                 }
                 Spacer()
             }
