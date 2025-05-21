@@ -48,15 +48,9 @@ struct LoginView: View {
                             }
                         }
                         Spacer().frame(height: 25)
-                        HStack {
-                            Text("비밀번호")
-                                .font(.body)
-                                .foregroundStyle(Color("AppSecondaryColor"))
-                            Spacer()
-                            Text("6자 이상, 영문, 숫자")
-                                .font(.caption2)
-                                .foregroundStyle(Color(.placeholderText))
-                        }
+                        Text("비밀번호")
+                            .font(.body)
+                            .foregroundStyle(Color("AppSecondaryColor"))
                         Spacer().frame(height: 16)
                         VStack(alignment: .leading) {
                             SecureField("******", text: $store.passWord)
