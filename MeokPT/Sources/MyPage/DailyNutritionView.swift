@@ -44,7 +44,7 @@ struct DailyNutritionView: View {
                             }
                         }
                     }
-                    .background(Color.white)
+                    .background(Color("App CardColor"))
                     .cornerRadius(16)
                     .overlay(
                         RoundedRectangle(cornerRadius: 16)

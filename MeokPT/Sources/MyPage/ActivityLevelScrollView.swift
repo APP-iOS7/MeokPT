@@ -9,7 +9,7 @@ struct ActivityLevelScrollView: View {
           VStack(alignment: .leading, spacing: 8) {
               Text("평소 활동량")
                   .font(.title3)
-                  .foregroundStyle(Color("AppSecondaryColor"))
+                  .foregroundStyle(Color("App title"))
 
               ScrollView(.horizontal, showsIndicators: false) {
                   HStack(spacing: 12) {

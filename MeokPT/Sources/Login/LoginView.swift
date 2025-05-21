@@ -21,7 +21,7 @@ struct LoginView: View {
                     VStack(alignment: .leading) {
                         Text("이메일")
                             .font(.body)
-                            .foregroundStyle(Color("AppSecondaryColor"))
+                            .foregroundStyle(Color("App title"))
                         Spacer().frame(height: 16)
                         VStack (alignment: .leading) {
                             TextField(
@@ -50,7 +50,7 @@ struct LoginView: View {
                         Spacer().frame(height: 25)
                         Text("비밀번호")
                             .font(.body)
-                            .foregroundStyle(Color("AppSecondaryColor"))
+                            .foregroundStyle(Color("App title"))
                         Spacer().frame(height: 16)
                         VStack(alignment: .leading) {
                             SecureField("******", text: $store.passWord)

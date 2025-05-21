@@ -60,7 +60,7 @@ struct BodyInfoInputView: View {
                 HStack {
                     Text("식단 목표")
                         .font(.title3)
-                        .foregroundStyle(Color("AppSecondaryColor"))
+                        .foregroundStyle(Color("App title"))
                     Spacer()
                     Picker("식단 목표 선택", selection: viewStore.binding(
                        get: \.selectedGoal,

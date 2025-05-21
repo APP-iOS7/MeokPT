@@ -10,6 +10,7 @@ struct MyPageView: View {
     
     @State private var showAlert = false
     
+    
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading) {
