@@ -15,6 +15,7 @@ struct FoodNutritionItem: Decodable, Equatable, Identifiable {
     let AMT_NUM3: String?
     let AMT_NUM4: String?
     let AMT_NUM6: String?
+    let AMT_NUM7: String?
     let AMT_NUM8: String?
     let AMT_NUM13: String?
     let Z10500: String?
@@ -31,6 +32,7 @@ struct FoodNutritionItem: Decodable, Equatable, Identifiable {
         case AMT_NUM3
         case AMT_NUM4
         case AMT_NUM6
+        case AMT_NUM7
         case AMT_NUM8
         case AMT_NUM13
         case Z10500
@@ -46,6 +48,7 @@ struct FoodNutritionItem: Decodable, Equatable, Identifiable {
         AMT_NUM3 = try container.decodeIfPresent(String.self, forKey: .AMT_NUM3)
         AMT_NUM4 = try container.decodeIfPresent(String.self, forKey: .AMT_NUM4)
         AMT_NUM6 = try container.decodeIfPresent(String.self, forKey: .AMT_NUM6)
+        AMT_NUM7 = try container.decodeIfPresent(String.self, forKey: .AMT_NUM7)
         AMT_NUM8 = try container.decodeIfPresent(String.self, forKey: .AMT_NUM8)
         AMT_NUM13 = try container.decodeIfPresent(String.self, forKey: .AMT_NUM13)
         Z10500 = try container.decodeIfPresent(String.self, forKey: .Z10500)
@@ -72,6 +75,7 @@ struct FoodNutritionItem: Decodable, Equatable, Identifiable {
     var protein: Double { Double(AMT_NUM3?.replacingOccurrences(of: ",", with: "") ?? "0.0") ?? 0.0 }
     var fat: Double { Double(AMT_NUM4?.replacingOccurrences(of: ",", with: "") ?? "0.0") ?? 0.0 }
     var carbohydrate: Double { Double(AMT_NUM6?.replacingOccurrences(of: ",", with: "") ?? "0.0") ?? 0.0 }
+    var sugar: Double { Double(AMT_NUM7?.replacingOccurrences(of: ",", with: "") ?? "0.0") ?? 0.0 }
     var dietaryFiber: Double { Double(AMT_NUM8?.replacingOccurrences(of: ",", with: "") ?? "0.0") ?? 0.0 }
     var sodium: Double { Double(AMT_NUM13?.replacingOccurrences(of: ",", with: "") ?? "0.0") ?? 0.0 }
     var servingSize: Double { Double(Z10500?.replacingOccurrences(of: ",", with: "") ?? "0.0") ?? 0.0 }
