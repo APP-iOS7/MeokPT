@@ -10,84 +10,98 @@ struct BodyInfoInputView: View {
     let store: StoreOf<BodyInfoInputFeature>
     let onSaveCompleted: (BodyInfoInputFeature.State) -> Void
 
-    enum Field {
+    enum Field: Hashable {
         case height, age, weight
     }
     
 
     var body: some View {
         WithViewStore(store, observe: { $0 }) { viewStore in
-            Spacer()
-            VStack(spacing: 20) {
-                Group {
-                    TextField("신장 (cm)", text: viewStore.binding(
-                        get: \.height,
-                        send: { .heightChanged($0) }
-                    ))
-                    .keyboardType(.numberPad)
-                    .focused($focusedField, equals: .height)
+            ScrollView {
+                VStack(spacing: 40) {
                     
-                    TextField("나이", text: viewStore.binding(
-                        get: \.age,
-                        send: { .ageChanged($0) }
-                    ))
-                    .keyboardType(.numberPad)
-                    .focused($focusedField, equals: .age)
-                    
-                    TextField("체중 (kg)", text: viewStore.binding(
-                        get: \.weight,
-                        send: { .weightChanged($0) }
-                    ))
-                    .keyboardType(.numberPad)
-                    .focused($focusedField, equals: .weight)
-                }
-                .padding(.bottom, 10)
-
-                VStack {
-                    Picker("성별 선택", selection: viewStore.binding(
-                        get: \.selectedGender,
-                        send: { .genderChanged($0) }
-                    )) {
-                        ForEach(Gender.allCases, id: \.self) { option in
-                            Text(option.rawValue).tag(option)
+                    VStack(spacing: 20) {
+                        TextField("신장 (cm)", text: viewStore.binding(
+                            get: \.height,
+                            send: { .heightChanged($0) }
+                        ))
+                        .keyboardType(.numberPad)
+                        .focused($focusedField, equals: .height)
+                        .submitLabel(.next)
+                        .onSubmit {
+                            focusedField = .weight
+                        }
+                        
+                        TextField("체중 (kg)", text: viewStore.binding(
+                            get: \.weight,
+                            send: { .weightChanged($0) }
+                        ))
+                        .keyboardType(.numberPad)
+                        .focused($focusedField, equals: .weight)
+                        .submitLabel(.next)
+                        .onSubmit {
+                            focusedField = .age
+                        }
+                        
+                        TextField("나이", text: viewStore.binding(
+                            get: \.age,
+                            send: { .ageChanged($0) }
+                        ))
+                        .keyboardType(.numberPad)
+                        .focused($focusedField, equals: .age)
+                        .submitLabel(.done)
+                        .onSubmit {
+                            focusedField = nil
                         }
                     }
-                    .pickerStyle(SegmentedPickerStyle())
-                }
-                
-                Spacer()
-                
-                HStack {
-                    Text("식단 목표")
-                        .font(.title3)
-                        .foregroundStyle(Color("AppSecondaryColor"))
-                    Spacer()
-                    Picker("식단 목표 선택", selection: viewStore.binding(
-                       get: \.selectedGoal,
-                       send: { .goalChanged($0) }
-                   )) {
-                       ForEach(Goal.allCases) { goal in // id: \.self 불필요 (Identifiable)
-                           Text(goal.rawValue).tag(goal)
-                       }
-                   }
-                   .tint(Color("TextButton"))
-                }
-                
-                Spacer()
 
-                ActivityLevelScrollView(
-                    selectedLevel: viewStore.binding(
-                        get: \.selectedActivityLevel,
-                        send: { .activityLevelChanged($0) }
-                    ),
-                    onSelect: { level in
-                        viewStore.send(.activityLevelChanged(level))
+                    VStack {
+                        Picker("성별 선택", selection: viewStore.binding(
+                            get: \.selectedGender,
+                            send: { .genderChanged($0) }
+                        )) {
+                            ForEach(Gender.allCases, id: \.self) { option in
+                                Text(option.rawValue).tag(option)
+                            }
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
                     }
-                )
+                    
+                    
+                    HStack {
+                        Text("식단 목표")
+                            .font(.title3)
+                            .foregroundStyle(Color("AppSecondaryColor"))
+                        Spacer()
+                        Picker("식단 목표 선택", selection: viewStore.binding(
+                            get: \.selectedGoal,
+                            send: { .goalChanged($0) }
+                        )) {
+                            ForEach(Goal.allCases) { goal in
+                                Text(goal.rawValue).tag(goal)
+                            }
+                        }
+                        .tint(Color("TextButton"))
+                    }
+                    
 
-                Spacer()
-                
+                    ActivityLevelScrollView(
+                        selectedLevel: viewStore.binding(
+                            get: \.selectedActivityLevel,
+                            send: { .activityLevelChanged($0) }
+                        ),
+                        onSelect: { level in
+                            viewStore.send(.activityLevelChanged(level))
+                        }
+                    )
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+            }
+            .background(Color("AppBackgroundColor"))
+            .safeAreaInset(edge: .bottom, spacing: 0) {
                 Button(action: {
+                    focusedField = nil
                     viewStore.send(.saveButtonTapped(modelContext))
                     onSaveCompleted(viewStore.state)
                 }) {
@@ -97,17 +111,23 @@ struct BodyInfoInputView: View {
                         .padding(.vertical, 14)
                         .background(Color("AppTintColor", bundle: nil))
                         .foregroundColor(.black)
-                        .cornerRadius(28)
+                        .cornerRadius(16)
                 }
-
+                .padding(.horizontal, 20)
+                .padding(.top, 10)
+                .padding(.bottom, 10)
+                .background(Color("AppBackgroundColor"))
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 16)
-            .padding(.bottom, 24)
-            .background(Color("AppBackgroundColor", bundle: nil).ignoresSafeArea())
-            .ignoresSafeArea(.keyboard)
+            .ignoresSafeArea(.keyboard, edges: .bottom)
+//            .toolbar {
+//                ToolbarItemGroup(placement: .keyboard) {
+//                    Spacer()
+//                    Button("완료") {
+//                        focusedField = nil
+//                    }
+//                }
+//            }
             .toolbar(.hidden, for: .tabBar)
         }
     }
 }
-
