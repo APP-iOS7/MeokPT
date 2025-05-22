@@ -1,4 +1,4 @@
-enum NutritionType: String, CaseIterable, Identifiable {
+enum NutritionType: String, CaseIterable, Identifiable, Equatable {
     case calorie = "열량"
     case carbohydrate = "탄수화물"
     case protein = "단백질"

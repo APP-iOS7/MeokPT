@@ -62,13 +62,15 @@ struct MyPageView: View {
                 
                 HStack {
                     HStack(spacing: 16) {
-                        NavigationLink(destination: BodyInfoInputView(
-                            store: Store(
-                                initialState: BodyInfoInputFeature.State(),
-                                reducer: {
-                                    BodyInfoInputFeature()
-                                }
-                            )
+                        NavigationLink(destination: BodyNutritionContainerView(
+                            initialTab: .bodyinInfoInput,
+                            bodyInfoStore: Store(initialState: BodyInfoInputFeature.State()) {
+                                BodyInfoInputFeature()
+                            },
+                            nutritionStore: Store(initialState:
+                                DailyNutritionFeature.State()) {
+                                    DailyNutritionFeature()
+                            }
                         )) {
                             VStack(alignment: .leading, spacing: 4) {
                                 HStack {
@@ -85,12 +87,18 @@ struct MyPageView: View {
                                 .cornerRadius(20)
                             }
                         }
+                        .navigationBarTitleDisplayMode(.inline)
                         
-                        NavigationLink(destination: DailyNutritionView(
-                            store: Store(
-                            initialState: DailyNutritionFeature.State()) {
-                                DailyNutritionFeature()
-                        })) {
+                        NavigationLink(destination: BodyNutritionContainerView(
+                            initialTab: .dailyNutrition,
+                            bodyInfoStore: Store(initialState: BodyInfoInputFeature.State()) {
+                                BodyInfoInputFeature()
+                            },
+                            nutritionStore: Store(initialState:
+                                DailyNutritionFeature.State()) {
+                                    DailyNutritionFeature()
+                            }
+                        )) {
                             VStack {
                                 HStack {
                                     Text("하루 목표 칼로리")
@@ -106,6 +114,8 @@ struct MyPageView: View {
                             .background(Color("AppSecondaryColor"))
                             .cornerRadius(20)
                         }
+                        .navigationBarTitleDisplayMode(.inline)
+
                     }
                 }
                 .frame(maxWidth: .infinity)

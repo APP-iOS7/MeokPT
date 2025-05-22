@@ -1,24 +1,41 @@
-import ComposableArchitecture
 import Foundation
 import SwiftData
 
 @Model
-class BodyInfo {
-    var height: Double
+final class BodyInfo {
+    var height: Int
     var age: Int
-    var weight: Double
-    var gender: String
-    var goal: String
-    var activityLevel: String = "보통"
-    var createdDate: Date = Date()
+    var weight: Int
+    var genderRawValue: String
+    var goalRawValue: String
+    var activityLevelRawValue: Double
     
-    init(height: Double, age: Int, weight: Double, gender: String, goal: String, activityLevel: String = "보통") {
+    init(height: Int,
+         age: Int,
+         weight: Int,
+         genderRawValue: String,
+         goalRawValue: String,
+         activityLevelRawValue: Double) {
         self.height = height
         self.age = age
         self.weight = weight
-        self.gender = gender
-        self.goal = goal
-        self.activityLevel = activityLevel
-        self.createdDate = Date()
+        self.genderRawValue = genderRawValue
+        self.goalRawValue = goalRawValue
+        self.activityLevelRawValue = activityLevelRawValue
+    }
+
+    var gender: Gender? {
+        get { Gender(rawValue: self.genderRawValue) }
+        set { self.genderRawValue = newValue?.rawValue ?? "" }
+    }
+
+    var goal: Goal? {
+        get { Goal(rawValue: self.goalRawValue) }
+        set { self.goalRawValue = newValue?.rawValue ?? "" }
+    }
+
+    var activityLevel: ActivityLevel? {
+        get { ActivityLevel(rawValue: self.activityLevelRawValue) }
+        set { self.activityLevelRawValue = newValue?.rawValue ?? ActivityLevel.veryLow.rawValue }
     }
 }

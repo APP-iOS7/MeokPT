@@ -14,6 +14,8 @@ struct DailyNutritionDietInfoFeature {
         
         @Presents var dietSelectionSheet: DietSelectionSheetFeature.State?
         @Presents var aiSheet: AISheetFeature.State?
+        
+        var lastDataChangeTimestamp: Date = Date()
     }
     
     enum Action: Equatable {
@@ -24,17 +26,27 @@ struct DailyNutritionDietInfoFeature {
         case presentAISheet
         
         case loadInfo(ModelContext)
+        
+        case task
+        case nutritionDataDidChangeNotification
+        
+        case _internalLoadInfoCompleted([NutritionItem])
+        case _internalLoadInfoFailed(NutritionError)
     }
     
     enum NutritionError: Error, Equatable {
         case fetchFailed
+        case internalLoadInfoFailed
+    }
+    
+    enum FeatureCancelID: Hashable {
+        case nutritionUpdateListener
     }
 
 
     var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
-        
             case .presentDietSelectionSheet:
                 state.dietSelectionSheet = DietSelectionSheetFeature.State()
                 return .none
@@ -47,30 +59,54 @@ struct DailyNutritionDietInfoFeature {
                 return .none
                 
             case let .loadInfo(context):
-                do {
-                    let items = try context.fetch(FetchDescriptor<NutritionItem>())
-                    
-                    print("Nutriitem 개수: \(items.count)")
-                    
-                    for item in items {
-                        print("로드 : \(item.type.rawValue) - \(item.value)\(item.unit)")
-                    }
-                    
-                    let typeOrder = NutritionType.allCases
-                    let sorted = items.sorted {
-                        guard let first = typeOrder.firstIndex(of: $0.type),
-                              let second = typeOrder.firstIndex(of: $1.type) else {
-                            return false
+                state.isLoading = true
+                state.errorMessage = nil
+                print("➡️ DailyNutritionDietInfoFeature: .loadInfo called. Will perform ASYNC fetch.")
+                return .run { send in
+                    do {
+                        let descriptor = FetchDescriptor<NutritionItem>()
+                        let items = try context.fetch(descriptor)
+                        
+                        print("Nutriitem 개수 (after delay): \(items.count)")
+                        for item in items {
+                            print("  Fetched (after delay): \(item.type.rawValue) - Value: \(item.value)\(item.unit), Max: \(item.max)\(item.unit)")
                         }
-                        return first < second
+                        
+                        let typeOrder = NutritionType.allCases
+                        let sortedItems = items.sorted {
+                            guard let first = typeOrder.firstIndex(of: $0.type),
+                                  let second = typeOrder.firstIndex(of: $1.type) else { return false }
+                            return first < second
+                        }
+                        await send(._internalLoadInfoCompleted(sortedItems))
+                    } catch {
+                        print("DailyNutritionDietInfoFeature: Fetch failed after delay: \(error)")
+                        await send(._internalLoadInfoFailed(.fetchFailed)) // Use your defined error
                     }
-                    state.nutritionItems = sorted
-                    print("Nutrition 최대값 로딩 성공")
-                } catch {
-                    state.errorMessage = "Nutrition 정보 불러오기 실패"
-                    print("에러: \(error.localizedDescription)")
                 }
+            case .task:
+                return .run { send in
+                    for await _ in NotificationCenter.default.notifications(named: .didUpdateNutritionItems) {
+                        await send(.nutritionDataDidChangeNotification)
+                    }
+                }
+                .cancellable(id: FeatureCancelID.nutritionUpdateListener, cancelInFlight: true)
+
+            case .nutritionDataDidChangeNotification:
+                print("DailyNutritionDietInfoFeature: received notification")
+                state.lastDataChangeTimestamp = Date()
+                return .none
+            
+            case let ._internalLoadInfoCompleted(items):
                 state.isLoading = false
+                state.nutritionItems = items
+                print("Nutrition 최대값 로딩 성공 (after async processing)")
+                return .none
+                
+            case let ._internalLoadInfoFailed(error):
+                state.isLoading = false
+                state.errorMessage = "Nutrition 정보 불러오기 실패 (async)"
+                print("에러 (async loadInfo): \(error.localizedDescription)")
                 return .none
             }
         }
