@@ -35,15 +35,13 @@ struct AppView: View {
             }
         }
         .fullScreenCover(
-            store: store.scope(state: \.$loginFullScreenCover, action: \.loginAction)
-        ) { loginStore in
+            item: $store.scope(state: \.loginFullScreenCover, action: \.loginAction)) { loginStore in
             NavigationStack {
                 LoginView(store: loginStore)
             }
         }
         .fullScreenCover(
-            store: store.scope(state: \.$profileSettingFullScreenCover, action: \.profileSettingAction)
-        ) { profileStore in
+            item: $store.scope(state: \.profileSettingFullScreenCover, action: \.profileSettingAction)) { profileStore in
             NavigationStack {
                 ProfileSettingView(store: profileStore)
             }
