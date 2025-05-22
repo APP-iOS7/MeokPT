@@ -21,15 +21,6 @@ struct BodyNutritionContainerView: View {
         WithViewStore(self.bodyInfoStore, observe: { $0 }) { bodyViewStore_ObservedState in
             WithViewStore(self.nutritionStore, observe: { $0 }) { nutritionViewStore_ObservedState in
                 VStack {
-                    Picker("선택", selection: $selectedTab) {
-                        ForEach(SegmentType.allCases) { segment in
-                            Text(segment.rawValue).tag(segment)
-                        }
-                    }
-                    .frame(width: 194, height: 25)
-                    .pickerStyle(SegmentedPickerStyle())
-                    .padding()
-
                     switch selectedTab {
                     case .bodyinInfoInput:
                         BodyInfoInputView(
@@ -96,7 +87,18 @@ struct BodyNutritionContainerView: View {
                             }
                         )
                     }
-                    Spacer()
+                }
+                .toolbar {
+                    ToolbarItem(placement: .principal) {
+                        Picker("선택", selection: $selectedTab) {
+                            ForEach(SegmentType.allCases) { segment in
+                                Text(segment.rawValue).tag(segment)
+                            }
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+                        .padding()
+                        .controlSize(.mini)
+                    }
                 }
                 .background(Color("AppBackgroundColor"))
                 .onAppear {

@@ -24,7 +24,7 @@ struct DietSelectionModalView: View {
                             
                         }
                     }
-                    .frame(width: 194, height: 25)
+                    .controlSize(.mini)
                     .pickerStyle(SegmentedPickerStyle())
                     .padding()
                     
