@@ -97,7 +97,7 @@ struct BodyNutritionContainerView: View {
                         }
                         .pickerStyle(SegmentedPickerStyle())
                         .padding()
-                        .controlSize(.mini)
+                        .fixedSize()
                     }
                 }
                 .background(Color("AppBackgroundColor"))

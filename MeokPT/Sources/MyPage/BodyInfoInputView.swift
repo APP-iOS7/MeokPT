@@ -20,7 +20,7 @@ struct BodyInfoInputView: View {
             ScrollView {
                 VStack(spacing: 40) {
                     
-                    VStack(spacing: 20) {
+                    VStack(spacing: 30) {
                         TextField("신장 (cm)", text: viewStore.binding(
                             get: \.height,
                             send: { .heightChanged($0) }
@@ -96,7 +96,7 @@ struct BodyInfoInputView: View {
                     )
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 16)
+                .padding(.top, 30)
             }
             .background(Color("AppBackgroundColor"))
             .safeAreaInset(edge: .bottom, spacing: 0) {
