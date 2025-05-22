@@ -58,30 +58,35 @@ struct CommunityWriteView: View {
                 }
             }
             .padding(.horizontal)
-
-            // 식단 선택
-            NavigationLink(destination: MealSelectionView()) {  // TODO: NavigationLink 가 아닌 TCA 네비게이션 방식으로 변경
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.white)
-                    .frame(height: 160)
-                    .overlay(
-                        HStack {
-                            Text("＋")
-                                .font(.system(size: 70, weight: .medium))
-                                .padding(.trailing, 6)
-                                .foregroundColor(.black)
-                            Text("식단 선택")
-                                .foregroundColor(.black)
-                        }
-                        .padding()
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.gray.opacity(0.3))
-                    )
-                    .padding(.horizontal)
-            }
-
+            
+            // 식단 선택 - NavigationLink로 변경            
+            NavigationLink {
+                MealSelectionView(
+                    store: Store(initialState: MealSelectionFeature.State()) {
+                        MealSelectionFeature()
+                    }
+                )} label: {
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(Color.white)
+                        .frame(height: 160)
+                        .overlay(
+                            HStack {
+                                Text("＋")
+                                    .font(.system(size: 70, weight: .medium))
+                                    .padding(.trailing, 6)
+                                    .foregroundColor(.black)
+                                Text("식단 선택")
+                                    .foregroundColor(.black)
+                            }
+                                .padding()
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray.opacity(0.3))
+                        )
+                }
+                .padding(.horizontal)
+            
             // 사진 선택
             VStack(alignment: .leading, spacing: 8) {
                 Text("사진 (선택)")

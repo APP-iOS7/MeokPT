@@ -1,8 +1,10 @@
 import SwiftUI
+import ComposableArchitecture
 
 struct MealSelectionView: View {
     @Environment(\.dismiss) var dismiss
-    @State private var isFavoriteTab: Bool = false
+    
+    @Bindable var store: StoreOf<MealSelectionFeature>
 
     var body: some View {
         VStack(spacing: 0) {
@@ -26,7 +28,7 @@ struct MealSelectionView: View {
             .padding()
 
             // 스위치 스타일 토글
-            ZStack(alignment: isFavoriteTab ? .trailing : .leading) {
+            ZStack(alignment: store.isFavoriteTab ? .trailing : .leading) {
                 RoundedRectangle(cornerRadius: 9)
                     .fill(Color.gray.opacity(0.3))
                     .frame(width: 194, height: 26)
@@ -39,17 +41,17 @@ struct MealSelectionView: View {
                 HStack(spacing: 0) {
                     Text("전체")
                         .frame(width: 97, height: 26)
-                        .foregroundColor(isFavoriteTab ? .gray : .black)
+                        .foregroundColor(store.isFavoriteTab ? .gray : .black)
                     Text("즐겨찾기")
                         .frame(width: 97, height: 26)
-                        .foregroundColor(isFavoriteTab ? .black : .gray)
+                        .foregroundColor(store.isFavoriteTab ? .black : .gray)
                 }
                 .font(.system(size: 13, weight: .medium))
             }
             .padding(.vertical, 16)
             .onTapGesture {
                 withAnimation(.easeInOut(duration: 0.25)) {
-                    isFavoriteTab.toggle()
+                    store.isFavoriteTab.toggle()
                 }
             }
 
