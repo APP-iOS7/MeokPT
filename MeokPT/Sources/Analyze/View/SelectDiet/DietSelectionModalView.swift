@@ -24,8 +24,8 @@ struct DietSelectionModalView: View {
                             
                         }
                     }
-                    .frame(width: 194, height: 25)
-                    .pickerStyle(SegmentedPickerStyle())
+                    .pickerStyle(.segmented)
+                    .fixedSize()
                     .padding()
                     
                     Spacer()

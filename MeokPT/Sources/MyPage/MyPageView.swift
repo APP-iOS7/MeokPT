@@ -88,6 +88,7 @@ struct MyPageView: View {
                                 .cornerRadius(20)
                             }
                         }
+                        .navigationBarTitleDisplayMode(.inline)
                         
                         NavigationLink(destination: BodyNutritionContainerView(
                             initialTab: .dailyNutrition,
@@ -114,6 +115,8 @@ struct MyPageView: View {
                             .background(Color("AppSecondaryColor"))
                             .cornerRadius(20)
                         }
+                        .navigationBarTitleDisplayMode(.inline)
+
                     }
                 }
                 .frame(maxWidth: .infinity)
