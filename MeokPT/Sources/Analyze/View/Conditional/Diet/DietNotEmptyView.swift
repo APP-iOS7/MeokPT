@@ -6,8 +6,11 @@ struct DietNotEmptyView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("샐러드와 고구마")
                     .font(.headline)
+                
+                
                 Text("400kcal")
                     .font(.subheadline)
+
             }
             
             HStack(spacing: 20) {
@@ -23,7 +26,7 @@ struct DietNotEmptyView: View {
         .background(
             RoundedRectangle(cornerRadius: 20)
                 .stroke(Color.gray, lineWidth: 1)
-                .background(Color.white)
+                .background(Color("App CardColor"))
         )
         .padding(.horizontal, 24)
     }

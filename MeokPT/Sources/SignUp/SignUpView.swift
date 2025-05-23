@@ -22,7 +22,7 @@ struct SignUpView: View {
                     VStack(alignment: .leading) {
                         Text("이메일")
                             .font(.body)
-                            .foregroundStyle(Color("AppSecondaryColor"))
+                            .foregroundStyle(Color("App title"))
                         VStack (alignment: .leading) {
                             TextField(
                                 "",
@@ -51,7 +51,7 @@ struct SignUpView: View {
                         HStack {
                             Text("비밀번호")
                                 .font(.body)
-                                .foregroundStyle(Color("AppSecondaryColor"))
+                                .foregroundStyle(Color("App title"))
                             Spacer()
                             Text("6자 이상, 영문, 숫자")
                                 .font(.caption2)
@@ -79,7 +79,7 @@ struct SignUpView: View {
                         Spacer().frame(height: 25)
                         Text("비밀번호 확인")
                             .font(.body)
-                            .foregroundStyle(Color("AppSecondaryColor"))
+                            .foregroundStyle(Color("App title"))
                         Spacer().frame(height: 16)
                         VStack(alignment: .leading) {
                             SecureField("******", text: $store.passWordVerify)

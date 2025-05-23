@@ -24,7 +24,7 @@ struct DailyNutritionInfoView: View {
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .stroke(Color.gray, lineWidth: 1)
-                .background(Color.white)
+                .background(Color("CardBackgroundColor"))
         )
         .padding(24)
     }

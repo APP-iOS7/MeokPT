@@ -39,6 +39,7 @@ struct AppView: View {
         ) { loginStore in
             NavigationStack {
                 LoginView(store: loginStore)
+                    .tint(Color("AppTintColor"))
             }
         }
         .fullScreenCover(
@@ -46,6 +47,7 @@ struct AppView: View {
         ) { profileStore in
             NavigationStack {
                 ProfileSettingView(store: profileStore)
+                    .tint(Color("AppTintColor"))
             }
         }
     }
