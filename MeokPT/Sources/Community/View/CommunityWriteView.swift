@@ -59,13 +59,9 @@ struct CommunityWriteView: View {
             }
             .padding(.horizontal)
             
-            // 식단 선택 - NavigationLink로 변경            
-            NavigationLink {
-                MealSelectionView(
-                    store: Store(initialState: MealSelectionFeature.State()) {
-                        MealSelectionFeature()
-                    }
-                )} label: {
+            Button(action: {
+                store.send(.presentMealSelectionSheet)
+            }) {
                     RoundedRectangle(cornerRadius: 20)
                         .fill(Color.white)
                         .frame(height: 160)
@@ -130,6 +126,14 @@ struct CommunityWriteView: View {
         .navigationBarHidden(true)              // ✅ 시스템 네비게이션 숨김
         .navigationBarBackButtonHidden(true)    // ✅ 시스템 뒤로가기 숨김
         .navigationBarTitle("")                 // ✅ 시스템 제목 제거
+        .sheet (
+            item: $store.scope(state: \.mealSelectionSheet, action: \.mealSelectionAction)) { store in
+            NavigationStack {
+                MealSelectionView(store: store)
+                    .presentationDragIndicator(.visible)
+                    .presentationDetents([.large])
+            }
+        }
     }
 }
 
