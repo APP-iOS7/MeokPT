@@ -17,20 +17,17 @@ struct DietView: View {
     }
     
     var body: some View {
-        NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
+//        NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
             List(filteredDiets) { diet in
                 ZStack {
-                    NavigationLink(
-                        state: DietFeature.Path.State.detail(
-                            .init(
-                                diet: diet,
-                                foods: Diet.sampleFoods(for: diet.title)
-                            )
-                        )
-                    ) {
-                        EmptyView() // NavigationLink의 label을 비워서 기본 '>' 표시가 나타나지 않도록 함
-                    }
-
+//                    NavigationLink(
+//                        state: DietDetailFeature.State(diet: diet)
+//                    ) {
+//                        EmptyView() // NavigationLink의 label을 비워서 기본 '>' 표시가 나타나지 않도록 함
+//                    }
+                    Button {
+                        store.send(.dietCellTapped(id: diet.id))
+                    } label: {
                     DietCellView(diet: diet) { id in
                         store.send(.likeButtonTapped(id: id))
                     }
@@ -51,6 +48,7 @@ struct DietView: View {
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
+                        store.send(.addButtonTapped)
                     } label: {
                         Image(systemName: "plus")
                     }
@@ -61,18 +59,10 @@ struct DietView: View {
             .background(Color("AppBackgroundColor"))
             .searchable(text: $searchText, prompt: "검색")
             .navigationBarTitleDisplayMode(.inline)
-        } destination: { store in
-            switch store.state {
-            case .detail:
-                if let detailStore = store.scope(state: \.detail, action: \.detail) {
-                    DietDetailView(store: detailStore)
-                }
-            }
+//        } destination: { store in
+//            DietDetailView(store: store)
         }
         .tint(Color("AppSecondaryColor"))
-        .onAppear {
-//            store.send(.onAppear)
-        }
     }
 }
 
@@ -124,7 +114,42 @@ private struct DietCellView: View {
 
 #Preview {
     DietView(
-        store: Store(initialState: DietFeature.State()) {
+        store: Store(initialState: DietFeature.State(
+            dietList: [
+                Diet(
+                    title: "닭가슴살 샐러드",
+                    isFavorite: false,
+                    foods: [
+                        Food(name: "닭가슴살", amount: 100, kcal: 165, carbohydrate: 0, protein: 31, fat: 3.6),
+                        Food(name: "채소믹스", amount: 150, kcal: 35, carbohydrate: 7, protein: 2, fat: 0.5)
+                    ]
+                ),
+                Diet(
+                    title: "현미밥과 연어구이",
+                    isFavorite: true,
+                    foods: [
+                        Food(name: "현미밥", amount: 150, kcal: 165, carbohydrate: 36, protein: 3, fat: 1),
+                        Food(name: "연어구이", amount: 120, kcal: 250, carbohydrate: 0, protein: 24, fat: 16)
+                    ]
+                ),
+                Diet(
+                    title: "두부김치",
+                    isFavorite: false,
+                    foods: [
+                        Food(name: "두부", amount: 200, kcal: 160, carbohydrate: 4, protein: 16, fat: 9),
+                        Food(name: "볶음김치", amount: 150, kcal: 120, carbohydrate: 15, protein: 5, fat: 5)
+                    ]
+                ),
+                Diet(
+                    title: "고구마와 사과",
+                    isFavorite: true,
+                    foods: [
+                        Food(name: "고구마", amount: 100, kcal: 139, carbohydrate: 32.4, protein: 1.6, fat: 0.2),
+                        Food(name: "사과", amount: 150, kcal: 95, carbohydrate: 25, protein: 0.5, fat: 0.3)
+                    ]
+                )
+            ]
+        )) {
             DietFeature()
         }
     )
