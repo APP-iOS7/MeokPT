@@ -165,7 +165,6 @@ struct MyPageView: View {
             }
             .background(Color("AppBackgroundColor"))
         }
-        .tint(Color(hex: "FF8F00"))
     }
 }
 
