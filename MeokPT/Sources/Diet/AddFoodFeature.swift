@@ -19,31 +19,29 @@ struct AddFoodFeature {
         var amountGram: Int
         let maxInputLength = 4
         
-        // 초기화 시점에 selectedFoodItem을 받아 amountGram을 설정
+        var currentCalories: Double
+        var currentCarbohydrates: Double
+        var currentProtein: Double
+        var currentFat: Double
+        
         init(selectedFoodItem: FoodNutritionItem) {
             self.selectedFoodItem = selectedFoodItem
-            // servingSize가 0보다 크면 그 값을, 아니면 기본값 100을 사용
-            self.amountGram = selectedFoodItem.servingSize > 0 ? Int(selectedFoodItem.servingSize) : 100
+            let initialAmount = selectedFoodItem.servingSize > 0 ? Int(selectedFoodItem.servingSize) : 100
+            self.amountGram = initialAmount
+            
+            // 100g당 영양 정보를 기준으로 초기 amountGram에 맞게 계산
+            self.currentCalories = (selectedFoodItem.calorie / 100.0) * Double(initialAmount)
+            self.currentCarbohydrates = (selectedFoodItem.carbohydrate / 100.0) * Double(initialAmount)
+            self.currentProtein = (selectedFoodItem.protein / 100.0) * Double(initialAmount)
+            self.currentFat = (selectedFoodItem.fat / 100.0) * Double(initialAmount)
         }
         
-        var currentCalories: Double {
-            (selectedFoodItem.calorie / 100.0) * Double(amountGram)
-        }
-        var currentCarbohydrates: Double {
-            (selectedFoodItem.carbohydrate / 100.0) * Double(amountGram)
-        }
-        var currentProtein: Double {
-            (selectedFoodItem.protein / 100.0) * Double(amountGram)
-        }
-        var currentFat: Double {
-            (selectedFoodItem.fat / 100.0) * Double(amountGram)
-        }
         var info: AttributedString? {
             let markdownString: String
             if selectedFoodItem.servingSize > 0 {
-                markdownString = "식약처 DB에서 제공하는 총 내용량은 **\(Int(selectedFoodItem.servingSize))g**입니다."
+                markdownString = "식약처 DB에서 제공하는 총 내용량(1회 제공량)은 **\(Int(selectedFoodItem.servingSize))g** 입니다."
             } else {
-                markdownString = "총 내용량을 식약처 DB에서 제공하지 않아 **100g** 기준으로 표시됩니다."
+                markdownString = "식약처 DB에서 총 내용량을 제공하지 않습니다. **100g** 기준으로 표시됩니다."
             }
             return try? AttributedString(markdown: markdownString)
         }
@@ -60,7 +58,7 @@ struct AddFoodFeature {
     
     enum DelegateAction: Equatable {
         case dismissSheet
-        case addFoodToDiet(FoodNutritionItem, Int) // 추가될 음식과 양
+        case addFoodToDiet(foodItem: FoodNutritionItem, amount: Int, calories: Double, carbohydrates: Double, protein: Double, fat: Double)
     }
     
     var body: some ReducerOf<Self> {
@@ -73,8 +71,19 @@ struct AddFoodFeature {
                 if state.amountGram < 0 {
                     state.amountGram = 0
                 }
+                // amountGram 변경 시, selectedFoodItem의 100g당 비율을 기준으로 모든 영양소 재계산
+                state.currentCalories = (state.selectedFoodItem.calorie / 100.0) * Double(state.amountGram)
+                state.currentCarbohydrates = (state.selectedFoodItem.carbohydrate / 100.0) * Double(state.amountGram)
+                state.currentProtein = (state.selectedFoodItem.protein / 100.0) * Double(state.amountGram)
+                state.currentFat = (state.selectedFoodItem.fat / 100.0) * Double(state.amountGram)
                 return .none
-                
+            
+            case .binding(\.currentCarbohydrates), .binding(\.currentProtein), .binding(\.currentFat):
+                if state.currentCarbohydrates < 0 { state.currentCarbohydrates = 0 }
+                if state.currentProtein < 0 { state.currentProtein = 0 }
+                if state.currentFat < 0 { state.currentFat = 0 }
+                return .none
+
             case .binding(_):
                 return .none
                 
@@ -82,10 +91,17 @@ struct AddFoodFeature {
                 return .run { send in await send(.delegate(.dismissSheet)) }
 
             case .addButtonTapped:
-                // TODO: 실제 식단에 추가하는 로직 (예: Delegate 통해 전달)
-                guard state.amountGram > 0 else { return .none } // 0g 이하면 추가하지 않음
-                return .run { [foodItem = state.selectedFoodItem, amount = state.amountGram] send in
-                    await send(.delegate(.addFoodToDiet(foodItem, amount)))
+                guard state.amountGram > 0 else { return .none }
+                
+                return .run { [
+                    foodItem = state.selectedFoodItem,
+                    amount = state.amountGram,
+                    calories = state.currentCalories,
+                    carbs = state.currentCarbohydrates,
+                    protein = state.currentProtein,
+                    fat = state.currentFat
+                ] send in
+                    await send(.delegate(.addFoodToDiet(foodItem: foodItem, amount: amount, calories: calories, carbohydrates: carbs, protein: protein, fat: fat)))
                     await send(.delegate(.dismissSheet))
                 }
                 
