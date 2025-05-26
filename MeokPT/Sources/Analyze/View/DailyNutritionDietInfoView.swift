@@ -33,6 +33,7 @@ struct DailyNutritionDietInfoView: View {
                                     .background(Color("AppTintColor"))
                                     .clipShape(RoundedRectangle(cornerRadius: 10))
                                     .padding(.horizontal, 24)
+                                    .padding(.bottom, 10)
                             }
                         }
                         .toolbar {
