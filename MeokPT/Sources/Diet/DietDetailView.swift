@@ -8,43 +8,43 @@ struct DietDetailView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
-//                    VStack(alignment: .leading) {
-//                        HStack {
-//                            TextField("제목", text: $store.diet.title.sending(\.updateTitle))
-//                            .submitLabel(.done)
-//                            .font(.largeTitle)
-//                            .fontWeight(.bold)
-//                            Spacer()
-//                            Toggle("즐겨찾기", isOn: Binding(
-//                                get: { store.diet.isFavorite },
-//                                set: { _ in store.send(.likeButtonTapped) }
-//                            ))
-//                            .toggleStyle(FavoriteToggleStyle())
-//                            .padding(.horizontal)
-//                        }
-//                        Text("\(String(format: "%.0f", store.diet.kcal)) kcal")
-//                            .font(.title2)
-//                    }
+                    VStack(alignment: .leading) {
+                        HStack {
+                            TextField("제목", text: $store.diet.title.sending(\.updateTitle))
+                            .submitLabel(.done)
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            Spacer()
+                            Toggle("즐겨찾기", isOn: Binding(
+                                get: { store.diet.isFavorite },
+                                set: { _ in store.send(.likeButtonTapped) }
+                            ))
+                            .toggleStyle(FavoriteToggleStyle())
+                            .padding(.horizontal)
+                        }
+                        Text("\(String(format: "%.0f", store.diet.kcal)) kcal")
+                            .font(.title2)
+                    }
                     
-//                    HStack {
-//                        NutrientView(carbohydrate: store.diet.carbohydrate, protein: store.diet.protein, fat: store.diet.fat)
-//                    }
-//                    .padding(.horizontal, 32)
+                    HStack {
+                        NutrientView(carbohydrate: store.diet.carbohydrate, protein: store.diet.protein, fat: store.diet.fat)
+                    }
+                    .padding(.horizontal, 32)
                     
                     // 음식 리스트
                     VStack {
-                        ForEach(store.foods) { food in
+                        ForEach(store.diet.foods) { food in
                             VStack(alignment: .leading, spacing: 16) {
                                 VStack(alignment: .leading) {
                                     Text(food.name)
                                         .font(.headline)
                                     Text("\(String(format: "%.0f", food.amount))g, \(String(format: "%.0f", food.kcal))kcal")
                                 }
-                                NutrientView( carbohydrate: food.carbohydrate, protein: food.protein, fat: food.fat)
+                                NutrientView(carbohydrate: food.carbohydrate, protein: food.protein, fat: food.fat)
                                 .padding(.horizontal)
                             }
                             .padding()
-                            if food != store.foods.last {
+                            if food != store.diet.foods.last {
                                 Divider()
                             }
                         }
@@ -75,11 +75,14 @@ struct DietDetailView: View {
 #Preview {
     DietDetailView(
         store: Store(initialState: DietDetailFeature.State(
-            diet: Diet(title: "샐러드와 고구마", kcal: 439, carbohydrate: 37.4, protein: 33.6, fat: 1.2, isFavorite: false),
-            foods: [
-                Food(name: "닭가슴살 샐러드", amount: 200, kcal: 300, carbohydrate: 5, protein: 32, fat: 1),
-                Food(name: "고구마", amount: 100, kcal: 139, carbohydrate: 32.4, protein: 1.6, fat: 0.2)
-            ]
+            diet: Diet(
+                title: "샐러드와 고구마",
+                isFavorite: false,
+                foods: [
+                    Food(name: "닭가슴살 샐러드", amount: 200, kcal: 300, carbohydrate: 5, protein: 32, fat: 1),
+                    Food(name: "고구마", amount: 100, kcal: 139, carbohydrate: 32.4, protein: 1.6, fat: 0.2)
+                ]
+            )
         )) {
             DietDetailFeature()
         }
