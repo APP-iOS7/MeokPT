@@ -103,102 +103,102 @@ struct CreateDietView: View {
                         Spacer()
                     }
                 }
-                    // 페이지네이션
-                    if store.totalPages > 1 {
-                        HStack {
-                            Button(action: { store.send(.goToPage(store.currentPage - 1)) }) {
-                                Text("이전")
-                            }
-                            .foregroundStyle(Color("TextButtonColor"))
-                            
-                            Spacer()
-                            Text("\(store.currentPage) / \(store.totalPages)")
-                                .font(.footnote)
-                                .foregroundStyle(Color("AppSecondaryColor"))
-                            Spacer()
-                            Button(action: { store.send(.goToPage(store.currentPage + 1)) }) {
-                                Text("다음")
-                            }
-                            .foregroundStyle(Color("TextButtonColor"))
-                            .disabled(store.currentPage >= store.totalPages)
+                // 페이지네이션
+                if store.totalPages > 1 {
+                    HStack {
+                        Button(action: { store.send(.goToPage(store.currentPage - 1)) }) {
+                            Text("이전")
                         }
-                        .padding(.top, 8)
+                        .foregroundStyle(Color("TextButtonColor"))
+                        
+                        Spacer()
+                        Text("\(store.currentPage) / \(store.totalPages)")
+                            .font(.footnote)
+                            .foregroundStyle(Color("AppSecondaryColor"))
+                        Spacer()
+                        Button(action: { store.send(.goToPage(store.currentPage + 1)) }) {
+                            Text("다음")
+                        }
+                        .foregroundStyle(Color("TextButtonColor"))
+                        .disabled(store.currentPage >= store.totalPages)
                     }
-                    Spacer()
+                    .padding(.top, 8)
                 }
-                    .padding(24)
-                    .containerRelativeFrame([.horizontal, .vertical])
+                Spacer()
             }
-            .scrollDisabled(true)
-            .navigationTitle("식단 생성")
-            .navigationBarTitleDisplayMode(.inline)
-            .contentShape(Rectangle())
-            .background(Color("AppBackgroundColor"))
-            .onTapGesture {
-                focusedField = false
-            }
-            .sheet(item: $store.scope(state: \.scanner, action: \.scannerSheet)) { _ in
-                scannerSheetContent
-            }
-            .sheet(item: $store.scope(state: \.addFoodSheet, action: \.addFoodSheet)) { store in
-                AddFoodView(store: store)
-                    .presentationDragIndicator(.visible)
-                    .presentationDetents([.medium])
-            }
-            .toolbar(content: {
-                ToolbarItem(placement: .topBarTrailing,
-                            content: { Button(action: {
-                    store.send(.closeButtonTapped)
-                }) { Text("완료") }})
-            })
+            .padding(24)
+            .containerRelativeFrame([.horizontal, .vertical])
         }
-        
-        private var scannerSheetContent: some View {
-            let onFoundCode: (String) -> Void = { code in
-                store.send(.barcodeScanned(code))
-            }
-            let onFailScanning: (ScannerError) -> Void = { error in
-                print("Scanner Error: \(error.localizedDescription)")
-                store.send(.scannerSheet(.dismiss))
-            }
-            
-            return CameraScannerView(
-                didFindCode: onFoundCode,
-                didFailScanning: onFailScanning
-            )
+        .scrollDisabled(true)
+        .navigationTitle("식단 생성")
+        .navigationBarTitleDisplayMode(.inline)
+        .contentShape(Rectangle())
+        .background(Color("AppBackgroundColor"))
+        .onTapGesture {
+            focusedField = false
         }
+        .sheet(item: $store.scope(state: \.scanner, action: \.scannerSheet)) { _ in
+            scannerSheetContent
+        }
+        .sheet(item: $store.scope(state: \.addFoodSheet, action: \.addFoodSheet)) { store in
+            AddFoodView(store: store)
+                .presentationDragIndicator(.visible)
+                .presentationDetents([.medium])
+        }
+        .toolbar(content: {
+            ToolbarItem(placement: .topBarTrailing,
+                        content: { Button(action: {
+                store.send(.closeButtonTapped)
+            }) { Text("완료") }})
+        })
     }
     
-    struct FoodItemRowView: View {
-        let foodInfo: FoodNutritionItem
-        
-        var body: some View {
-            VStack(alignment: .leading) {
-                HStack {
-                    Text(foodInfo.foodName).font(.headline).fontWeight(.bold)
-                    Spacer()
-                    if foodInfo.DB_CLASS_NM == "상용제품" {
-                        Text(foodInfo.makerName)
-                            .font(.caption)
-                            .foregroundColor(Color("AppSecondaryColor"))
-                    }
-                }
-                Spacer().frame(height:4)
-                Text("\(foodInfo.calorie, specifier: "%.0f") kcal").font(.body)
-                Spacer().frame(height: 20)
-                NutrientView(carbohydrate: foodInfo.carbohydrate, protein: foodInfo.protein, fat: foodInfo.fat)
-                    .frame(height: 47)
-                    .padding(.horizontal)
-            }
-            .padding(.vertical, 12)
+    private var scannerSheetContent: some View {
+        let onFoundCode: (String) -> Void = { code in
+            store.send(.barcodeScanned(code))
         }
-    }
-    
-    #Preview {
-        CreateDietView(
-            store: Store(
-                initialState: CreateDietFeature.State(foodNameInput: "사과"),
-                reducer: { CreateDietFeature()._printChanges() }
-            )
+        let onFailScanning: (ScannerError) -> Void = { error in
+            print("Scanner Error: \(error.localizedDescription)")
+            store.send(.scannerSheet(.dismiss))
+        }
+        
+        return CameraScannerView(
+            didFindCode: onFoundCode,
+            didFailScanning: onFailScanning
         )
     }
+}
+
+struct FoodItemRowView: View {
+    let foodInfo: FoodNutritionItem
+    
+    var body: some View {
+        VStack(alignment: .leading) {
+            HStack {
+                Text(foodInfo.foodName).font(.headline).fontWeight(.bold)
+                Spacer()
+                if foodInfo.DB_CLASS_NM == "상용제품" {
+                    Text(foodInfo.makerName)
+                        .font(.caption)
+                        .foregroundColor(Color("AppSecondaryColor"))
+                }
+            }
+            Spacer().frame(height:4)
+            Text("\(foodInfo.calorie, specifier: "%.0f") kcal").font(.body)
+            Spacer().frame(height: 20)
+            NutrientView(carbohydrate: foodInfo.carbohydrate, protein: foodInfo.protein, fat: foodInfo.fat)
+                .frame(height: 47)
+                .padding(.horizontal)
+        }
+        .padding(.vertical, 12)
+    }
+}
+
+#Preview {
+    CreateDietView(
+        store: Store(
+            initialState: CreateDietFeature.State(foodNameInput: "사과"),
+            reducer: { CreateDietFeature()._printChanges() }
+        )
+    )
+}
