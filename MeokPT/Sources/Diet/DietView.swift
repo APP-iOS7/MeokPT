@@ -17,18 +17,22 @@ struct DietView: View {
     }
     
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
             List(filteredDiets) { diet in
-                Button {
-                    store.send(.dietCellTapped(id: diet.id))
-                } label: {
+                ZStack {
+                    NavigationLink(
+                        state: DietDetailFeature.State(diet: diet)
+                    ) {
+                        EmptyView() // NavigationLink의 label을 비워서 기본 '>' 표시가 나타나지 않도록 함
+                    }
+                    
                     DietCellView(diet: diet) { id in
                         store.send(.likeButtonTapped(id: id))
                     }
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-                    .listRowInsets(EdgeInsets(top: 0, leading: 24, bottom: 16, trailing: 24))
                 }
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets(top: 0, leading: 24, bottom: 16, trailing: 24))
             }
             .toolbar {
                 ToolbarItem(placement: .principal) {
@@ -53,6 +57,13 @@ struct DietView: View {
             .background(Color("AppBackgroundColor"))
             .searchable(text: $searchText, prompt: "검색")
             .navigationBarTitleDisplayMode(.inline)
+        } destination: { store in
+            switch store.state {
+            case .detail:
+                if let detailStore = store.scope(state: \.detail, action: \.detail) {
+                    DietDetailView(store: detailStore)
+                }
+            }
         }
         .tint(Color("AppSecondaryColor"))
     }
