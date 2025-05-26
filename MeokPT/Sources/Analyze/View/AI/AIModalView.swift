@@ -12,13 +12,23 @@ struct AIModalView: View {
                 .foregroundStyle(.black)
                 .font(.title3)
 
-            Text("하나의 식단 평가와 달리, 분석 탭에서 추가한 모든 식단을 고려하여 프롬프트 제작한다.")
-                .foregroundStyle(.black)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-
+            if store.isLoading {
+                ProgressView()
+                Text("AI가 분석 중입니다...")
+                    .font(.caption)
+                    .foregroundStyle(.gray)
+            } else {
+                Text(store.generatedResponse)
+                    .foregroundStyle(.black)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+            }
+            
             Spacer()
         }
         .padding(.top, 20)
+        .onAppear {
+            store.send(.onAppear)
+        }
     }
 }
