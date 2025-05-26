@@ -1,69 +1,83 @@
 import ComposableArchitecture
 import Foundation
 
+enum DietFilter: String, CaseIterable, Identifiable {
+    case all = "전체"
+    case favorites = "즐겨찾기"
+    var id: String { self.rawValue }
+}
+
 @Reducer
 struct DietFeature {
     @ObservableState
     struct State: Equatable {
+        
+        @Presents var addDietFullScreenCover: FoodNutritionFeature.State?
+        
         var dietList: IdentifiedArrayOf<Diet> = []
-        var path = StackState<DietDetailFeature.State>()
+        var searchText = ""
+        var selectedFilter: DietFilter = .all
+        
+        var filteredDiets: [Diet] {
+            let searchedDiets = searchText.isEmpty ? dietList.elements : dietList.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
+            switch selectedFilter {
+            case .all:
+                return Array(searchedDiets)
+            case .favorites:
+                return Array(searchedDiets.filter { $0.isFavorite })
+            }
+        }
     }
     
-    enum Action {
-        case likeButtonTapped(id: Diet.ID)
-        case path(StackAction<DietDetailFeature.State, DietDetailFeature.Action>)
+    enum Action: BindableAction {
+        
+        case addDietFullScreenCover(PresentationAction<FoodNutritionFeature.Action>)
+        
+        case binding(BindingAction<State>)
         case addButtonTapped
         case dietCellTapped(id: Diet.ID)
+        case likeButtonTapped(id: Diet.ID, isFavorite: Bool)
     }
-
-//    @Reducer
-//    struct Path {
-//        @ObservableState
-//        enum State: Equatable, Hashable {
-//            case detail(DietDetailFeature.State)
-//        }
-//        enum Action {
-//            case detail(DietDetailFeature.Action)
-//        }
-//        var body: some ReducerOf<Self> {
-//            Scope(state: \.detail, action: \.detail) {
-//                DietDetailFeature()
-//            }
-//        }
-//    }
     
     var body: some ReducerOf<Self> {
+        BindingReducer()
+        
         Reduce { state, action in
             switch action {
-            case let .likeButtonTapped(id):
-                guard state.dietList[id: id] != nil else { return .none }
-                state.dietList[id: id]?.isFavorite.toggle()
-                return .none
-
             case .addButtonTapped:
+                state.addDietFullScreenCover = FoodNutritionFeature.State()
+                
                 let newDiet = Diet(title: "새로운 식단", isFavorite: false, foods: [])
                 state.dietList.append(newDiet)
-                state.path.append(DietDetailFeature.State(diet: newDiet))
                 return .none
                 
             case .dietCellTapped(let id):
-                guard let diet = state.dietList[id: id] else { return .none }
-                state.path.append(DietDetailFeature.State(diet: diet))
+//                guard let diet = state.dietList[id: id] else { return .none }
                 return .none
-
-//            case let .path(.element(id: pathID, action: .detail(.delegate(.favoriteToggled(isFavorite))))):
-//                guard case let .detail(detailState) = state.path[id: pathID] else { return .none }
-//                if state.dietList[id: detailState.diet.id] != nil {
-//                    state.dietList[id: detailState.diet.id]?.isFavorite = isFavorite
-//                }
-//                return .none
-            
-            case .path:
+                
+            case let .likeButtonTapped(id, isFavorite):
+                guard var dietToUpdate = state.dietList[id: id] else {
+                    return .none
+                }
+                if dietToUpdate.isFavorite != isFavorite {
+                    _ = dietToUpdate.isFavorite
+                    dietToUpdate.isFavorite = isFavorite
+                    state.dietList[id: id] = dietToUpdate
+                }
                 return .none
+                
+            case .binding(_):
+                return .none
+                
+            case .addDietFullScreenCover(.presented(.delegate(.dismissSheet))):
+                state.addDietFullScreenCover = nil
+                return .none
+                
+            case .addDietFullScreenCover(_):
+                return .none
+                
             }
         }
-        .forEach(\.path, action: \.path) { // Path Reducer 통합
-            DietDetailFeature()
-        }
+        .ifLet(\.$addDietFullScreenCover, action: \.addDietFullScreenCover) { FoodNutritionFeature() }
     }
 }

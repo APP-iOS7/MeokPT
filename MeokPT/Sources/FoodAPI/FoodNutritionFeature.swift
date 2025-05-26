@@ -71,6 +71,13 @@ struct FoodNutritionFeature {
         case barcodeScanned(String)
         case barcodeInfoResponse(Result<String?, APIError>)
         case scannerSheet(PresentationAction<Never>)
+        case closeButtonTapped
+        
+        case delegate(DelegateAction)
+    }
+    
+    enum DelegateAction: Equatable {
+        case dismissSheet
     }
     
     @Dependency(\.foodNutritionClient) var apiClient
@@ -219,6 +226,12 @@ struct FoodNutritionFeature {
                 state.scanner = nil
                 return .none
             case .scannerSheet:
+                return .none
+                
+            case .closeButtonTapped:
+                return .send(.delegate(.dismissSheet))
+                
+            case .delegate(_):
                 return .none
             }
         }
