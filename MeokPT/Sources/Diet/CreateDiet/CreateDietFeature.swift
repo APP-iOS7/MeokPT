@@ -12,17 +12,13 @@ struct CategorizedFoodSection: Identifiable, Equatable {
     let id = UUID()
     let categoryName: String
     let items: [FoodNutritionItem]
-    
-    static func == (lhs: CategorizedFoodSection, rhs: CategorizedFoodSection) -> Bool {
-        return lhs.id == rhs.id && lhs.categoryName == rhs.categoryName && lhs.items == rhs.items
-    }
 }
 
 @Reducer
 struct CreateDietFeature {
     @ObservableState
     struct State: Equatable {
-        var foodNameInput: String = ""
+        var foodNameInput: String = "고구마"
         var lastSearchType: FoodNutritionClient.SearchType? = nil
 
         var currentPage: Int = 1
@@ -58,7 +54,9 @@ struct CreateDietFeature {
         }
         
         struct ScannerPresentationMarker: Equatable {}
+        
         @Presents var scanner: ScannerPresentationMarker?
+        @Presents var addFoodSheet: AddFoodFeature.State?
     }
     
     enum Action {
@@ -72,6 +70,9 @@ struct CreateDietFeature {
         case barcodeInfoResponse(Result<String?, APIError>)
         case scannerSheet(PresentationAction<Never>)
         case closeButtonTapped
+        case foodItemRowTapped(FoodNutritionItem)
+
+        case addFoodSheet(PresentationAction<AddFoodFeature.Action>)
         
         case delegate(DelegateAction)
     }
@@ -230,12 +231,35 @@ struct CreateDietFeature {
             case .closeButtonTapped:
                 return .send(.delegate(.dismissSheet))
                 
+            case .foodItemRowTapped(let foodItem):
+                state.addFoodSheet = AddFoodFeature.State(selectedFoodItem: foodItem)
+                return .none
+
+            case .addFoodSheet(.presented(.delegate(let addFoodDelegateAction))):
+                switch addFoodDelegateAction {
+                case .dismissSheet:
+                    state.addFoodSheet = nil // 시트 닫기
+                    return .none
+                case .addFoodToDiet(let foodItem, let amount):
+                    // TODO: 식단에 음식을 추가하는 로직 구현 (예: 부모 Feature로 전달)
+                    print("음식 추가: \(foodItem.foodName), 양: \(amount)g")
+                    // state.delegate(.foodAdded(foodItem, amount)) 와 같은 형태로 부모에게 전달 가능
+                    state.addFoodSheet = nil // 시트 닫기
+                    return .none
+                }
+                
+            case .addFoodSheet(_):
+                return .none
+                
             case .delegate(_):
                 return .none
             }
         }
         .ifLet(\.$scanner, action: \.scannerSheet) {
             EmptyReducer() // 스캐너 자체가 TCA Feature가 아니므로 EmptyReducer
+        }
+        .ifLet(\.$addFoodSheet, action: \.addFoodSheet) {
+            AddFoodFeature()
         }
     }
 }
