@@ -21,7 +21,7 @@ struct DietView: View {
             List(filteredDiets) { diet in
                 ZStack {
                     NavigationLink(
-                        state: DietDetailFeature.State(diet: diet)
+                        state: DietFeature.Path.State.detail(DietDetailFeature.State(diet: diet))
                     ) {
                         EmptyView() // NavigationLink의 label을 비워서 기본 '>' 표시가 나타나지 않도록 함
                     }
@@ -58,11 +58,9 @@ struct DietView: View {
             .searchable(text: $searchText, prompt: "검색")
             .navigationBarTitleDisplayMode(.inline)
         } destination: { store in
-            switch store.state {
-            case .detail:
-                if let detailStore = store.scope(state: \.detail, action: \.detail) {
-                    DietDetailView(store: detailStore)
-                }
+            switch store.case {
+            case .detail(let store):
+                DietDetailView(store: store)
             }
         }
         .tint(Color("AppSecondaryColor"))

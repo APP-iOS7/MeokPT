@@ -4,32 +4,20 @@ import Foundation
 @Reducer
 struct DietFeature {
     @ObservableState
-    struct State: Equatable {
+    struct State {
         var dietList: IdentifiedArrayOf<Diet> = []
         var path = StackState<Path.State>()
     }
     
     enum Action {
         case likeButtonTapped(id: Diet.ID)
-        case path(StackAction<Path.State, Path.Action>)
+        case path(StackActionOf<Path>)
         case addButtonTapped
-//        case dietCellTapped(id: Diet.ID)
     }
-
+    
     @Reducer
-    struct Path {
-        @ObservableState
-        enum State: Equatable, Hashable {
-            case detail(DietDetailFeature.State)
-        }
-        enum Action {
-            case detail(DietDetailFeature.Action)
-        }
-        var body: some ReducerOf<Self> {
-            Scope(state: \.detail, action: \.detail) {
-                DietDetailFeature()
-            }
-        }
+    enum Path {
+        case detail(DietDetailFeature)
     }
     
     var body: some ReducerOf<Self> {
@@ -46,11 +34,6 @@ struct DietFeature {
                 state.path.append(.detail(.init(diet: newDiet)))
                 return .none
                 
-//            case .dietCellTapped(let id):
-//                guard let diet = state.dietList[id: id] else { return .none }
-//                state.path.append(DietDetailFeature.State(diet: diet))
-//                return .none
-
             case let .path(.element(id: pathID, action: .detail(.delegate(.favoriteToggled(isFavorite))))):
                 guard case let .detail(detailState) = state.path[id: pathID] else { return .none }
                 if state.dietList[id: detailState.diet.id] != nil {
@@ -62,8 +45,6 @@ struct DietFeature {
                 return .none
             }
         }
-        .forEach(\.path, action: \.path) { // Path Reducer 통합
-            Path()
-        }
+        .forEach(\.path, action: \.path)
     }
 }
