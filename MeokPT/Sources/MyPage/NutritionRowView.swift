@@ -13,7 +13,7 @@ struct NutritionRowView: View {
     var body: some View {
         HStack {
             Text(name)
-                .foregroundColor(Color("AppSecondaryColor"))
+                .foregroundColor(Color("App title"))
 
             Spacer()
 

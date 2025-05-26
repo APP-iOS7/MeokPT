@@ -49,7 +49,7 @@ struct DietDetailView: View {
                             }
                         }
                     }
-                    .background(Color("AppCellBackgroundColor"))
+                    .background(Color("App CardColor"))
                     .cornerRadius(20)
                     .overlay(
                         RoundedRectangle(cornerRadius: 20)
