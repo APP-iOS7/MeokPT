@@ -27,49 +27,24 @@ struct AddFoodFeature {
         }
         
         var currentCalories: Double {
-            guard selectedFoodItem.servingSize > 0 else { // 100g 기준 영양 정보 사용
-                return (selectedFoodItem.calorie / 100.0) * Double(amountGram)
-            }
-            // servingSize가 있다면, 1g당 영양정보를 계산하여 현재 g에 맞게 계산
-            return (selectedFoodItem.calorie / selectedFoodItem.servingSize) * Double(amountGram)
+            (selectedFoodItem.calorie / 100.0) * Double(amountGram)
         }
         var currentCarbohydrates: Double {
-            guard selectedFoodItem.servingSize > 0 else {
-                return (selectedFoodItem.carbohydrate / 100.0) * Double(amountGram)
-            }
-            return (selectedFoodItem.carbohydrate / selectedFoodItem.servingSize) * Double(amountGram)
+            (selectedFoodItem.carbohydrate / 100.0) * Double(amountGram)
         }
         var currentProtein: Double {
-            guard selectedFoodItem.servingSize > 0 else {
-                return (selectedFoodItem.protein / 100.0) * Double(amountGram)
-            }
-            return (selectedFoodItem.protein / selectedFoodItem.servingSize) * Double(amountGram)
+            (selectedFoodItem.protein / 100.0) * Double(amountGram)
         }
         var currentFat: Double {
-            guard selectedFoodItem.servingSize > 0 else {
-                return (selectedFoodItem.fat / 100.0) * Double(amountGram)
-            }
-            return (selectedFoodItem.fat / selectedFoodItem.servingSize) * Double(amountGram)
+            (selectedFoodItem.fat / 100.0) * Double(amountGram)
         }
         var info: AttributedString? {
-            _ = selectedFoodItem.servingSize > 0 ? "\(Int(selectedFoodItem.servingSize))g" : "제공량 정보 없음 (100g 기준 영양 정보)"
-            // FoodNutritionItem의 foodName은 옵셔널이 아니라고 가정 (FoodNutritionItem.swift에서 non-optional로 처리됨)
-            let foodName = selectedFoodItem.foodName
-            let servingInfoText = selectedFoodItem.servingSize > 0 ? "\(Int(selectedFoodItem.servingSize))g" : "100g"
-
-            // CreateDietView에서 "영양성분은 100g 기준입니다." 라고 명시되어 있으므로,
-            // API에서 제공하는AMT_NUM 값들이 100g 기준 값이라고 간주.
-            // Z10500 (servingSize)는 별도의 "총 내용량" 정보로 활용.
-            let markdownString = "\(foodName)의 총 내용량은 **\(servingInfoText)** 이며,\n 아래 영양성분은 입력하신 **\(amountGram)g** 기준입니다."
-            
-//            if selectedFoodItem.servingSize == 0 {
-//                 // servingSize가 0일때는 foodNameCorrections에 있는 foodName을 사용하도록 처리
-//                let adjustedFoodName = foodNameCorrections[selectedFoodItem.FOOD_NM_KR ?? ""] ?? selectedFoodItem.foodName
-//                let markdownStringZeroServing = "\(adjustedFoodName)의 영양성분은 100g 기준이며, 아래는 입력하신 **\(amountGram)g** 기준입니다."
-//                 return try? AttributedString(markdown: markdownStringZeroServing)
-//            }
-
-
+            let markdownString: String
+            if selectedFoodItem.servingSize > 0 {
+                markdownString = "식약처 DB에서 제공하는 총 내용량은 **\(Int(selectedFoodItem.servingSize))g**입니다."
+            } else {
+                markdownString = "총 내용량을 식약처 DB에서 제공하지 않아 **100g** 기준으로 표시됩니다."
+            }
             return try? AttributedString(markdown: markdownString)
         }
     }
@@ -108,6 +83,7 @@ struct AddFoodFeature {
 
             case .addButtonTapped:
                 // TODO: 실제 식단에 추가하는 로직 (예: Delegate 통해 전달)
+                guard state.amountGram > 0 else { return .none } // 0g 이하면 추가하지 않음
                 return .run { [foodItem = state.selectedFoodItem, amount = state.amountGram] send in
                     await send(.delegate(.addFoodToDiet(foodItem, amount)))
                     await send(.delegate(.dismissSheet))

@@ -33,6 +33,7 @@ struct AddFoodView: View {
                 Text(store.info ?? "")
                     .font(.caption)
                     .foregroundColor(Color("AppSecondaryColor"))
+                    .padding(.horizontal, 24)
                 
                 VStack(spacing: 16) {
                     Text("\(store.currentCalories, specifier: "%.0f")kcal")

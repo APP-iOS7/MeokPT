@@ -78,7 +78,7 @@ struct FoodNutritionItem: Decodable, Equatable, Identifiable {
     var sugar: Double { Double(AMT_NUM7?.replacingOccurrences(of: ",", with: "") ?? "0.0") ?? 0.0 }
     var dietaryFiber: Double { Double(AMT_NUM8?.replacingOccurrences(of: ",", with: "") ?? "0.0") ?? 0.0 }
     var sodium: Double { Double(AMT_NUM13?.replacingOccurrences(of: ",", with: "") ?? "0.0") ?? 0.0 }
-    var servingSize: Double { Double(Z10500?.replacingOccurrences(of: ",", with: "") ?? "0.0") ?? 0.0 }
+    var servingSize: Double {Double(Z10500?.replacingOccurrences(of: "g", with: "") ?? "0.0") ?? 0.0}
     var makerName: String { MAKER_NM?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "" }
 }
 
