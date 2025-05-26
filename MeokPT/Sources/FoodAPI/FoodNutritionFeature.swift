@@ -53,6 +53,13 @@ struct FoodNutritionFeature {
         case foodNameInputChanged(String)
         case searchButtonTapped
         case foodNutritionResponse(Result<FoodNutritionAPIResponse, Error>)
+        case closeButtonTapped
+        
+        case delegate(DelegateAction)
+    }
+    
+    enum DelegateAction: Equatable {
+        case dismissSheet
     }
     
     @Dependency(\.foodNutritionClient) var apiClient
@@ -127,6 +134,12 @@ struct FoodNutritionFeature {
             case .foodNutritionResponse(.failure(_)):
                 state.isLoading = false
                 state.fetchedFoodItems = []
+                return .none
+                
+            case .closeButtonTapped:
+                return .send(.delegate(.dismissSheet))
+                
+            case .delegate(_):
                 return .none
             }
         }

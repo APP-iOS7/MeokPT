@@ -14,81 +14,85 @@ struct FoodNutritionView: View {
     @FocusState private var focusedField: Bool
 
     var body: some View {
-        NavigationView {
-            VStack(alignment: .leading) {
-                HStack {
-                    VStack {
-                        TextField(
-                            "",
-                            text: $store.foodNameInput.sending(\.foodNameInputChanged),
-                            prompt: Text("식품 이름 (예: 고구마)")
-                        )
-                        .focused($focusedField)
-                        .autocapitalization(.none)
-                        .onSubmit { store.send(.searchButtonTapped) }
-                        Rectangle()
-                            .frame(height: 1)
-                            .foregroundColor(Color(.placeholderText))
-                    }
-                    Spacer()
-                    Button(action: {
-                        focusedField = false
-                        store.send(.searchButtonTapped)
-                    }) {
-                        if store.isLoading {
-                            ProgressView()
-                        } else {
-                            Text("검색")
-                        }
-                    }
-                    .disabled(store.isLoading)
+        VStack(alignment: .leading) {
+            HStack {
+                VStack {
+                    TextField(
+                        "",
+                        text: $store.foodNameInput.sending(\.foodNameInputChanged),
+                        prompt: Text("식품 이름 (예: 고구마)")
+                    )
+                    .focused($focusedField)
+                    .autocapitalization(.none)
+                    .onSubmit { store.send(.searchButtonTapped) }
+                    Rectangle()
+                        .frame(height: 1)
+                        .foregroundColor(Color(.placeholderText))
                 }
-                Spacer().frame(height:8)
-                
-                ScrollView {
-                    ForEach(store.categorizedSections) { sectionData in
-                        HStack {
-                            Text(sectionData.categoryName)
-                                .font(.subheadline)
-                            Spacer()
-                            Text("영양성분은 100g 기준입니다.")
-                                .font(.subheadline.bold())
-                        }
-                        .foregroundStyle(Color("AppSecondaryColor"))
-                        .padding([.top])
+                Spacer()
+                Button(action: {
+                    focusedField = false
+                    store.send(.searchButtonTapped)
+                }) {
+                    if store.isLoading {
+                        ProgressView()
+                    } else {
+                        Text("검색")
+                    }
+                }
+                .disabled(store.isLoading)
+            }
+            Spacer().frame(height:8)
+            
+            ScrollView {
+                ForEach(store.categorizedSections) { sectionData in
+                    HStack {
+                        Text(sectionData.categoryName)
+                            .font(.subheadline)
+                        Spacer()
+                        Text("영양성분은 100g 기준입니다.")
+                            .font(.subheadline.bold())
+                    }
+                    .foregroundStyle(Color("AppSecondaryColor"))
+                    .padding([.top])
+                    VStack(alignment: .leading) {
                         VStack(alignment: .leading) {
-                            VStack(alignment: .leading) {
-                                ForEach(sectionData.items) { foodInfo in
-                                    FoodItemRowView(foodInfo: foodInfo)
-                                        .padding(.horizontal)
-                                    
-                                    if foodInfo.id != sectionData.items.last?.id {
-                                        Divider()
-                                    }
+                            ForEach(sectionData.items) { foodInfo in
+                                FoodItemRowView(foodInfo: foodInfo)
+                                    .padding(.horizontal)
+                                
+                                if foodInfo.id != sectionData.items.last?.id {
+                                    Divider()
                                 }
                             }
                         }
-                        .padding(.vertical)
-                        .background(Color(UIColor.secondarySystemGroupedBackground))
-                        .cornerRadius(20)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(Color(UIColor.separator), lineWidth: 1)
-                        )
                     }
+                    .padding(.vertical)
+                    .background(Color(UIColor.secondarySystemGroupedBackground))
+                    .cornerRadius(20)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(Color(UIColor.separator), lineWidth: 1)
+                    )
                 }
-                Spacer()
             }
-            .padding(24)
-            .navigationTitle("식단 생성")
-            .navigationBarTitleDisplayMode(.inline)
-            .containerRelativeFrame([.horizontal, .vertical])
-            .contentShape(Rectangle())
-            .background(Color("AppBackgroundColor"))
-            .onTapGesture {
-                focusedField = false
-            }
+            Spacer()
         }
+        .padding(24)
+        .navigationTitle("식단 생성")
+        .navigationBarTitleDisplayMode(.inline)
+        .containerRelativeFrame([.horizontal, .vertical])
+        .contentShape(Rectangle())
+        .background(Color("AppBackgroundColor"))
+        .onTapGesture {
+            focusedField = false
+        }
+        .toolbar(content: {
+            ToolbarItem(placement: .topBarTrailing,
+                        content: { Button(action: {
+                store.send(.closeButtonTapped)
+            }) { Text("완료") }})
+        })
     }
 }
 
