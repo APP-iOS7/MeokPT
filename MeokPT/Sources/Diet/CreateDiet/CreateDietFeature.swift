@@ -22,7 +22,7 @@ struct CreateDietFeature {
         var lastSearchType: FoodNutritionClient.SearchType? = nil
 
         var currentPage: Int = 1
-        var numOfRows: Int = 50
+        var numOfRows: Int = 30
         var totalItemsCount: Int = 0
         
         var fetchedFoodItems: [FoodNutritionItem] = []
@@ -240,7 +240,7 @@ struct CreateDietFeature {
                 case .dismissSheet:
                     state.addFoodSheet = nil // 시트 닫기
                     return .none
-                case .addFoodToDiet(let foodItem, let amount):
+                case .addFoodToDiet(let foodItem, let amount, let calories, let carbohydrates, let protein, let fat):
                     // TODO: 식단에 음식을 추가하는 로직 구현 (예: 부모 Feature로 전달)
                     print("음식 추가: \(foodItem.foodName), 양: \(amount)g")
                     // state.delegate(.foodAdded(foodItem, amount)) 와 같은 형태로 부모에게 전달 가능
