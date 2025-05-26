@@ -52,9 +52,9 @@ struct DietView: View {
             .navigationBarTitleDisplayMode(.inline)
         }
         .fullScreenCover(
-            item: $store.scope(state: \.addDietFullScreenCover, action: \.addDietFullScreenCover)) { store in
+            item: $store.scope(state: \.createDietFullScreenCover, action: \.createDietFullScreenCover)) { store in
             NavigationStack {
-                FoodNutritionView(store: store)
+                CreateDietView(store: store)
             }
         }
         .tint(Color("AppSecondaryColor"))

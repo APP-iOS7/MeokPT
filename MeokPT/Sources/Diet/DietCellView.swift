@@ -42,3 +42,14 @@ struct DietCellView: View {
         )
     }
 }
+
+struct FavoriteToggleStyle: ToggleStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        Button(action: {
+            configuration.isOn.toggle()
+        }) {
+            Image(systemName: configuration.isOn ? "heart.fill" : "heart")
+        }
+        .foregroundColor(Color("AppSecondaryColor"))
+    }
+}

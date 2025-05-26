@@ -8,8 +8,8 @@
 import SwiftUI
 import ComposableArchitecture
 
-struct FoodNutritionView: View {
-    @Bindable var store: StoreOf<FoodNutritionFeature>
+struct CreateDietView: View {
+    @Bindable var store: StoreOf<CreateDietFeature>
     
     @FocusState private var focusedField: Bool
 
@@ -32,12 +32,13 @@ struct FoodNutritionView: View {
                 Spacer()
                 Button(action: {
                     focusedField = false
-                    store.send(.searchButtonTapped)
+                    store.send(.scanBarcodeButtonTapped)
                 }) {
                     if store.isLoading {
                         ProgressView()
                     } else {
-                        Text("검색")
+                        Image(systemName: "barcode.viewfinder")
+                            .font(.title)
                     }
                 }
                 .disabled(store.isLoading)
@@ -86,6 +87,9 @@ struct FoodNutritionView: View {
         .background(Color("AppBackgroundColor"))
         .onTapGesture {
             focusedField = false
+        }
+        .sheet(item: $store.scope(state: \.scanner, action: \.scannerSheet)) { _ in
+            scannerSheetContent
         }
         .toolbar(content: {
             ToolbarItem(placement: .topBarTrailing,
@@ -137,10 +141,10 @@ struct FoodItemRowView: View {
 }
 
 #Preview {
-    FoodNutritionView(
+    CreateDietView(
         store: Store(
-            initialState: FoodNutritionFeature.State(foodNameInput: "사과"),
-            reducer: { FoodNutritionFeature()._printChanges() }
+            initialState: CreateDietFeature.State(foodNameInput: "사과"),
+            reducer: { CreateDietFeature()._printChanges() }
         )
     )
 }

@@ -1,5 +1,5 @@
 //
-//  FoodNutritionFeature.swift
+//  CreateDietFeature.swift
 //  MeokPT
 //
 //  Created by 김동영 on 5/19/25.
@@ -19,7 +19,7 @@ struct CategorizedFoodSection: Identifiable, Equatable {
 }
 
 @Reducer
-struct FoodNutritionFeature {
+struct CreateDietFeature {
     @ObservableState
     struct State: Equatable {
         var foodNameInput: String = ""
@@ -214,12 +214,11 @@ struct FoodNutritionFeature {
                     await send(.foodNutritionResponse(result))
                 }
 
-            case .barcodeInfoResponse(.failure(let apiError)):
+            case .barcodeInfoResponse(.failure):
                 state.scanner = nil
                 state.isLoading = false
                 state.fetchedFoodItems = []
                 state.totalItemsCount = 0
-                let errorToReport: APIError = apiError
                 return .none
 
             case .scannerSheet(.dismiss):
