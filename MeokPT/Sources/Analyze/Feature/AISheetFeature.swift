@@ -41,7 +41,7 @@ struct AISheetFeature: Reducer {
             }
             state.isLoading = true
             return .run { send in
-                let prompt = "분석 탭에서 추가한 모든 식단을 고려하여 프롬프트를 제작해주세요."
+                let prompt = "여러 가지 단락 구분을 위해 \n\n을 이용한 예시를 보여줘"
                 await send(.aiResponse(Result {
                     try await firebaseAIService.generate(prompt)
                 }))

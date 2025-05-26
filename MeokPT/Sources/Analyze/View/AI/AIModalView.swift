@@ -1,9 +1,8 @@
-import ComposableArchitecture
 import SwiftUI
+import ComposableArchitecture
 
 struct AIModalView: View {
     @Bindable var store: StoreOf<AISheetFeature>
-
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
@@ -12,6 +11,7 @@ struct AIModalView: View {
                 .foregroundStyle(.black)
                 .font(.title3)
                 .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.bottom, 10)
 
             if store.isLoading {
                 ProgressView()
@@ -23,21 +23,13 @@ struct AIModalView: View {
                     .frame(maxWidth: .infinity, alignment: .center)
 
             } else {
-                if let attributedString = try? AttributedString(markdown: store.generatedResponse) {
-                    Text(attributedString)
-                        .foregroundStyle(.black)
-                        .multilineTextAlignment(.leading)
-                        .lineSpacing(8)
-                        .padding(.horizontal)
-                } else {
-                    Text(store.generatedResponse)
-                        .foregroundStyle(.black)
-                        .multilineTextAlignment(.leading)
-                        .lineSpacing(8)
+                ScrollView {
+                    AttributedTextView(markdown: store.generatedResponse)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal)
                 }
             }
-            
+
             Spacer()
         }
         .padding(.top, 20)
@@ -46,4 +38,10 @@ struct AIModalView: View {
             store.send(.onAppear)
         }
     }
+}
+
+#Preview {
+    AIModalView(store: Store(initialState: AISheetFeature.State()) {
+        AISheetFeature()
+    })
 }
