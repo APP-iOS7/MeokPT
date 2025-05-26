@@ -4,7 +4,7 @@ import ComposableArchitecture
 
 private enum BarcodeAPIConstants {
     static let keyId = "d0ce663b8a8e47449b98"
-    static let serviceId = "C005"
+    static let serviceId = "I2570"
     static let dataType = "json"
     static let defaultStartIdx = "1"
     static let defaultEndIdx = "1"
@@ -15,7 +15,7 @@ struct FullBarcodeResponse: Decodable, Equatable {
     let responseData: BarcodeAPIResponseContainer?
 
     private enum CodingKeys: String, CodingKey {
-        case responseData = "C005"
+        case responseData = "I2570"
     }
 }
 

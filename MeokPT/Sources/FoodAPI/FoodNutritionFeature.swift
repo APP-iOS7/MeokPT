@@ -56,6 +56,9 @@ struct FoodNutritionFeature {
             guard numOfRows > 0 else { return 0 }
             return (totalItemsCount + numOfRows - 1) / numOfRows // 올림 계산
         }
+        
+        struct ScannerPresentationMarker: Equatable {}
+        @Presents var scanner: ScannerPresentationMarker?
     }
     
     enum Action {
@@ -63,9 +66,15 @@ struct FoodNutritionFeature {
         case searchButtonTapped
         case foodNutritionResponse(Result<FoodNutritionAPIResponse, Error>)
         case goToPage(Int)
+        
+        case scanBarcodeButtonTapped
+        case barcodeScanned(String)
+        case barcodeInfoResponse(Result<String?, APIError>)
+        case scannerSheet(PresentationAction<Never>)
     }
     
     @Dependency(\.foodNutritionClient) var apiClient
+    @Dependency(\.barcodeInfoClient) var barcodeClient
     
     var body: some ReducerOf<Self> {
         Reduce { state, action in
@@ -152,7 +161,69 @@ struct FoodNutritionFeature {
                     }
                     await send(.foodNutritionResponse(result))
                 }
+                
+            case .scanBarcodeButtonTapped:
+                state.scanner = State.ScannerPresentationMarker()
+                return .none
+                
+            case .barcodeScanned(let barcode):
+                state.scanner = nil
+                state.isLoading = true
+                state.fetchedFoodItems = []
+                state.totalItemsCount = 0
+                state.currentPage = 1
+                state.foodNameInput = "바코드: \(barcode)"
+                state.lastSearchType = nil
+
+                return .run { send in
+                    let result = await Result { try await barcodeClient.fetchItemReportNo(barcode) }
+                    
+                    let mappedResult: Result<String?, APIError> = result.mapError { error in
+                        if let apiError = error as? APIError {
+                            return apiError
+                        } else {
+                            return APIError.requestFailed(error.localizedDescription)
+                        }
+                    }
+                    await send(.barcodeInfoResponse(mappedResult))
+                }
+                
+            case .barcodeInfoResponse(.success(let itemReportNoOrNil)):
+                guard let itemReportNo = itemReportNoOrNil, !itemReportNo.isEmpty else {
+                    state.isLoading = false
+                    state.fetchedFoodItems = []
+                    state.totalItemsCount = 0
+                    return .none
+                }
+                
+                let searchType = FoodNutritionClient.SearchType.byItemReportNo(itemReportNo)
+                state.lastSearchType = searchType
+                if !state.isLoading { state.isLoading = true }
+
+                return .run { [pageNo = state.currentPage, numOfRows = state.numOfRows] send in
+                    let result: Result<FoodNutritionAPIResponse, Error> = await Result {
+                        try await apiClient.fetch(searchType, pageNo, numOfRows, APIConstants.serviceKey)
+                    }
+                    await send(.foodNutritionResponse(result))
+                }
+
+            case .barcodeInfoResponse(.failure(let apiError)):
+                state.scanner = nil
+                state.isLoading = false
+                state.fetchedFoodItems = []
+                state.totalItemsCount = 0
+                let errorToReport: APIError = apiError
+                return .none
+
+            case .scannerSheet(.dismiss):
+                state.scanner = nil
+                return .none
+            case .scannerSheet:
+                return .none
             }
+        }
+        .ifLet(\.$scanner, action: \.scannerSheet) {
+            EmptyReducer() // 스캐너 자체가 TCA Feature가 아니므로 EmptyReducer
         }
     }
 }

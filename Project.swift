@@ -38,7 +38,8 @@ let project = Project(
                     ],
                     "LSApplicationQueriesSchemes": [
                         "kakaokompassauth": true
-                    ]
+                    ],
+                    "NSCameraUsageDescription": "바코드를 스캔하여 식품 정보를 조회하기 위해 카메라 권한이 필요합니다."
                 ]
             ),
             sources: ["MeokPT/Sources/**"],

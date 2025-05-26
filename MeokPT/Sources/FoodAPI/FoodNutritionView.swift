@@ -34,12 +34,13 @@ struct FoodNutritionView: View {
                         Spacer()
                         Button(action: {
                             focusedField = false
-                            store.send(.searchButtonTapped)
+                            store.send(.scanBarcodeButtonTapped)
                         }) {
                             if store.isLoading {
                                 ProgressView()
                             } else {
-                                Text("검색")
+                                Image(systemName: "barcode.viewfinder")
+                                    .font(.title)
                             }
                         }
                         .disabled(store.isLoading)
@@ -134,7 +135,25 @@ struct FoodNutritionView: View {
             .onTapGesture {
                 focusedField = false
             }
+            .sheet(item: $store.scope(state: \.scanner, action: \.scannerSheet)) { _ in
+                scannerSheetContent
+            }
         }
+    }
+    
+    private var scannerSheetContent: some View {
+        let onFoundCode: (String) -> Void = { code in
+            store.send(.barcodeScanned(code))
+        }
+        let onFailScanning: (ScannerError) -> Void = { error in
+            print("Scanner Error: \(error.localizedDescription)")
+            store.send(.scannerSheet(.dismiss))
+        }
+
+        return CameraScannerView(
+            didFindCode: onFoundCode,
+            didFailScanning: onFailScanning
+        )
     }
 }
 
