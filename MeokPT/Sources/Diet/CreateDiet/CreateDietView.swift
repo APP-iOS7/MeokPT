@@ -15,97 +15,83 @@ struct CreateDietView: View {
 
     var body: some View {
         VStack {
-            ScrollView {
-                VStack(alignment: .leading) {
-                    HStack {
-                        VStack {
-                            TextField(
-                                "",
-                                text: $store.foodNameInput.sending(\.foodNameInputChanged),
-                                prompt: Text("식품 이름 (예: 고구마)")
-                            )
-                            .focused($focusedField)
-                            .autocapitalization(.none)
-                            .onSubmit { store.send(.searchButtonTapped) }
-                            Rectangle()
-                                .frame(height: 1)
-                                .foregroundColor(Color(.placeholderText))
-                        }
-                        Spacer()
-                        Button(action: {
-                            focusedField = false
-                            store.send(.scanBarcodeButtonTapped)
-                        }) {
-                            if store.isLoading {
-                                ProgressView()
-                            } else {
-                                Image(systemName: "barcode.viewfinder")
-                                    .font(.title)
-                            }
-                        }
-                        .disabled(store.isLoading)
+            VStack(alignment: .leading) {
+                HStack {
+                    VStack {
+                        TextField(
+                            "",
+                            text: $store.foodNameInput.sending(\.foodNameInputChanged),
+                            prompt: Text("식품 이름 (예: 고구마)")
+                        )
+                        .focused($focusedField)
+                        .autocapitalization(.none)
+                        .onSubmit { store.send(.searchButtonTapped) }
+                        Rectangle()
+                            .frame(height: 1)
+                            .foregroundColor(Color(.placeholderText))
                     }
-                    Spacer().frame(height:8)
-                    
-                    if store.isLoading {
-                        VStack (alignment: .center){
-                            Spacer()
-                            ProgressView()
-                                .frame(maxWidth: .infinity, alignment: .center)
-                            Spacer()
-                            
-                        }
-                    } else {
-                        if !store.fetchedFoodItems.isEmpty {
-                            ScrollView {
-                                ForEach(store.categorizedSections) { sectionData in
-                                    HStack {
-                                        Text(sectionData.categoryName)
-                                            .font(.subheadline)
-                                        Spacer()
-                                        Text("영양성분은 100g 기준입니다.")
-                                            .font(.subheadline.bold())
-                                    }
-                                    .foregroundStyle(Color("AppSecondaryColor"))
-                                    .padding([.top])
-                                    VStack(alignment: .leading) {
-                                        VStack(alignment: .leading) {
-                                            ForEach(sectionData.items) { foodInfo in
-                                                FoodItemRowView(foodInfo: foodInfo)
-                                                    .padding(.horizontal)
-                                                    .onTapGesture {
-                                                        print(foodInfo.foodName)
-                                                        store.send(.foodItemRowTapped(foodInfo))
-                                                    }
-                                                if foodInfo.id != sectionData.items.last?.id {
-                                                    Divider()
-                                                }
-                                            }
-                                        }
-                                    }
-                                    .padding(.vertical)
-                                    .background(Color(UIColor.secondarySystemGroupedBackground))
-                                    .cornerRadius(20)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 20)
-                                            .stroke(Color(UIColor.separator), lineWidth: 1)
-                                    )
-                                }
-                            }
-                        } else if store.lastSearchType != nil { // 검색결과가 없는 경우
-                            VStack {
-                                Spacer()
-                                Text("검색 결과가 없습니다.")
-                                    .foregroundColor(.gray)
-                                    .frame(maxWidth: .infinity, alignment: .center)
-                                Spacer()
-                            }
-                        } else {
-                            Spacer()
-                        }
+                    Spacer()
+                    Button(action: {
+                        focusedField = false
+                        store.send(.scanBarcodeButtonTapped)
+                    }) {
+                        Image(systemName: "barcode.viewfinder")
+                            .font(.title)
                     }
+                    .disabled(store.isLoading)
                 }
-                .padding(24)
+            }
+            .padding(.vertical, 8)
+            .padding(.horizontal, 24)
+
+            if store.isLoading {
+                VStack (alignment: .center) {
+                    Spacer()
+                    ProgressView()
+                        .frame(maxWidth: .infinity, alignment: .center)
+                    Spacer()
+                }
+            } else {
+                if !store.fetchedFoodItems.isEmpty {
+                    List {
+                        ForEach(store.categorizedSections) { sectionData in
+                            Section {
+                                ForEach(sectionData.items) { foodInfo in
+                                    FoodItemRowView(
+                                        foodInfo: foodInfo,
+                                    )
+                                    .onTapGesture { store.send(.foodItemRowTapped(foodInfo)) }
+                                    .listRowInsets(EdgeInsets())
+                                }
+                            } header: {
+                                HStack {
+                                    Text(sectionData.categoryName)
+                                        .font(.subheadline)
+                                    Spacer()
+                                    Text("영양성분은 100g 기준입니다.")
+                                        .font(.subheadline.bold())
+                                }
+                                .foregroundStyle(Color("AppSecondaryColor"))
+                                .textCase(nil)
+                                .padding(.horizontal, -8)
+                            }
+                        }
+                    }
+                    .listStyle(.insetGrouped)
+                    .scrollContentBackground(.hidden)
+                    .background(Color("AppBackgroundColor"))
+                    .padding(.horizontal, 4)
+                } else if store.lastSearchType != nil { // 검색결과가 없는 경우
+                    VStack {
+                        Spacer()
+                        Text("검색 결과가 없습니다.")
+                            .foregroundColor(.gray)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                        Spacer()
+                    }
+                } else {
+                    Spacer()
+                }
             }
             
             if store.totalPages > 1 {
@@ -133,9 +119,6 @@ struct CreateDietView: View {
         .navigationBarTitleDisplayMode(.inline)
         .contentShape(Rectangle())
         .background(Color("AppBackgroundColor"))
-        .onTapGesture {
-            focusedField = false
-        }
         .sheet(item: $store.scope(state: \.scanner, action: \.scannerSheet)) { _ in
             scannerSheetContent
         }
@@ -182,14 +165,17 @@ struct FoodItemRowView: View {
                         .foregroundColor(Color("AppSecondaryColor"))
                 }
             }
-            Spacer().frame(height:4)
+            .padding(.horizontal)
+            Text("") // 리스트 Divider 왼쪽 여백 없애기 위한 빈 텍스트
             Text("\(foodInfo.calorie, specifier: "%.0f") kcal").font(.body)
-            Spacer().frame(height: 20)
+                .padding(.horizontal)
+                .padding(.top, -8)
+            Spacer().frame(height: 12)
             NutrientView(carbohydrate: foodInfo.carbohydrate, protein: foodInfo.protein, fat: foodInfo.fat)
                 .frame(height: 47)
-                .padding(.horizontal)
+                .padding(.horizontal,24)
         }
-        .padding(.vertical, 12)
+        .padding(.vertical, 24)
     }
 }
 
