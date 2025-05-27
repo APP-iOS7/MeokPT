@@ -9,18 +9,22 @@ struct AppView: View {
             Group {
                 DietView(store: store.scope(state: \.dietState, action: \.dietAction))
                     .tabItem {
+                        Image(systemName: "list.bullet")
                         Text("식단")
                     }
                 DailyNutritionDietInfoView(store: store.scope(state: \.analyzeState, action: \.analyzeAction))
                     .tabItem {
+                        Image(systemName: "chart.bar.xaxis")
                         Text("분석")
                     }
                 CommunityView(store: store.scope(state: \.communityState, action: \.communityAction))
                     .tabItem {
+                        Image(systemName: "text.bubble")
                         Text("커뮤니티")
                     }
                 MyPageView(store: store.scope(state: \.myPageState, action: \.myPageAction))
                     .tabItem {
+                        Image(systemName: "person.crop.circle")
                         Text("마이페이지")
                     }
             }
