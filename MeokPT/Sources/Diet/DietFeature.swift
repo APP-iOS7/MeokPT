@@ -9,6 +9,24 @@ enum DietFilter: String, CaseIterable, Identifiable {
 
 @Reducer
 struct DietFeature {
+    @Reducer
+    struct Path {
+        @ObservableState
+        struct State: Equatable, Hashable {
+            var detail: DietDetailFeature.State
+        }
+
+        enum Action {
+            case detail(DietDetailFeature.Action)
+        }
+
+        var body: some Reducer<State, Action> {
+            Scope(state: \.detail, action: \.detail) {
+                DietDetailFeature()
+            }
+        }
+    }
+    
     @ObservableState
     struct State: Equatable {
         
@@ -17,6 +35,8 @@ struct DietFeature {
         var dietList: IdentifiedArrayOf<Diet> = []
         var searchText = ""
         var selectedFilter: DietFilter = .all
+        
+        var path = StackState<Path.State>()
         
         var filteredDiets: [Diet] {
             let searchedDiets = searchText.isEmpty ? dietList.elements : dietList.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
@@ -37,6 +57,9 @@ struct DietFeature {
         case addButtonTapped
         case dietCellTapped(id: Diet.ID)
         case likeButtonTapped(id: Diet.ID, isFavorite: Bool)
+        
+        case path(StackActionOf<Path>)
+
     }
     
     var body: some ReducerOf<Self> {
@@ -51,8 +74,10 @@ struct DietFeature {
                 state.dietList.append(newDiet)
                 return .none
                 
-            case .dietCellTapped/*(let id)*/:
-//                guard let diet = state.dietList[id: id] else { return .none }
+            case let .dietCellTapped(id):
+                if let diet = state.dietList.first(where: { $0.id == id }) {
+                    state.path.append(.init(detail: .init(diet: diet, dietID: id)))
+                }
                 return .none
                 
             case let .likeButtonTapped(id, isFavorite):
@@ -76,7 +101,18 @@ struct DietFeature {
             case .createDietFullScreenCover(_):
                 return .none
                 
+            case let .path(.element(id: pathID, action: .detail(.delegate(.favoriteToggled(isFavorite))))):
+                guard let dietDetailState = state.path[id: pathID]?.detail else {
+                    return .none
+                }
+                return .send(.likeButtonTapped(id: dietDetailState.dietID, isFavorite: isFavorite))
+
+            case .path:
+                return .none
             }
+        }
+        .forEach(\.path, action: \.path) {
+            Path()
         }
         .ifLet(\.$createDietFullScreenCover, action: \.createDietFullScreenCover) { CreateDietFeature() }
     }

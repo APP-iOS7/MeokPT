@@ -26,9 +26,11 @@ struct DietCellView: View {
                         Image(systemName: "ellipsis")
                     }
                 }
+                Spacer().frame(height: 4)
                 Text(String(format: "%.0f kcal", diet.kcal))
+                    .font(.body)
             }
-            
+            Spacer().frame(height: 8)
             HStack {
                 NutrientView(carbohydrate: diet.carbohydrate, protein: diet.protein, fat: diet.fat)
             }
@@ -52,4 +54,21 @@ struct FavoriteToggleStyle: ToggleStyle {
         }
         .foregroundColor(Color("AppSecondaryColor"))
     }
+}
+
+#Preview {
+    @Previewable @State var isFavoritePreview: Bool = false
+    return DietCellView(
+        diet: Diet(
+            title: "샐러드와 고구마",
+            isFavorite: false,
+            foods: [
+                Food(name: "닭가슴살 샐러드", amount: 200, kcal: 300, carbohydrate: 5, protein: 32, fat: 1),
+                Food(name: "고구마", amount: 100, kcal: 139, carbohydrate: 32.4, protein: 1.6, fat: 0.2)
+            ]
+        ),
+        isFavorite: $isFavoritePreview
+    )
+    .padding()
+    .frame(height: 162)
 }

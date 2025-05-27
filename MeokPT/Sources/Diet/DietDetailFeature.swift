@@ -6,6 +6,7 @@ struct DietDetailFeature {
     @ObservableState
     struct State: Equatable, Hashable {
         var diet: Diet
+        let dietID: UUID
     }
     
     enum Action {

@@ -5,28 +5,33 @@ struct DietView: View {
     @Bindable var store: StoreOf<DietFeature>
     
     var body: some View {
-        NavigationStack {
-            List(store.filteredDiets) { diet in
-                Button {
-                    store.send(.dietCellTapped(id: diet.id))
-                } label: {
-                    let favoriteBinding = Binding<Bool>(
-                        get: {
-                            store.dietList[id: diet.id]?.isFavorite ?? diet.isFavorite
-                        },
-                        set: { newValue in
-                            store.send(.likeButtonTapped(id: diet.id, isFavorite: newValue))
+        NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
+            ScrollView {
+                LazyVStack(spacing: 12) {
+                    ForEach(store.filteredDiets) { diet in
+                        Button {
+                            store.send(.dietCellTapped(id: diet.id))
+                        } label: {
+                            let favoriteBinding = Binding<Bool>(
+                                get: {
+                                    store.dietList[id: diet.id]?.isFavorite ?? diet.isFavorite
+                                },
+                                set: { newValue in
+                                    store.send(.likeButtonTapped(id: diet.id, isFavorite: newValue))
+                                }
+                            )
+                            DietCellView(
+                                diet: diet,
+                                isFavorite: favoriteBinding
+                            )
                         }
-                    )
-                    DietCellView(
-                        diet: diet,
-                        isFavorite: favoriteBinding
-                    )
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-                    .listRowInsets(EdgeInsets(top: 0, leading: 24, bottom: 16, trailing: 24))
+                        .buttonStyle(PlainButtonStyle())
+                    }
                 }
+                .padding(.horizontal, 24)
+                .padding(.top, 8)
             }
+            .background(Color("AppBackgroundColor"))
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Picker("필터", selection: $store.selectedFilter) {
@@ -45,11 +50,11 @@ struct DietView: View {
                     }
                 }
             }
-            .listRowSpacing(12)
-            .listStyle(.plain)
-            .background(Color("AppBackgroundColor"))
             .searchable(text: $store.searchText, prompt: "검색")
             .navigationBarTitleDisplayMode(.inline)
+        }
+        destination: { storeForElement in
+            DietDetailView(store: storeForElement.scope(state: \.detail, action: \.detail))
         }
         .fullScreenCover(
             item: $store.scope(state: \.createDietFullScreenCover, action: \.createDietFullScreenCover)) { store in
