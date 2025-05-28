@@ -84,8 +84,13 @@ struct DietDetailView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("음식 추가") {
-                    // TODO: 음식 추가 기능 구현 (예: store.send(.addFoodButtonTapped))
+                    store.send(.addFoodButtonTapped)
                 }
+            }
+        }
+        .fullScreenCover(item: $store.scope(state: \.createDietFullScreenCover, action: \.createDietFullScreenCover)) { store in
+            NavigationStack {
+                CreateDietView(store: store)
             }
         }
         .tint(Color("AppTintColor"))

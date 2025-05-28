@@ -59,12 +59,6 @@ struct DietView: View {
                 DietDetailView(store: detailStore)
             }
         }
-        .fullScreenCover(
-            item: $store.scope(state: \.createDietFullScreenCover, action: \.createDietFullScreenCover)) { store in
-            NavigationStack {
-                CreateDietView(store: store)
-            }
-        }
         .tint(Color("AppSecondaryColor"))
     }
 }
