@@ -10,25 +10,12 @@ enum DietFilter: String, CaseIterable, Identifiable {
 @Reducer
 struct DietFeature {
     @Reducer
-    struct Path {
-        @ObservableState
-        struct State: Equatable, Hashable {
-            var detail: DietDetailFeature.State
-        }
-
-        enum Action {
-            case detail(DietDetailFeature.Action)
-        }
-
-        var body: some Reducer<State, Action> {
-            Scope(state: \.detail, action: \.detail) {
-                DietDetailFeature()
-            }
-        }
+    enum Path {
+        case detail(DietDetailFeature)
     }
     
     @ObservableState
-    struct State: Equatable {
+    struct State {
         
         @Presents var createDietFullScreenCover: CreateDietFeature.State?
         
@@ -76,7 +63,7 @@ struct DietFeature {
                 
             case let .dietCellTapped(id):
                 if let diet = state.dietList.first(where: { $0.id == id }) {
-                    state.path.append(.init(detail: .init(diet: diet, dietID: id)))
+                    state.path.append(.detail(DietDetailFeature.State(diet: diet, dietID: id)))
                 }
                 return .none
                 
@@ -111,9 +98,7 @@ struct DietFeature {
                 return .none
             }
         }
-        .forEach(\.path, action: \.path) {
-            Path()
-        }
+        .forEach(\.path, action: \.path)
         .ifLet(\.$createDietFullScreenCover, action: \.createDietFullScreenCover) { CreateDietFeature() }
     }
 }
