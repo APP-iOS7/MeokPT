@@ -8,6 +8,9 @@ struct AddFoodView: View {
         case carbohydrate
         case protein
         case fat
+        case dietFiber
+        case sugar
+        case sodium
     }
     @FocusState private var focusedNutrientField: NutrientField?
 
@@ -88,6 +91,12 @@ struct AddFoodView: View {
                     store.currentProtein = 0.0
                 case .fat:
                     store.currentFat = 0.0
+                case .dietFiber:
+                    store.currentDietaryFiber = 0.0
+                case .sugar:
+                    store.currentSugar = 0.0
+                case .sodium:
+                    store.currentSodium = 0.0
                 case nil:
                     break
                 }

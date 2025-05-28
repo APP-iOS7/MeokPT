@@ -23,6 +23,9 @@ struct AddFoodFeature {
         var currentCarbohydrates: Double
         var currentProtein: Double
         var currentFat: Double
+        var currentDietaryFiber: Double
+        var currentSugar: Double
+        var currentSodium: Double
         
         init(selectedFoodItem: FoodNutritionItem) {
             self.selectedFoodItem = selectedFoodItem
@@ -34,6 +37,9 @@ struct AddFoodFeature {
             self.currentCarbohydrates = (selectedFoodItem.carbohydrate / 100.0) * Double(initialAmount)
             self.currentProtein = (selectedFoodItem.protein / 100.0) * Double(initialAmount)
             self.currentFat = (selectedFoodItem.fat / 100.0) * Double(initialAmount)
+            self.currentDietaryFiber = (selectedFoodItem.dietaryFiber / 100.0) * Double(initialAmount)
+            self.currentSugar = (selectedFoodItem.sugar / 100.0) * Double(initialAmount)
+            self.currentSodium = (selectedFoodItem.sodium / 100.0) * Double(initialAmount)
         }
         
         var info: AttributedString? {
@@ -58,7 +64,7 @@ struct AddFoodFeature {
     
     enum DelegateAction: Equatable {
         case dismissSheet
-        case addFoodToDiet(foodItem: FoodNutritionItem, amount: Int, calories: Double, carbohydrates: Double, protein: Double, fat: Double)
+        case addFoodToDiet(foodName: String, amount: Int, calories: Double, carbohydrates: Double, protein: Double, fat: Double, dietaryFiber: Double, sugar: Double, sodium: Double)
     }
     
     var body: some ReducerOf<Self> {
@@ -94,14 +100,17 @@ struct AddFoodFeature {
                 guard state.amountGram > 0 else { return .none }
                 
                 return .run { [
-                    foodItem = state.selectedFoodItem,
+                    foodName = state.selectedFoodItem.foodName,
                     amount = state.amountGram,
                     calories = state.currentCalories,
                     carbs = state.currentCarbohydrates,
                     protein = state.currentProtein,
-                    fat = state.currentFat
+                    fat = state.currentFat,
+                    dietaryFiber = state.currentDietaryFiber,
+                    sugar = state.currentSugar,
+                    sodium = state.currentSodium
                 ] send in
-                    await send(.delegate(.addFoodToDiet(foodItem: foodItem, amount: amount, calories: calories, carbohydrates: carbs, protein: protein, fat: fat)))
+                    await send(.delegate(.addFoodToDiet(foodName: foodName, amount: amount, calories: calories, carbohydrates: carbs, protein: protein, fat: fat, dietaryFiber: dietaryFiber, sugar: sugar, sodium: sodium)))
                     await send(.delegate(.dismissSheet))
                 }
                 
