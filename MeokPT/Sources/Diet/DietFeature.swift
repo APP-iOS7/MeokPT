@@ -29,9 +29,9 @@ struct DietFeature {
             let searchedDiets = searchText.isEmpty ? dietList.elements : dietList.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
             switch selectedFilter {
             case .all:
-                return Array(searchedDiets)
+                return searchedDiets
             case .favorites:
-                return Array(searchedDiets.filter { $0.isFavorite })
+                return searchedDiets.filter { $0.isFavorite }
             }
         }
     }
