@@ -1,97 +1,146 @@
 import SwiftUI
 import ComposableArchitecture
+import SwiftData
 
 struct DailyNutritionDietInfoView: View {
     @Bindable var store: StoreOf<DailyNutritionDietInfoFeature>
     @Environment(\.modelContext) private var context
-    
+
     var body: some View {
-        ZStack {
-            NavigationStack {
-                ZStack {
-                    Color("AppBackgroundColor")
-                               .ignoresSafeArea()
-                    ScrollView {
-                        VStack {
-                            WithViewStore(self.store, observe: { $0 }) { viewStore in
+        WithViewStore(self.store, observe: { $0 }) { viewStore in
+            ZStack {
+                NavigationStack {
+                    ZStack {
+                        Color("AppBackgroundColor")
+                            .ignoresSafeArea()
+                        ScrollView {
+                            VStack {
                                 content(for: viewStore)
-                                    .onAppear {
-                                        viewStore.send(.loadInfo(context))
-                                    }
-                                
+                            }
+                            .navigationTitle("분석")
+                            .navigationBarTitleDisplayMode(.inline)
+                            .background(Color("AppBackgroundColor"))
+                        }
+                        .scrollContentBackground(.hidden)
+                        .safeAreaInset(edge: .bottom) {
+                            if viewStore.state.isAIbuttonEnabled {
+                                Button {
+                                    viewStore.send(.presentAISheet)
+                                } label: {
+                                    Text("AI 식단 분석")
+                                        .frame(maxWidth: .infinity)
+                                        .padding()
+                                        .foregroundStyle(.black)
+                                        .background(Color("AppTintColor"))
+                                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                                        .padding(.horizontal, 24)
+                                        .padding(.bottom, 10)
+                                }
+                            } else {
+                                EmptyView()
                             }
                         }
-                        .navigationTitle("분석")
-                        .navigationBarTitleDisplayMode(.inline)
-                        .background(Color("AppBackgroundColor"))
-                    }
-                    .safeAreaInset(edge: .bottom) {
-                        Button {
-                            store.send(.presentAISheet)
-                        } label: {
-                            Text("AI 식단 분석")
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .foregroundStyle(.black)
-                                .background(Color("AppTintColor"))
-                                .clipShape(RoundedRectangle(cornerRadius: 10))
-                                .padding(.horizontal, 24)
-                        }
-                    }
-                    .toolbar {
-                        ToolbarItem(placement: .confirmationAction) {
-                            Button {
-                                store.send(.presentDietSelectionSheet)
-                            } label: {
-                                Text("식단 추가")
-                                    .foregroundStyle(Color("AppTintColor"))
-                                    .fontWeight(.semibold)
+                        .toolbar {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button {
+                                    viewStore.send(.presentDietSelectionSheet) // Use viewStore
+                                } label: {
+                                    Text("식단 추가")
+                                        .foregroundStyle(Color("AppTintColor"))
+                                        .fontWeight(.semibold)
+                                }
                             }
-                        }
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button {
-                            } label: {
-                                Text("비우기")
-                                    .foregroundStyle(Color("AppTintColor"))
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button {
+                                } label: {
+                                    Text("비우기")
+                                        .foregroundStyle(Color("AppTintColor"))
+                                }
                             }
                         }
                     }
+                }
+                .sheet(
+                    store: self.store.scope(state: \.$dietSelectionSheet, action: \.dietSelectionSheetAction)
+                ) { modalStore in
+                    NavigationStack {
+                        DietSelectionModalView(store: modalStore)
+                    }
+                    .presentationDragIndicator(.visible)
+                }
+                .sheet(
+                    store: self.store.scope(state: \.$aiSheet, action: \.aiSheetAction)
+                ) { modalStore in
+                    NavigationStack {
+                        AIModalView(store: modalStore)
+                    }
+                    .presentationDragIndicator(.visible)
                 }
             }
-            .scrollContentBackground(.hidden)
-            .sheet(
-                store: store.scope(state: \.$dietSelectionSheet, action: \.dietSelectionSheetAction)
-            ) { modalStore in
-                NavigationStack {
-                    DietSelectionModalView(store: modalStore)
+            .onAppear {
+                if viewStore.state.nutritionItems == nil && !viewStore.state.isLoading {
+                    print("DailyNutritionDietInfoView: Initial load on appear.")
+                    viewStore.send(.loadInfo(context))
                 }
-                .presentationDragIndicator(.visible)
+                print("DailyNutritionDietInfoView: Sending .task action to start listener.")
+                viewStore.send(.task)
             }
-            .sheet(
-                store: store.scope(state: \.$aiSheet, action: \.aiSheetAction)
-            ) { modalStore in
-                NavigationStack {
-                    AIModalView(store: modalStore)
-                }
-                .presentationDragIndicator(.visible)
+            .onChange(of: viewStore.state.lastDataChangeTimestamp) { oldValue, newValue in
+               if oldValue != newValue {
+                   print("Values are different. Sending .loadInfo(context)...")
+                   viewStore.send(.loadInfo(context))
+               } else {
+                   print("Values were identical in onChange. Not sending .loadInfo.")
+               }
             }
         }
-//        .task {
-//            ViewStore(store, observe: { $0 }).send(.onAppear)
-//        }
     }
-    
+
+    // TODO: - 신체정보가 있고 식단이 없는 경우
     @ViewBuilder
     private func content(for viewStore: ViewStore<DailyNutritionDietInfoFeature.State, DailyNutritionDietInfoFeature.Action>) -> some View {
-        if viewStore.isLoading {
-            ProgressView("로딩 중입니다…")
-        } else if let nutrtionItems = viewStore.nutritionItems {
-            DailyNutritionInfoView(nutritionItems: nutrtionItems)
-        } else if let errorMessage = viewStore.errorMessage {
-            Text(errorMessage)
-                .font(.caption)
-        } else {
-            DailyNutritionInfoEmptyView()
+        VStack {
+            if viewStore.isLoading {
+                ProgressView("로딩 중입니다…")
+                    .padding()
+            } else if let nutritionItems = viewStore.nutritionItems {
+                if nutritionItems.isEmpty {
+                    DailyNutritionInfoEmptyView(
+                       onNavigateToMyPageButtonTap: {
+                           store.send(.myPageNavigationButtonTapped)
+                       }
+                   )
+                } else {
+                    DailyNutritionInfoView(nutritionItems: nutritionItems)
+                    
+                    if let dietItem = viewStore.dietItems {
+                        if dietItem.isEmpty {
+                            DietEmptyView()
+                        } else {
+                            DietNotEmptyView()
+                        }
+                    } else {
+                        DietEmptyView()
+                    }
+                }
+            } else if let errorMessage = viewStore.errorMessage {
+                Text(errorMessage)
+                    .font(.caption)
+                    .foregroundColor(.red)
+                    .padding()
+            } else {
+                DailyNutritionInfoEmptyView(
+                   onNavigateToMyPageButtonTap: {
+                       store.send(.myPageNavigationButtonTapped)
+                   }
+               )
+            }
         }
     }
+}
+
+#Preview {
+    DailyNutritionDietInfoView(store: Store(initialState: DailyNutritionDietInfoFeature.State()) {
+        DailyNutritionDietInfoFeature()
+    })
 }

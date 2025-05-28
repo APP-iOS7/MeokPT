@@ -1,7 +1,6 @@
 import Foundation
 import ComposableArchitecture
 
-
 struct Food: Identifiable, Equatable, Hashable {
     let id: UUID = UUID()
     let name: String

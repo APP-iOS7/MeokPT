@@ -34,9 +34,10 @@ struct DietItemCellView: View {
         .padding(24)
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(isSelected ? Color("AppTertiaryColor").opacity(0.2) : Color.white)
+                .fill(isSelected
+                      ? Color("AppTertiaryColor").opacity(0.2)
+                      : Color("App CardColor"))
                 .stroke(Color.gray, lineWidth: 1)
-                .background(Color.white)
         )
         .padding(.horizontal, 24)
         .onTapGesture {

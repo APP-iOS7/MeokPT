@@ -36,7 +36,7 @@ struct ProfileSettingView: View {
                     } else {
                         Image(systemName: "person.circle.fill")
                             .resizable()
-                            .foregroundStyle(Color("AppSecondaryColor").opacity(0.5))
+                            .foregroundStyle(Color("App ProfileColor").opacity(0.5))
                     }
                 }
                 .frame(width: 104, height: 104)

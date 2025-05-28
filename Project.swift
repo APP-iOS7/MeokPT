@@ -52,6 +52,8 @@ let project = Project(
                 .external(name: "FirebaseAuth"),
                 .external(name: "FirebaseStorage"),
                 .external(name: "Kingfisher"),
+                .external(name: "FirebaseAI"),
+                .external(name: "MarkdownUI"),
                 .external(name: "KakaoSDKAuth"),
                 .external(name: "KakaoSDKUser")
             ]

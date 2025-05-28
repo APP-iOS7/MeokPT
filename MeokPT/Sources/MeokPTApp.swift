@@ -28,7 +28,6 @@ struct MeokPTApp: App {
     var body: some Scene {
         WindowGroup {
             AppView(store: MeokPTApp.store)
-                .tint(Color("AppTintColor"))
                 .modelContainer(for: [BodyInfo.self, NutritionItem.self])
                 .onOpenURL { url in
                     if (AuthApi.isKakaoTalkLoginUrl(url)) {

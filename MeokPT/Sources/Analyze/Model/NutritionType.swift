@@ -1,4 +1,4 @@
-enum NutritionType: String, CaseIterable, Identifiable {
+enum NutritionType: String, CaseIterable, Identifiable, Equatable {
     case calorie = "열량"
     case carbohydrate = "탄수화물"
     case protein = "단백질"
@@ -13,6 +13,18 @@ enum NutritionType: String, CaseIterable, Identifiable {
         case .calorie: return "kcal"
         case .sodium: return "mg"
         default: return "g"
+        }
+    }
+    
+    var jsonKey: String {
+        switch self {
+        case .calorie: return "calories"
+        case .carbohydrate: return "carbohydrates"
+        case .protein: return "protein"
+        case .fat: return "fat"
+        case .dietaryFiber: return "dietaryFiber"
+        case .sugar: return "sugar"
+        case .sodium: return "sodium"
         }
     }
 }

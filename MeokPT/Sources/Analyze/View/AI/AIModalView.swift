@@ -1,24 +1,74 @@
-import ComposableArchitecture
 import SwiftUI
+import ComposableArchitecture
+import MarkdownUI
 
 struct AIModalView: View {
     @Bindable var store: StoreOf<AISheetFeature>
-
     @Environment(\.dismiss) var dismiss
 
+    private func stripMarkdownCodeBlockWrapper(from text: String) -> String {
+        let trimmedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if trimmedText.hasPrefix("```") && trimmedText.hasSuffix("```") && trimmedText.count >= 6 {
+            var innerContentSubstring = trimmedText.dropFirst(3).dropLast(3)
+            if let firstNewlineIndex = innerContentSubstring.firstIndex(of: "\n") {
+                let partBeforeNewline = innerContentSubstring[..<firstNewlineIndex]
+            
+                if partBeforeNewline.isEmpty || (!partBeforeNewline.isEmpty && partBeforeNewline.allSatisfy({ $0.isLetter || $0.isNumber })) {
+                    innerContentSubstring = innerContentSubstring[innerContentSubstring.index(after: firstNewlineIndex)...]
+                }
+            }
+            return String(innerContentSubstring)
+        }
+        return text
+    }
+
     var body: some View {
-        VStack(spacing: 16) {            
-            Text("AI 식단 평가")
-                .foregroundStyle(.black)
-                .font(.title3)
+        VStack(alignment: .leading, spacing: 16) {
+            if store.isLoading {
+                ProgressView()
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, 20)
 
-            Text("하나의 식단 평가와 달리, 분석 탭에서 추가한 모든 식단을 고려하여 프롬프트 제작한다.")
-                .foregroundStyle(.black)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
+                Text("AI가 분석 중입니다...")
+                    .font(.caption)
+                    .foregroundStyle(.gray)
+                    .frame(maxWidth: .infinity, alignment: .center)
 
+            } else {
+                ScrollView {
+                    let cleanedResponse = stripMarkdownCodeBlockWrapper(from: store.generatedResponse)
+                    
+                    if !cleanedResponse.isEmpty {
+                        Markdown(cleanedResponse)
+                    } else if !store.generatedResponse.isEmpty && cleanedResponse.isEmpty {
+                        Text("분석 결과가 비어있습니다.")
+                            .font(.caption)
+                            .foregroundStyle(.gray)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding()
+                    } else {
+                         Text("분석 결과를 표시할 수 없습니다.")
+                            .font(.caption)
+                            .foregroundStyle(.gray)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding()
+                    }
+                }
+            }
             Spacer()
         }
-        .padding(.top, 20)
+        .padding(.top, 10)
+        .onAppear {
+            store.send(.onAppear)
+        }
     }
+}
+
+#Preview {
+    AIModalView(store: Store(initialState: AISheetFeature.State(
+        generatedResponse: "AI가 곧 분석 결과를 알려드립니다." 
+    )) {
+        AISheetFeature()
+    })
 }

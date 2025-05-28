@@ -75,3 +75,6 @@ Tuist/.build
 ### others ###
 buildServer.json
 .gitmessage
+
+# Gemini API Key 폴더 제외
+MeokPT/Sources/Dependency/GeminiClientKey.swift

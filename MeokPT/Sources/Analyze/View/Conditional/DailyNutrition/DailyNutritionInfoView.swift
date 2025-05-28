@@ -20,10 +20,11 @@ struct DailyNutritionInfoView: View {
             }
         }
         .padding(24)
+        .cornerRadius(16)
         .background(
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: 16)
                 .stroke(Color.gray, lineWidth: 1)
-                .background(Color.white)
+                .background(Color("CardBackgroundColor"))
         )
         .padding(24)
     }
