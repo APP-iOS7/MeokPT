@@ -58,7 +58,7 @@ struct CreateDietView: View {
                             Section {
                                 ForEach(sectionData.items) { foodInfo in
                                     FoodItemRowView(
-                                        foodInfo: foodInfo,
+                                        foodInfo: foodInfo
                                     )
                                     .onTapGesture { store.send(.foodItemRowTapped(foodInfo)) }
                                     .listRowInsets(EdgeInsets())
