@@ -113,3 +113,9 @@ struct DailyNutritionDietInfoView: View {
         }
     }
 }
+
+#Preview {
+    DailyNutritionDietInfoView(store: Store(initialState: DailyNutritionDietInfoFeature.State()) {
+        DailyNutritionDietInfoFeature()
+    })
+}
