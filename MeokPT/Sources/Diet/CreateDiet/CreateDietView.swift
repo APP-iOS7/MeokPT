@@ -125,7 +125,7 @@ struct CreateDietView: View {
         .sheet(item: $store.scope(state: \.addFoodSheet, action: \.addFoodSheet)) { store in
             AddFoodView(store: store)
                 .presentationDragIndicator(.visible)
-                .presentationDetents([.medium, .large])
+                .presentationDetents([.fraction(0.8)])
         }
         .toolbar(content: {
             ToolbarItem(placement: .topBarTrailing,
