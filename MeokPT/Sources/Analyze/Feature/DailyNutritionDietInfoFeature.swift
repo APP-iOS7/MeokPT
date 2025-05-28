@@ -16,6 +16,10 @@ struct DailyNutritionDietInfoFeature {
         @Presents var aiSheet: AISheetFeature.State?
         
         var lastDataChangeTimestamp: Date = Date()
+        
+        var isAIbuttonEnabled: Bool {
+            !(nutritionItems?.isEmpty ?? true)
+        }
     }
     
     enum Action: Equatable {
@@ -32,6 +36,13 @@ struct DailyNutritionDietInfoFeature {
         
         case _internalLoadInfoCompleted([NutritionItem])
         case _internalLoadInfoFailed(NutritionError)
+        
+        case myPageNavigationButtonTapped
+        case delegate(DelegateAction)
+    }
+    
+    enum DelegateAction {
+        case navigateToMyPage
     }
     
     enum NutritionError: Error, Equatable {
@@ -52,6 +63,10 @@ struct DailyNutritionDietInfoFeature {
                 return .none
                 
             case .presentAISheet:
+                guard state.isAIbuttonEnabled else {
+                    print("Error: AI button")
+                    return .none
+                }
                 state.aiSheet = AISheetFeature.State()
                 return .none
 
@@ -107,6 +122,10 @@ struct DailyNutritionDietInfoFeature {
                 state.isLoading = false
                 state.errorMessage = "Nutrition 정보 불러오기 실패 (async)"
                 print("에러 (async loadInfo): \(error.localizedDescription)")
+                return .none
+            case .myPageNavigationButtonTapped:
+                return .send(.delegate(.navigateToMyPage))
+            case .delegate(_):
                 return .none
             }
         }

@@ -5,28 +5,32 @@ struct AppView: View {
     @Bindable var store: StoreOf<AppFeature>
     
     var body: some View {
-        TabView {
+        TabView(selection: $store.selectedTab.sending(\.setSelectedTab)) {
             Group {
                 DietView(store: store.scope(state: \.dietState, action: \.dietAction))
                     .tabItem {
                         Image(systemName: "list.bullet")
                         Text("식단")
                     }
+                    .tag(AppFeature.State.Tab.diet)
                 DailyNutritionDietInfoView(store: store.scope(state: \.analyzeState, action: \.analyzeAction))
                     .tabItem {
                         Image(systemName: "chart.bar.xaxis")
                         Text("분석")
                     }
+                    .tag(AppFeature.State.Tab.analyze)
                 CommunityView(store: store.scope(state: \.communityState, action: \.communityAction))
                     .tabItem {
                         Image(systemName: "text.bubble")
                         Text("커뮤니티")
                     }
+                    .tag(AppFeature.State.Tab.community)
                 MyPageView(store: store.scope(state: \.myPageState, action: \.myPageAction))
                     .tabItem {
                         Image(systemName: "person.crop.circle")
                         Text("마이페이지")
                     }
+                    .tag(AppFeature.State.Tab.myPage)
             }
             .toolbarBackground(.visible, for: .tabBar)
             .toolbarBackground(Color(UIColor.systemBackground), for: .tabBar)
