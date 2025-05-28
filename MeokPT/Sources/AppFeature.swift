@@ -8,6 +8,7 @@ struct AppFeature {
     
     @ObservableState
     struct State {
+        var selectedTab: Tab = .diet
         var dietState = DietFeature.State()
         var analyzeState = DailyNutritionDietInfoFeature.State()
         var communityState = CommunityFeature.State()
@@ -21,9 +22,15 @@ struct AppFeature {
         var isLoadingUserProfile: Bool = false
         var userProfileError: String?
         var isInitialAuthCheckDone: Bool = false
+        
+        enum Tab: Hashable {
+            case diet, analyze, community, myPage
+        }
     }
     
     enum Action: BindableAction {
+        case setSelectedTab(State.Tab)
+        
         case binding(BindingAction<State>)
         case dietAction(DietFeature.Action)
         case analyzeAction(DailyNutritionDietInfoFeature.Action)
@@ -244,6 +251,17 @@ struct AppFeature {
                 }
                 .cancellable(id: CancelID.authStateListener)
                 
+            case .setSelectedTab(let tab):
+                state.selectedTab = tab
+                return .none
+            case .analyzeAction(.delegate(let analyzeDelegateAction)):
+                switch analyzeDelegateAction {
+                case .navigateToMyPage: // DailyNutritionDietInfoFeature.DelegateAction의 케이스와 일치하는지 확인
+                    state.selectedTab = .myPage // 수정된 Tab enum 케이스 사용 (여기서는 .myPage로 이동해야 함)
+                    // !!!! 중요: 분석 탭에서 마이페이지로 이동하는 것이므로, 아래와 같이 수정되어야 합니다.
+                    // state.selectedTab = .myPage
+                    return .none
+            }
             case .binding, .dietAction, .analyzeAction, .communityAction, .myPageAction, .loginAction, .profileSettingAction:
                 return .none
             }

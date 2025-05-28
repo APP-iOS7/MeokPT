@@ -23,9 +23,7 @@ struct DailyNutritionInfoEmptyView: View {
                     .fontWeight(.semibold)
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .foregroundColor(.white)
-                    .background(Color("AppTintColor"))
-                    .cornerRadius(12)
+                    .foregroundColor(Color("AppTintColor"))
             }
             .padding(.horizontal)
         }
