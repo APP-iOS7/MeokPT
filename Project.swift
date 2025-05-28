@@ -7,7 +7,9 @@ let project = Project(
         developmentRegion: "ko"
     ),
     settings: .settings(
-        base: [:],
+        base: [
+            "DEVELOPMENT_TEAM": "59FP2PXRXK",
+        ],
         configurations: [
             .debug(
                 name: "Debug",
@@ -24,7 +26,7 @@ let project = Project(
             name: "MeokPT",
             destinations: .iOS,
             product: .app,
-            bundleId: "kr.co.codegrove.MeokPT",
+            bundleId: "kr.co.codegrove.MeokPTApp",
             infoPlist: .extendingDefault(
                 with: [
                     "UILaunchScreen": [
@@ -34,10 +36,14 @@ let project = Project(
                     "NSAppTransportSecurity": [
                         "NSAllowsArbitraryLoads": true
                     ],
+                    "LSApplicationQueriesSchemes": [
+                        "kakaokompassauth": true
+                    ]
                 ]
             ),
             sources: ["MeokPT/Sources/**"],
             resources: ["MeokPT/Resources/**"],
+            entitlements: .file(path: "MeokPT.entitlements"),
             dependencies: [
                 .external(name: "ComposableArchitecture"),
                 .external(name: "FirebaseCore"),
@@ -47,13 +53,15 @@ let project = Project(
                 .external(name: "Kingfisher"),
                 .external(name: "FirebaseAI"),
                 .external(name: "MarkdownUI"),
+                .external(name: "KakaoSDKAuth"),
+                .external(name: "KakaoSDKUser")
             ]
         ),
         .target(
             name: "MeokPTTests",
             destinations: .iOS,
             product: .unitTests,
-            bundleId: "kr.co.codegrove.MeokPTTests",
+            bundleId: "kr.co.codegrove.MeokPTAppTests",
             infoPlist: .default,
             sources: ["MeokPT/Tests/**"],
             resources: [],

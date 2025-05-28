@@ -20,7 +20,7 @@ struct ActivityLevelItemView: View {
         .frame(width: 200, height: 130)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(isSelected ? Color("AppTintColor", bundle: nil) : Color.white)
+                .fill(isSelected ? Color("AppTintColor", bundle: nil) : Color("App CardColor"))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
