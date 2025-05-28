@@ -58,13 +58,13 @@ struct FavoriteToggleStyle: ToggleStyle {
 
 #Preview {
     @Previewable @State var isFavoritePreview: Bool = false
-    return DietCellView(
+    DietCellView(
         diet: Diet(
             title: "샐러드와 고구마",
             isFavorite: false,
             foods: [
-                Food(name: "닭가슴살 샐러드", amount: 200, kcal: 300, carbohydrate: 5, protein: 32, fat: 1),
-                Food(name: "고구마", amount: 100, kcal: 139, carbohydrate: 32.4, protein: 1.6, fat: 0.2)
+                Food(name: "닭가슴살 샐러드", amount: 200, kcal: 300, carbohydrate: 5, protein: 32, fat: 1, dietaryFiber: 2, sodium: 4, sugar: 5),
+                Food(name: "고구마", amount: 100, kcal: 301390, carbohydrate: 32.4, protein: 1.6, fat: 0.2, dietaryFiber: 4.1, sodium: 1.1, sugar: 2.2),
             ]
         ),
         isFavorite: $isFavoritePreview

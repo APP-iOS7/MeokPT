@@ -37,30 +37,34 @@ struct DietDetailView: View {
                 }
 
                 HStack {
-                    NutrientView(
+                    DetailNutrientView(
                         carbohydrate: store.diet.carbohydrate,
                         protein: store.diet.protein,
-                        fat: store.diet.fat
+                        fat: store.diet.fat,
+                        dietaryFiber: store.diet.dietaryFiber,
+                        sugar: store.diet.sugar,
+                        sodium: store.diet.sodium
                     )
                 }
-                .padding(.horizontal, 32)
 
                 VStack {
                     ForEach(store.diet.foods) { food in
-                        VStack(alignment: .leading, spacing: 16) {
-                            VStack(alignment: .leading) {
+                        VStack(alignment: .leading, spacing: 24) {
+                            VStack(alignment: .leading, spacing: 8) {
                                 Text(food.name)
                                     .font(.headline)
                                 Text("\(String(format: "%.0f", food.amount))g, \(String(format: "%.0f", food.kcal))kcal")
                             }
-                            NutrientView(
+                            DetailNutrientView(
                                 carbohydrate: food.carbohydrate,
                                 protein: food.protein,
-                                fat: food.fat
+                                fat: food.fat,
+                                dietaryFiber: food.dietaryFiber,
+                                sugar: food.sugar,
+                                sodium: food.sodium
                             )
-                            .padding(.horizontal)
                         }
-                        .padding()
+                        .padding(24)
                         if food != store.diet.foods.last {
                             Divider()
                         }
@@ -97,8 +101,8 @@ struct DietDetailView: View {
                         title: "샐러드와 고구마",
                         isFavorite: false,
                         foods: [
-                            Food(name: "닭가슴살 샐러드", amount: 200, kcal: 300, carbohydrate: 5, protein: 32, fat: 1),
-                            Food(name: "고구마", amount: 100, kcal: 139, carbohydrate: 32.4, protein: 1.6, fat: 0.2)
+                            Food(name: "닭가슴살 샐러드", amount: 200, kcal: 300, carbohydrate: 5, protein: 32, fat: 1, dietaryFiber: 2, sodium: 4, sugar: 5),
+                            Food(name: "고구마", amount: 100, kcal: 390, carbohydrate: 32.4, protein: 1.6, fat: 0.2, dietaryFiber: 4.1, sodium: 1.1, sugar: 2.2),
                         ]
                     ),
                     dietID: UUID()
