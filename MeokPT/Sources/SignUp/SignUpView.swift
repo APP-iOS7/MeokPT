@@ -129,7 +129,6 @@ struct SignUpView: View {
                     passwordVerifyFocused = false
                 }
             }
-            .scrollDisabled(true)
             .background(Color("AppBackgroundColor"))
         
     }
