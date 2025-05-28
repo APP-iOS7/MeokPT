@@ -82,12 +82,18 @@ struct AddFoodFeature {
                 state.currentCarbohydrates = (state.selectedFoodItem.carbohydrate / 100.0) * Double(state.amountGram)
                 state.currentProtein = (state.selectedFoodItem.protein / 100.0) * Double(state.amountGram)
                 state.currentFat = (state.selectedFoodItem.fat / 100.0) * Double(state.amountGram)
+                state.currentDietaryFiber = (state.selectedFoodItem.dietaryFiber / 100.0) * Double(state.amountGram)
+                state.currentSugar = (state.selectedFoodItem.sugar / 100.0) * Double(state.amountGram)
+                state.currentSodium = (state.selectedFoodItem.sodium / 100.0) * Double(state.amountGram)
                 return .none
             
-            case .binding(\.currentCarbohydrates), .binding(\.currentProtein), .binding(\.currentFat):
+            case .binding(\.currentCarbohydrates), .binding(\.currentProtein), .binding(\.currentFat), .binding(\.currentDietaryFiber), .binding(\.currentSugar), .binding(\.currentSodium):
                 if state.currentCarbohydrates < 0 { state.currentCarbohydrates = 0 }
                 if state.currentProtein < 0 { state.currentProtein = 0 }
                 if state.currentFat < 0 { state.currentFat = 0 }
+                if state.currentDietaryFiber < 0 { state.currentDietaryFiber = 0 }
+                if state.currentSugar < 0 { state.currentSugar = 0 }
+                if state.currentSodium < 0 { state.currentSodium = 0 }
                 return .none
 
             case .binding(_):

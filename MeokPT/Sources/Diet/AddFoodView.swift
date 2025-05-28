@@ -12,6 +12,12 @@ struct AddFoodView: View {
         case sugar
         case sodium
     }
+    
+    private enum NutrientUnit: String {
+        case gram = "g"
+        case milligram = "mg"
+    }
+    
     @FocusState private var focusedNutrientField: NutrientField?
 
     var body: some View {
@@ -53,12 +59,23 @@ struct AddFoodView: View {
                     Text("\(store.currentCalories, specifier: "%.0f")kcal")
                         .foregroundColor(Color("AppSecondaryColor"))
                     Spacer().frame(height: 2)
-                    HStack {
-                        nutrientInputRow(label: "탄수화물", value: $store.currentCarbohydrates, field: .carbohydrate)
-                        Spacer()
-                        nutrientInputRow(label: "단백질", value: $store.currentProtein, field: .protein)
-                        Spacer()
-                        nutrientInputRow(label: "지방", value: $store.currentFat, field: .fat)
+                    
+                    VStack(spacing: 16) {
+                        HStack {
+                            nutrientInputRow(label: "탄수화물", value: $store.currentCarbohydrates, field: .carbohydrate, unit: .gram)
+                            Spacer()
+                            nutrientInputRow(label: "단백질", value: $store.currentProtein, field: .protein, unit: .gram)
+                            Spacer()
+                            nutrientInputRow(label: "지방", value: $store.currentFat, field: .fat, unit: .gram)
+                        }
+                        
+                        HStack {
+                            nutrientInputRow(label: "식이섬유", value: $store.currentDietaryFiber, field: .dietFiber, unit: .gram)
+                            Spacer()
+                            nutrientInputRow(label: "당류", value: $store.currentSugar, field: .sugar, unit: .gram)
+                            Spacer()
+                            nutrientInputRow(label: "나트륨", value: $store.currentSodium, field: .sodium, unit: .milligram)
+                        }
                     }
                 }
                 .padding(24)
@@ -105,7 +122,7 @@ struct AddFoodView: View {
     }
     
     @ViewBuilder
-    private func nutrientInputRow(label: String, value: Binding<Double>, field: NutrientField) -> some View {
+    private func nutrientInputRow(label: String, value: Binding<Double>, field: NutrientField, unit: NutrientUnit) -> some View {
         var nutrientFormatter: NumberFormatter {
             let formatter = NumberFormatter()
             formatter.numberStyle = .decimal
@@ -152,7 +169,7 @@ struct AddFoodView: View {
                             }
                         }
                     
-                    Text("g")
+                    Text(unit.rawValue)
                         .font(.body)
                         .foregroundColor(currentForegroundColor)
                         .fixedSize(horizontal: true, vertical: false)
