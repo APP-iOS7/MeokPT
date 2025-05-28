@@ -17,8 +17,6 @@ struct DietFeature {
     @ObservableState
     struct State {
         
-        @Presents var createDietFullScreenCover: CreateDietFeature.State?
-        
         var dietList: IdentifiedArrayOf<Diet> = []
         var searchText = ""
         var selectedFilter: DietFilter = .all
@@ -38,8 +36,6 @@ struct DietFeature {
     
     enum Action: BindableAction {
         
-        case createDietFullScreenCover(PresentationAction<CreateDietFeature.Action>)
-        
         case binding(BindingAction<State>)
         case addButtonTapped
         case dietCellTapped(id: Diet.ID)
@@ -55,10 +51,16 @@ struct DietFeature {
         Reduce { state, action in
             switch action {
             case .addButtonTapped:
-                state.createDietFullScreenCover = CreateDietFeature.State()
-                
                 let newDiet = Diet(title: "새로운 식단", isFavorite: false, foods: [])
                 state.dietList.append(newDiet)
+                
+                // DetailView -> CreateDietView 열기
+                let detailState = DietDetailFeature.State(
+                    diet: newDiet,
+                    dietID: newDiet.id,
+                    createDietFullScreenCover: CreateDietFeature.State()
+                )
+                state.path.append(.detail(detailState))
                 return .none
                 
             case let .dietCellTapped(id):
@@ -81,13 +83,6 @@ struct DietFeature {
             case .binding(_):
                 return .none
                 
-            case .createDietFullScreenCover(.presented(.delegate(.dismissSheet))):
-                state.createDietFullScreenCover = nil
-                return .none
-                
-            case .createDietFullScreenCover(_):
-                return .none
-                
             case let .path(.element(id: pathID, action: .detail(.delegate(.favoriteToggled(isFavorite))))):
                 guard let dietDetailState = state.path[id: pathID]?.detail else {
                     return .none
@@ -99,6 +94,5 @@ struct DietFeature {
             }
         }
         .forEach(\.path, action: \.path)
-        .ifLet(\.$createDietFullScreenCover, action: \.createDietFullScreenCover) { CreateDietFeature() }
     }
 }
