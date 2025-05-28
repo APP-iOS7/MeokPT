@@ -1,27 +1,21 @@
 import ComposableArchitecture
 import Foundation
 
-struct Food: Identifiable, Equatable {
-    let name: String
-    var amount: Double
-    var kcal: Double
-    var carbohydrate: Double
-    var protein: Double
-    var fat: Double
-    let id: UUID = UUID()
-}
-
 @Reducer
 struct DietDetailFeature {
     @ObservableState
     struct State: Equatable {
-        var diet: Diet?
-        var foods: [Food] = []
+        var diet: Diet
+        let dietID: UUID
+        
+        @Presents var createDietFullScreenCover: CreateDietFeature.State?
     }
     
     enum Action {
         case likeButtonTapped
         case updateTitle(String)
+        case addFoodButtonTapped
+        case createDietFullScreenCover(PresentationAction<CreateDietFeature.Action>)
         case delegate(DelegateAction)
     }
 
@@ -29,20 +23,29 @@ struct DietDetailFeature {
         case favoriteToggled(isFavorite: Bool)
     }
     
-    enum CancelID { case timer }
-    
     var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
             case .likeButtonTapped:
-                state.diet?.isFavorite.toggle()
-                return .send(.delegate(.favoriteToggled(isFavorite: state.diet?.isFavorite ?? false)))
+                state.diet.isFavorite.toggle()
+                return .send(.delegate(.favoriteToggled(isFavorite: state.diet.isFavorite)))
             case let .updateTitle(newTitle):
-                state.diet?.title = newTitle
+                state.diet.title = newTitle
+                return .none
+            case .addFoodButtonTapped:
+                state.createDietFullScreenCover = CreateDietFeature.State()
+                return .none
+            case .createDietFullScreenCover(.presented(.delegate(.dismissSheet))):
+                state.createDietFullScreenCover = nil
+                return .none
+            case .createDietFullScreenCover(_):
                 return .none
             case .delegate:
                 return .none
             }
+        }
+        .ifLet(\.$createDietFullScreenCover, action: \.createDietFullScreenCover) {
+            CreateDietFeature()
         }
     }
 }
