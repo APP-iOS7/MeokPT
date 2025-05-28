@@ -57,10 +57,12 @@ struct CreateDietView: View {
                         ForEach(store.categorizedSections) { sectionData in
                             Section {
                                 ForEach(sectionData.items) { foodInfo in
-                                    FoodItemRowView(
-                                        foodInfo: foodInfo,
-                                    )
-                                    .onTapGesture { store.send(.foodItemRowTapped(foodInfo)) }
+                                    Button {
+                                        store.send(.foodItemRowTapped(foodInfo))
+                                    } label: {
+                                        FoodItemRowView(foodInfo: foodInfo)
+                                    }
+                                    .tint(.primary)
                                     .listRowInsets(EdgeInsets())
                                 }
                             } header: {
