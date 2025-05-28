@@ -21,18 +21,23 @@ struct DailyNutritionDietInfoView: View {
                             .navigationBarTitleDisplayMode(.inline)
                             .background(Color("AppBackgroundColor"))
                         }
-                        .scrollContentBackground(.hidden) // If targeting iOS 16+ for ScrollView background
+                        .scrollContentBackground(.hidden)
                         .safeAreaInset(edge: .bottom) {
-                            Button {
-                                viewStore.send(.presentAISheet)
-                            } label: {
-                                Text("AI 식단 분석")
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
-                                    .foregroundStyle(.black)
-                                    .background(Color("AppTintColor"))
-                                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                                    .padding(.horizontal, 24)
+                            if viewStore.state.isAIbuttonEnabled {
+                                Button {
+                                    viewStore.send(.presentAISheet)
+                                } label: {
+                                    Text("AI 식단 분석")
+                                        .frame(maxWidth: .infinity)
+                                        .padding()
+                                        .foregroundStyle(.black)
+                                        .background(Color("AppTintColor"))
+                                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                                        .padding(.horizontal, 24)
+                                        .padding(.bottom, 10)
+                                }
+                            } else {
+                                EmptyView()
                             }
                         }
                         .toolbar {
@@ -91,24 +96,51 @@ struct DailyNutritionDietInfoView: View {
         }
     }
 
+    // TODO: - 신체정보가 있고 식단이 없는 경우
     @ViewBuilder
     private func content(for viewStore: ViewStore<DailyNutritionDietInfoFeature.State, DailyNutritionDietInfoFeature.Action>) -> some View {
-        if viewStore.isLoading {
-            ProgressView("로딩 중입니다…")
-                .padding()
-        } else if let nutritionItems = viewStore.nutritionItems {
-            if nutritionItems.isEmpty {
-                DailyNutritionInfoEmptyView()
+        VStack {
+            if viewStore.isLoading {
+                ProgressView("로딩 중입니다…")
+                    .padding()
+            } else if let nutritionItems = viewStore.nutritionItems {
+                if nutritionItems.isEmpty {
+                    DailyNutritionInfoEmptyView(
+                       onNavigateToMyPageButtonTap: {
+                           store.send(.myPageNavigationButtonTapped)
+                       }
+                   )
+                } else {
+                    DailyNutritionInfoView(nutritionItems: nutritionItems)
+                    
+                    if let dietItem = viewStore.dietItems {
+                        if dietItem.isEmpty {
+                            DietEmptyView()
+                        } else {
+                            DietNotEmptyView()
+                        }
+                    } else {
+                        DietEmptyView()
+                    }
+                }
+            } else if let errorMessage = viewStore.errorMessage {
+                Text(errorMessage)
+                    .font(.caption)
+                    .foregroundColor(.red)
+                    .padding()
             } else {
-                DailyNutritionInfoView(nutritionItems: nutritionItems)
+                DailyNutritionInfoEmptyView(
+                   onNavigateToMyPageButtonTap: {
+                       store.send(.myPageNavigationButtonTapped)
+                   }
+               )
             }
-        } else if let errorMessage = viewStore.errorMessage {
-            Text(errorMessage)
-                .font(.caption)
-                .foregroundColor(.red)
-                .padding()
-        } else {
-            DailyNutritionInfoEmptyView()
         }
     }
+}
+
+#Preview {
+    DailyNutritionDietInfoView(store: Store(initialState: DailyNutritionDietInfoFeature.State()) {
+        DailyNutritionDietInfoFeature()
+    })
 }

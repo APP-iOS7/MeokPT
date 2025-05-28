@@ -15,4 +15,16 @@ enum NutritionType: String, CaseIterable, Identifiable, Equatable {
         default: return "g"
         }
     }
+    
+    var jsonKey: String {
+        switch self {
+        case .calorie: return "calories"
+        case .carbohydrate: return "carbohydrates"
+        case .protein: return "protein"
+        case .fat: return "fat"
+        case .dietaryFiber: return "dietaryFiber"
+        case .sugar: return "sugar"
+        case .sodium: return "sodium"
+        }
+    }
 }
