@@ -54,7 +54,10 @@ struct DietView: View {
             .navigationBarTitleDisplayMode(.inline)
         }
         destination: { storeForElement in
-            DietDetailView(store: storeForElement.scope(state: \.detail, action: \.detail))
+            switch storeForElement.case {
+            case .detail(let detailStore):
+                DietDetailView(store: detailStore)
+            }
         }
         .fullScreenCover(
             item: $store.scope(state: \.createDietFullScreenCover, action: \.createDietFullScreenCover)) { store in
