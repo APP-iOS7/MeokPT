@@ -6,13 +6,12 @@ struct DailyNutritionView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
 
-    let store: StoreOf<DailyNutritionFeature>
+    @Bindable var store: StoreOf<DailyNutritionFeature>
     var onSaveTapped: (_ store: StoreOf<DailyNutritionFeature>, _ modelContext: ModelContext) -> Void
 
     @FocusState private var focusedItemID: String?
 
     var body: some View {
-        WithViewStore(store, observe: { $0 }) { viewStore in
             ZStack {
                 ScrollViewReader { scrollViewProxy in
                     ScrollView {
@@ -21,10 +20,7 @@ struct DailyNutritionView: View {
                                 Text("수치 직접 입력")
                                     .font(.headline)
                                 Spacer()
-                                Toggle("", isOn: viewStore.binding(
-                                    get: \.isEditable,
-                                    send: { .toggleChanged($0) }
-                                ))
+                                Toggle("", isOn: $store.isEditable.sending(\.toggleChanged))
                                 .labelsHidden()
                                 .tint(Color("AppTintColor"))
                             }
@@ -32,23 +28,23 @@ struct DailyNutritionView: View {
                             .padding(.top, 30)
 
                             VStack(spacing: 10) {
-                                ForEach(viewStore.rows) { rowData in
-                                    let currentRowValue = viewStore.rows.first(where: { $0.id == rowData.id })?.value ?? ""
+                                ForEach(store.rows) { rowData in
+//                                    let currentRowValue = store.rows.first(where: { $0.id == rowData.id })?.value ?? ""
 
                                     NutritionRowView(
                                         name: rowData.name,
-                                        value: currentRowValue,
+                                        value: rowData.value,
                                         unit: rowData.unit,
-                                        isEditable: viewStore.isEditable,
+                                        isEditable: store.isEditable,
                                         onChange: { newValue in
-                                            viewStore.send(.valueChanged(type: rowData.type, text: newValue))
+                                            store.send(.valueChanged(type: rowData.type, text: newValue))
                                         },
                                         focus: $focusedItemID,
                                         rowID: rowData.id
                                     )
                                     .id(rowData.id)
 
-                                    if rowData.id != viewStore.rows.last?.id {
+                                    if rowData.id != store.rows.last?.id {
                                         Divider().padding(.horizontal)
                                     }
                                 }
@@ -100,12 +96,11 @@ struct DailyNutritionView: View {
             .toolbar(.hidden, for: .tabBar)
             .ignoresSafeArea(.keyboard, edges: .bottom)
             .onAppear {
-                viewStore.send(.onAppear)
-                viewStore.send(.loadSavedData(context))
+                store.send(.onAppear)
+                store.send(.loadSavedData(context))
             }
             .onTapGesture {
                 focusedItemID = nil
             }
-        }
     }
 }
