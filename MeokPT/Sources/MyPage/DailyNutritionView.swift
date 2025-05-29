@@ -26,7 +26,7 @@ struct DailyNutritionView: View {
                                     send: { .toggleChanged($0) }
                                 ))
                                 .labelsHidden()
-                                .tint(Color("AppTintColor", bundle: nil))
+                                .tint(Color("AppTintColor"))
                             }
                             .padding(.horizontal)
                             .padding(.top, 30)
@@ -75,21 +75,19 @@ struct DailyNutritionView: View {
             }
             .background(Color("AppBackgroundColor", bundle: nil))
             .safeAreaInset(edge: .bottom, spacing: 0) {
-                Button("완료") {
+                Button("저장") {
                     focusedItemID = nil
                     onSaveTapped(store, context)
                     dismiss()
                 }
-                .font(.system(size: 16, weight: .semibold))
+                .font(.headline.bold())
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .background(Color("AppTintColor", bundle: nil))
+                .frame(height: 60)
                 .foregroundColor(.black)
-                .cornerRadius(16)
-                .padding(.horizontal, 20)
-                .padding(.top, 10)
-                .padding(.bottom, 10)
-                .background(Color("AppBackgroundColor", bundle: nil))
+                .buttonStyle(PlainButtonStyle())
+                .background(Color("AppTintColor"))
+                .cornerRadius(30)
+                .padding(.horizontal, 24)
             }
 //            .toolbar {
 //                ToolbarItemGroup(placement: .keyboard) {

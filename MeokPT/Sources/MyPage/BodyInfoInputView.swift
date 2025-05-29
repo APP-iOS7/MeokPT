@@ -85,18 +85,16 @@ struct BodyInfoInputView: View {
                     store.send(.saveButtonTapped(modelContext))
                     onSaveCompleted(store.state)
                 }) {
-                    Text("완료")
-                        .font(.system(size: 16, weight: .semibold))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(Color("AppTintColor", bundle: nil))
-                        .foregroundColor(.black)
-                        .cornerRadius(16)
+                    Text("저장")
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 10)
-                .padding(.bottom, 10)
-                .background(Color("AppBackgroundColor"))
+                .font(.headline.bold())
+                .frame(maxWidth: .infinity)
+                .frame(height: 60)
+                .foregroundColor(.black)
+                .buttonStyle(PlainButtonStyle())
+                .background(Color("AppTintColor"))
+                .cornerRadius(30)
+                .padding(.horizontal, 24)
             }
             .ignoresSafeArea(.keyboard, edges: .bottom)
 //            .toolbar {
