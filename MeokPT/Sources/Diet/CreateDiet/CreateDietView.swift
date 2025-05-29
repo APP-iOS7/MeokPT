@@ -47,7 +47,7 @@ struct CreateDietView: View {
                         }
                     }
                     .disabled(store.isLoading)
-                    .foregroundStyle(Color("TextButtonColor"))
+                    .foregroundStyle(Color("TextButton"))
                 }
             }
             .padding(.vertical, 8)
@@ -108,7 +108,7 @@ struct CreateDietView: View {
                     Button(action: { store.send(.goToPage(store.currentPage - 1)) }) {
                         Text("이전")
                     }
-                    .foregroundStyle(Color("TextButtonColor"))
+                    .foregroundStyle(Color("TextButton"))
                     
                     Spacer()
                     Text("\(store.currentPage) / \(store.totalPages)")
@@ -118,7 +118,7 @@ struct CreateDietView: View {
                     Button(action: { store.send(.goToPage(store.currentPage + 1)) }) {
                         Text("다음")
                     }
-                    .foregroundStyle(Color("TextButtonColor"))
+                    .foregroundStyle(Color("TextButton"))
                     .disabled(store.currentPage >= store.totalPages)
                 }
                 .padding(.horizontal, 24)
@@ -140,7 +140,7 @@ struct CreateDietView: View {
             ToolbarItem(placement: .topBarTrailing,
                         content: { Button(action: {
                 store.send(.closeButtonTapped)
-            }) { Text("완료").foregroundStyle(Color("TextButtonColor")) }})
+            }) { Text("완료").foregroundStyle(Color("TextButton")) }})
         })
     }
     

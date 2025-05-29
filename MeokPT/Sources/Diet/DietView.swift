@@ -60,7 +60,7 @@ struct DietView: View {
                 DietDetailView(store: detailStore)
             }
         }
-        .tint(Color("TextButtonColor"))
+        .tint(Color("TextButton"))
     }
 }
 

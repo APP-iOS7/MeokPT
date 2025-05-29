@@ -95,7 +95,7 @@ struct AddFoodView: View {
                     Button (action: { store.send(.addButtonTapped) }) { Text("추가") }
                 }
             }
-            .tint(Color("TextButtonColor"))
+            .tint(Color("TextButton"))
             .onTapGesture {
                 focusedNutrientField = nil
                 UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
