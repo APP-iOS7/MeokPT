@@ -44,7 +44,7 @@ struct MyPageView: View {
                             Spacer().frame(width: 26)
                             HStack {
                                 Text(store.userProfile?.nickname ?? "회원가입 / 로그인")
-                                    .foregroundColor(.white)
+                                    .foregroundColor(Color(.systemBackground))
                                     .font(.title2.bold())
                                 Spacer()
                                 Image(systemName: "chevron.right")
@@ -76,7 +76,7 @@ struct MyPageView: View {
                             VStack(alignment: .leading, spacing: 4) {
                                 HStack {
                                     Text("신체정보 입력")
-                                        .foregroundColor(.white)
+                                        .foregroundColor(Color(.systemBackground))
                                         .font(.headline)
                                     Spacer()
                                     Image(systemName: "chevron.right")
@@ -104,7 +104,7 @@ struct MyPageView: View {
                                 ZStack {
                                     HStack {
                                         Text("하루 섭취량 입력")
-                                            .foregroundColor(.white)
+                                            .foregroundColor(Color(.systemBackground))
                                             .font(.headline)
                                         Spacer()
                                     }
