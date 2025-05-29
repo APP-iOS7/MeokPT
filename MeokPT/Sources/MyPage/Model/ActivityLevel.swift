@@ -20,15 +20,15 @@ enum ActivityLevel: Double, CaseIterable, Identifiable, Equatable, Codable, Hash
     var description: String {
         switch self {
         case .veryLow:
-            return "좌식 생활 위주,\n운동 거의 안 함"
+            return "운동을 거의 안 함\n좌식 생활 위주"
         case .low:
-            return "가벼운 운동 (주 1-3회),\n또는 규칙적인 산책"
+            return "가벼운 활동\n주 1-2회 운동\n또는 규칙적인 산책"
         case .medium:
-            return "보통의 활동 (주 3-5회 운동),\n또는 활동적인 취미"
+            return "보통의 활동\n주 3-5회 운동\n또는 활동적인 취미"
         case .activity:
-            return "적극적인 활동 (주 6-7회 운동),\n또는 육체 노동 포함"
+            return "적극적인 활동\n주 6-7회 운동\n또는 육체 노동"
         case .veryActivity:
-            return "매우 높은 활동량,\n매일 운동 또는 힘든 육체노동"
+            return "운동 중심의 일상\n또는 힘든 육체 노동"
         }
     }
 }
