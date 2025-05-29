@@ -24,7 +24,6 @@ struct CommunityWriteView: View {
                 Image(systemName: "chevron.left")
                     .opacity(0)
             }
-            .padding(.horizontal)
             .padding(.top, 16)
 
             // 제목 입력
@@ -37,7 +36,6 @@ struct CommunityWriteView: View {
                     .frame(height: 1)
                     .foregroundColor(Color.gray.opacity(0.3))
             }
-            .padding(.horizontal)
 
             // 내용 입력
             VStack(alignment: .leading) {
@@ -57,7 +55,6 @@ struct CommunityWriteView: View {
                         .opacity(1)
                 }
             }
-            .padding(.horizontal)
             
             Button(action: {
                 store.send(.presentMealSelectionSheet)
@@ -81,7 +78,6 @@ struct CommunityWriteView: View {
                                 .stroke(Color.gray.opacity(0.3))
                         )
                 }
-                .padding(.horizontal)
             
             // 사진 선택
             VStack(alignment: .leading, spacing: 8) {
@@ -104,7 +100,6 @@ struct CommunityWriteView: View {
                             .stroke(Color.gray.opacity(0.3))
                     )
             }
-            .padding(.horizontal)
 
             Spacer()
 

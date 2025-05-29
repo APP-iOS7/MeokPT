@@ -42,7 +42,7 @@ struct CommunityView: View {
                                 }
                         }
                     }
-                    .padding()
+                    .padding(24)
                 }
             }
 //            .padding(.horizontal, 24)
