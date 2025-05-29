@@ -30,7 +30,7 @@ struct MealForJSON: Codable {
     let sodium: Int
 }
 
-func createNutritionInputForJSON(userRecommendedIntakeItems: [NutritionItem], consumedDiets: [Diet]) -> NutritionAnalysisInputForJSON? {
+func createNutritionInputForJSON(userRecommendedIntakeItems: [NutritionItem], consumedDiets: [DietItem]) -> NutritionAnalysisInputForJSON? {
     var dailyCalories = 0
     var dailyCarbs = 0
     var dailyProtein = 0
