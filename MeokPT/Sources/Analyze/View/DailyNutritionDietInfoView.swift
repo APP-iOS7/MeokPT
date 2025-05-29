@@ -107,7 +107,7 @@ struct DailyNutritionDietInfoView: View {
                 if nutritionItems.isEmpty {
                     DailyNutritionInfoEmptyView(
                        onNavigateToMyPageButtonTap: {
-//                           store.send(.myPageNavigationButtonTapped)
+                           store.send(.myPageNavigationButtonTapped)
                        }
                    )
                 } else {
@@ -131,7 +131,7 @@ struct DailyNutritionDietInfoView: View {
             } else {
                 DailyNutritionInfoEmptyView(
                    onNavigateToMyPageButtonTap: {
-//                       store.send(.myPageNavigationButtonTapped)
+                       store.send(.myPageNavigationButtonTapped)
                    }
                )
             }
