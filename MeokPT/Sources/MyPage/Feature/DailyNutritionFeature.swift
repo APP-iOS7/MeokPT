@@ -37,7 +37,7 @@ struct DailyNutritionFeature {
                    if UserDefaults.standard.object(forKey: Self.isEditableKey) != nil {
                        storedValue = UserDefaults.standard.bool(forKey: Self.isEditableKey)
                    } else {
-                       storedValue = true
+                       storedValue = false
                        UserDefaults.standard.set(storedValue, forKey: Self.isEditableKey)
                    }
                    await send(._isEditablePreferenceLoaded(storedValue))
