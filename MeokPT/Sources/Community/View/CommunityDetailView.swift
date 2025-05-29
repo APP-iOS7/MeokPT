@@ -63,10 +63,10 @@ struct CommunityDetailView: View {
                     Button(action: {}) {
                         Text("식단 리스트에 추가")
                             .font(.headline)
-                            .foregroundColor(Color(hex: "#090909"))
+                            .foregroundColor(.primary)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color(hex: "#FAAE2B"))
+                            .background(Color("AppTintColor"))
                             .cornerRadius(40)
                     }
                 }

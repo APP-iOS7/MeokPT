@@ -116,12 +116,12 @@ struct CommunityWriteView: View {
                     .foregroundColor(.black)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color(hex: "#F8B84E"))
-                    .cornerRadius(20)
             }
-            .padding(.horizontal)
-            .padding(.bottom, 20)
+            .frame(height: 60)
+            .background(Color("AppTintColor"))
+            .cornerRadius(30)
         }
+        .padding(.horizontal, 24)
         .background(Color("AppBackgroundColor").ignoresSafeArea())
         .navigationBarHidden(true)              // ✅ 시스템 네비게이션 숨김
         .navigationBarBackButtonHidden(true)    // ✅ 시스템 뒤로가기 숨김
