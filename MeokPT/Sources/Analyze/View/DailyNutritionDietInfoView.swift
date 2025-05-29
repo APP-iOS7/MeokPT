@@ -14,30 +14,50 @@ struct DailyNutritionDietInfoView: View {
                 ScrollView {
                     VStack {
                         content(for: store)
+                        
+                        if store.isAIbuttonEnabled {
+                            Button {
+                                store.send(.presentAISheet)
+                            } label: {
+                                Text("AI 식단 분석")
+                                    .font(.headline.bold())
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 60)
+                                    .foregroundColor(.black)
+                                    .buttonStyle(PlainButtonStyle())
+                                    .background(Color("AppTintColor"))
+                                    .cornerRadius(30)
+                                    .padding(.horizontal, 24)
+                                    .padding(.bottom, 10)
+                            }
+                        } else {
+                            EmptyView()
+                        }
+                        
                     }
                     .navigationTitle("분석")
                     .navigationBarTitleDisplayMode(.inline)
                     .background(Color("AppBackgroundColor"))
                 }
                 .scrollContentBackground(.hidden)
-                .safeAreaInset(edge: .bottom) {
-                    if store.isAIbuttonEnabled {
-                        Button {
-                            store.send(.presentAISheet)
-                        } label: {
-                            Text("AI 식단 분석")
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .foregroundStyle(.black)
-                                .background(Color("AppTintColor"))
-                                .clipShape(RoundedRectangle(cornerRadius: 10))
-                                .padding(.horizontal, 24)
-                                .padding(.bottom, 10)
-                        }
-                    } else {
-                        EmptyView()
-                    }
-                }
+//                .safeAreaInset(edge: .bottom) {
+//                    if store.isAIbuttonEnabled {
+//                        Button {
+//                            store.send(.presentAISheet)
+//                        } label: {
+//                            Text("AI 식단 분석")
+//                                .frame(maxWidth: .infinity)
+//                                .padding()
+//                                .foregroundStyle(.black)
+//                                .background(Color("AppTintColor"))
+//                                .clipShape(RoundedRectangle(cornerRadius: 10))
+//                                .padding(.horizontal, 24)
+//                                .padding(.bottom, 10)
+//                        }
+//                    } else {
+//                        EmptyView()
+//                    }
+//                }
                 .toolbar {
                     ToolbarItem(placement: .confirmationAction) {
                         Button {
@@ -83,14 +103,14 @@ struct DailyNutritionDietInfoView: View {
             print("DailyNutritionDietInfoView: Sending .task action to start listener.")
             store.send(.task)
         }
-        .onChange(of: store.lastDataChangeTimestamp) { oldValue, newValue in
-            if oldValue != newValue {
-                print("Values are different. Sending .loadInfo(context)...")
-                store.send(.loadInfo(context))
-            } else {
-                print("Values were identical in onChange. Not sending .loadInfo.")
-            }
-        }
+//        .onChange(of: store.lastDataChangeTimestamp) { oldValue, newValue in
+//            if oldValue != newValue {
+//                print("Values are different. Sending .loadInfo(context)...")
+//                store.send(.loadInfo(context))
+//            } else {
+//                print("Values were identical in onChange. Not sending .loadInfo.")
+//            }
+//        }
     }
 
     // TODO: - 신체정보가 있고 식단이 없는 경우

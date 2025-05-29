@@ -31,7 +31,7 @@ struct DietEmptyView: View {
 //            .padding(.horizontal, 40)
 //            .padding(.top, 10)
         }
-        .padding(.vertical, 30)
+        .padding(.vertical, 16)
         .frame(maxWidth: .infinity)
     }
 }
