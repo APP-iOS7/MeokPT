@@ -3,10 +3,11 @@ import Foundation
 import SwiftData
 
 @Reducer
-struct DailyNutritionFeature: Reducer {
+struct DailyNutritionFeature {
     
     private static let isEditableKey = "dailyNutritionIsEditablePreference"
-
+    
+    @ObservableState
     struct State: Equatable {
         var rows: [NutritionRowData] = NutritionType.allCases.map {
             NutritionRowData(type: $0, value: "")

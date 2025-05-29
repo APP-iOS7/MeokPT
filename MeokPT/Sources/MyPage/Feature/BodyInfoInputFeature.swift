@@ -2,7 +2,8 @@ import ComposableArchitecture
 import SwiftData
 
 @Reducer
-struct BodyInfoInputFeature: Reducer {
+struct BodyInfoInputFeature {
+    @ObservableState
     struct State: Equatable {
         var height : String = ""
         var age : String = ""
@@ -13,7 +14,8 @@ struct BodyInfoInputFeature: Reducer {
         var error: String?
     }
     
-    enum Action: Equatable {
+    enum Action: Equatable, BindableAction {
+        case binding(BindingAction<State>)
         case heightChanged(String)
         case ageChanged(String)
         case weightChanged(String)
@@ -25,8 +27,12 @@ struct BodyInfoInputFeature: Reducer {
     }
     
     var body: some ReducerOf<Self> {
+        BindingReducer()
+
         Reduce { state, action in
             switch action {
+            case .binding(_):
+                return .none
             case let .heightChanged(text):
                 state.height = text
                 return .none

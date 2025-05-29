@@ -7,103 +7,100 @@ struct DailyNutritionDietInfoView: View {
     @Environment(\.modelContext) private var context
 
     var body: some View {
-        WithViewStore(self.store, observe: { $0 }) { viewStore in
+        NavigationStack {
             ZStack {
-                NavigationStack {
-                    ZStack {
-                        Color("AppBackgroundColor")
-                            .ignoresSafeArea()
-                        ScrollView {
-                            VStack {
-                                content(for: viewStore)
-                            }
-                            .navigationTitle("분석")
-                            .navigationBarTitleDisplayMode(.inline)
-                            .background(Color("AppBackgroundColor"))
+                Color("AppBackgroundColor")
+                    .ignoresSafeArea()
+                ScrollView {
+                    VStack {
+                        content(for: store)
+                    }
+                    .navigationTitle("분석")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .background(Color("AppBackgroundColor"))
+                }
+                .scrollContentBackground(.hidden)
+                .safeAreaInset(edge: .bottom) {
+                    if store.isAIbuttonEnabled {
+                        Button {
+                            store.send(.presentAISheet)
+                        } label: {
+                            Text("AI 식단 분석")
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .foregroundStyle(.black)
+                                .background(Color("AppTintColor"))
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                                .padding(.horizontal, 24)
+                                .padding(.bottom, 10)
                         }
-                        .scrollContentBackground(.hidden)
-                        .safeAreaInset(edge: .bottom) {
-                            if viewStore.state.isAIbuttonEnabled {
-                                Button {
-                                    viewStore.send(.presentAISheet)
-                                } label: {
-                                    Text("AI 식단 분석")
-                                        .frame(maxWidth: .infinity)
-                                        .padding()
-                                        .foregroundStyle(.black)
-                                        .background(Color("AppTintColor"))
-                                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                                        .padding(.horizontal, 24)
-                                        .padding(.bottom, 10)
-                                }
-                            } else {
-                                EmptyView()
-                            }
-                        }
-                        .toolbar {
-                            ToolbarItem(placement: .confirmationAction) {
-                                Button {
-                                    viewStore.send(.presentDietSelectionSheet) // Use viewStore
-                                } label: {
-                                    Text("식단 추가")
-                                        .foregroundStyle(Color("AppTintColor"))
-                                        .fontWeight(.semibold)
-                                }
-                            }
-                            ToolbarItem(placement: .cancellationAction) {
-                                Button {
-                                } label: {
-                                    Text("비우기")
-                                        .foregroundStyle(Color("AppTintColor"))
-                                }
-                            }
-                        }
+                    } else {
+                        EmptyView()
                     }
                 }
-                .sheet(
-                    store: self.store.scope(state: \.$dietSelectionSheet, action: \.dietSelectionSheetAction)
-                ) { modalStore in
-                    NavigationStack {
-                        DietSelectionModalView(store: modalStore)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button {
+                            store.send(.presentDietSelectionSheet)
+                        } label: {
+                            Text("식단 추가")
+                                .foregroundStyle(Color("AppTintColor"))
+                                .fontWeight(.semibold)
+                        }
                     }
-                    .presentationDragIndicator(.visible)
-                }
-                .sheet(
-                    store: self.store.scope(state: \.$aiSheet, action: \.aiSheetAction)
-                ) { modalStore in
-                    NavigationStack {
-                        AIModalView(store: modalStore)
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button {
+                        } label: {
+                            Text("비우기")
+                                .foregroundStyle(Color("AppTintColor"))
+                        }
                     }
-                    .presentationDragIndicator(.visible)
                 }
             }
-            .onAppear {
-                if viewStore.state.nutritionItems == nil && !viewStore.state.isLoading {
-                    print("DailyNutritionDietInfoView: Initial load on appear.")
-                    viewStore.send(.loadInfo(context))
-                }
-                print("DailyNutritionDietInfoView: Sending .task action to start listener.")
-                viewStore.send(.task)
+        }
+        .sheet(
+            item: $store.scope(state: \.dietSelectionSheet, action: \.dietSelectionSheetAction)
+        ) { modalStore in
+            NavigationStack {
+                DietSelectionModalView(store: modalStore)
             }
-            .onChange(of: viewStore.state.lastDataChangeTimestamp) { oldValue, newValue in
-               if oldValue != newValue {
-                   print("Values are different. Sending .loadInfo(context)...")
-                   viewStore.send(.loadInfo(context))
-               } else {
-                   print("Values were identical in onChange. Not sending .loadInfo.")
-               }
+            .presentationDragIndicator(.visible)
+        }
+        .sheet(
+            item: $store.scope(state: \.aiSheet, action: \.aiSheetAction)
+        ) { modalStore in
+            NavigationStack {
+                AIModalView(store: modalStore)
+            }
+            .presentationDragIndicator(.visible)
+        }
+        
+        .onAppear {
+            if store.nutritionItems == nil && !store.isLoading {
+                print("DailyNutritionDietInfoView: Initial load on appear.")
+                store.send(.loadInfo(context))
+            }
+            print("DailyNutritionDietInfoView: Sending .task action to start listener.")
+            store.send(.task)
+        }
+        .onChange(of: store.lastDataChangeTimestamp) { oldValue, newValue in
+            if oldValue != newValue {
+                print("Values are different. Sending .loadInfo(context)...")
+                store.send(.loadInfo(context))
+            } else {
+                print("Values were identical in onChange. Not sending .loadInfo.")
             }
         }
     }
 
     // TODO: - 신체정보가 있고 식단이 없는 경우
     @ViewBuilder
-    private func content(for viewStore: ViewStore<DailyNutritionDietInfoFeature.State, DailyNutritionDietInfoFeature.Action>) -> some View {
+    private func content(for store: Store<DailyNutritionDietInfoFeature.State, DailyNutritionDietInfoFeature.Action>) -> some View {
         VStack {
-            if viewStore.isLoading {
+            if store.isLoading {
                 ProgressView("로딩 중입니다…")
                     .padding()
-            } else if let nutritionItems = viewStore.nutritionItems {
+            } else if let nutritionItems = store.nutritionItems {
                 if nutritionItems.isEmpty {
                     DailyNutritionInfoEmptyView(
                        onNavigateToMyPageButtonTap: {
@@ -113,7 +110,7 @@ struct DailyNutritionDietInfoView: View {
                 } else {
                     DailyNutritionInfoView(nutritionItems: nutritionItems)
                     
-                    if let dietItem = viewStore.dietItems {
+                    if let dietItem = store.dietItems {
                         if dietItem.isEmpty {
                             DietEmptyView()
                         } else {
@@ -123,7 +120,7 @@ struct DailyNutritionDietInfoView: View {
                         DietEmptyView()
                     }
                 }
-            } else if let errorMessage = viewStore.errorMessage {
+            } else if let errorMessage = store.errorMessage {
                 Text(errorMessage)
                     .font(.caption)
                     .foregroundColor(.red)
