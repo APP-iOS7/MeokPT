@@ -6,6 +6,7 @@ struct BodyInfoInputView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @FocusState private var focusedField: Field?
+    @State private var showAlert = false
     
     let onSaveCompleted: (BodyInfoInputFeature.State) -> Void
     @Bindable var store: StoreOf<BodyInfoInputFeature>
@@ -107,6 +108,7 @@ struct BodyInfoInputView: View {
                     focusedField = nil
                     store.send(.saveButtonTapped(modelContext))
                     onSaveCompleted(store.state)
+                    showAlert = true
                 }) {
                     Text("저장")
                 }
@@ -118,6 +120,11 @@ struct BodyInfoInputView: View {
                 .background(Color("AppTintColor"))
                 .cornerRadius(30)
                 .padding(.horizontal, 24)
+                .alert("신체정보가 저장되었습니다.", isPresented: $showAlert) {
+                    Button("확인", role: .cancel) {}
+                } message: {
+                    Text("하루 권장 섭취량을 업데이트 합니다.")
+                }
             }
             .ignoresSafeArea(.keyboard, edges: .bottom)
             .toolbar(.hidden, for: .tabBar)
