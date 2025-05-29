@@ -3,45 +3,38 @@ import ComposableArchitecture
 
 struct DietView: View {
     @Bindable var store: StoreOf<DietFeature>
-    @State private var searchText = ""
-    @State private var selectedFilter: DietFilter = .all
-    
-    private var filteredDiets: [Diet] {
-        let searchedDiets = searchText.isEmpty ? store.state.dietList.elements : store.state.dietList.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
-        switch selectedFilter {
-        case .all:
-            return Array(searchedDiets)
-        case .favorites:
-            return Array(searchedDiets.filter { $0.isFavorite })
-        }
-    }
     
     var body: some View {
         NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
-            List(filteredDiets) { diet in
-                ZStack {
-                    NavigationLink(
-                        state: DietFeature.Path.State.detail(
-                            .init(
-                                diet: diet,
-                                foods: Diet.sampleFoods(for: diet.title)
+            ScrollView {
+                LazyVStack(spacing: 12) {
+                    ForEach(store.filteredDiets) { diet in
+                        Button {
+                            store.send(.dietCellTapped(id: diet.id))
+                        } label: {
+                            let favoriteBinding = Binding<Bool>(
+                                get: {
+                                    store.dietList[id: diet.id]?.isFavorite ?? diet.isFavorite
+                                },
+                                set: { newValue in
+                                    store.send(.likeButtonTapped(id: diet.id, isFavorite: newValue))
+                                }
                             )
-                        )
-                    ) {
-                        EmptyView() // NavigationLink의 label을 비워서 기본 '>' 표시가 나타나지 않도록 함
-                    }
-
-                    DietCellView(diet: diet) { id in
-                        store.send(.likeButtonTapped(id: id))
+                            DietCellView(
+                                diet: diet,
+                                isFavorite: favoriteBinding
+                            )
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
                 }
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
-                .listRowInsets(EdgeInsets(top: 0, leading: 24, bottom: 16, trailing: 24))
+                .padding(.horizontal, 24)
+                .padding(.top, 8)
             }
+            .background(Color("AppBackgroundColor"))
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    Picker("필터", selection: $selectedFilter) {
+                    Picker("필터", selection: $store.selectedFilter) {
                         ForEach(DietFilter.allCases) { filter in
                             Text(filter.rawValue).tag(filter)
                         }
@@ -51,74 +44,22 @@ struct DietView: View {
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
+                        store.send(.addButtonTapped)
                     } label: {
                         Image(systemName: "plus")
                     }
                 }
             }
-            .listRowSpacing(12)
-            .listStyle(.plain)
-            .background(Color("AppBackgroundColor"))
-            .searchable(text: $searchText, prompt: "검색")
+            .searchable(text: $store.searchText, prompt: "검색")
             .navigationBarTitleDisplayMode(.inline)
-        } destination: { store in
-            switch store.state {
-            case .detail:
-                if let detailStore = store.scope(state: \.detail, action: \.detail) {
-                    DietDetailView(store: detailStore)
-                }
+        }
+        destination: { storeForElement in
+            switch storeForElement.case {
+            case .detail(let detailStore):
+                DietDetailView(store: detailStore)
             }
         }
         .tint(Color("AppSecondaryColor"))
-        .onAppear {
-//            store.send(.onAppear)
-        }
-    }
-}
-
-private enum DietFilter: String, CaseIterable, Identifiable {
-    case all = "전체"
-    case favorites = "즐겨찾기"
-    var id: String { self.rawValue }
-}
-
-private struct DietCellView: View {
-    let diet: Diet
-    let onFavoriteToggle: (UUID) -> Void
-    private let cornerRadius: CGFloat = 20
-    
-    var body: some View {
-        VStack(spacing: 10) {
-            VStack(alignment: .leading) {
-                HStack(spacing: 16) {
-                    Text(diet.title)
-                        .font(.headline)
-                    Spacer()
-                    Toggle("Favorite", isOn: Binding(
-                        get: { diet.isFavorite },
-                        set: { _ in onFavoriteToggle(diet.id) }
-                    ))
-                    .toggleStyle(FavoriteToggleStyle())
-                    Button {
-                        // TODO: 삭제 버튼 만들기
-                    } label: {
-                        Image(systemName: "ellipsis")
-                    }
-                }
-                Text(String(format: "%.0f kcal", diet.kcal))
-            }
-
-            HStack {
-                NutrientView(carbohydrate: diet.carbohydrate, protein: diet.protein, fat: diet.fat)
-            }
-        }
-        .padding(24)
-        .background(Color("AppCellBackgroundColor"))
-        .cornerRadius(cornerRadius)
-        .overlay(
-            RoundedRectangle(cornerRadius: cornerRadius)
-                .stroke(Color(uiColor: UIColor.separator), lineWidth: 1)
-        )
     }
 }
 

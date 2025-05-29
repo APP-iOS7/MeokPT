@@ -29,8 +29,9 @@ private struct EachNutrientView: View {
             Text(name)
                 .font(.caption)
                 .foregroundColor(Color("AppSecondaryColor"))
+            Spacer().frame(height:4)
             Text("\(value, specifier: "%.1f")g")
-            
+                .font(.body)
         }
     }
 }

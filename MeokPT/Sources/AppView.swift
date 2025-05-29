@@ -9,21 +9,25 @@ struct AppView: View {
             Group {
                 DietView(store: store.scope(state: \.dietState, action: \.dietAction))
                     .tabItem {
+                        Image(systemName: "list.bullet")
                         Text("식단")
                     }
                     .tag(AppFeature.State.Tab.diet)
                 DailyNutritionDietInfoView(store: store.scope(state: \.analyzeState, action: \.analyzeAction))
                     .tabItem {
+                        Image(systemName: "chart.bar.xaxis")
                         Text("분석")
                     }
                     .tag(AppFeature.State.Tab.analyze)
                 CommunityView(store: store.scope(state: \.communityState, action: \.communityAction))
                     .tabItem {
+                        Image(systemName: "text.bubble")
                         Text("커뮤니티")
                     }
                     .tag(AppFeature.State.Tab.community)
                 MyPageView(store: store.scope(state: \.myPageState, action: \.myPageAction))
                     .tabItem {
+                        Image(systemName: "person.crop.circle")
                         Text("마이페이지")
                     }
                     .tag(AppFeature.State.Tab.myPage)
@@ -39,16 +43,14 @@ struct AppView: View {
             }
         }
         .fullScreenCover(
-            store: store.scope(state: \.$loginFullScreenCover, action: \.loginAction)
-        ) { loginStore in
+            item: $store.scope(state: \.loginFullScreenCover, action: \.loginAction)) { loginStore in
             NavigationStack {
                 LoginView(store: loginStore)
                     .tint(Color("AppTintColor"))
             }
         }
         .fullScreenCover(
-            store: store.scope(state: \.$profileSettingFullScreenCover, action: \.profileSettingAction)
-        ) { profileStore in
+            item: $store.scope(state: \.profileSettingFullScreenCover, action: \.profileSettingAction)) { profileStore in
             NavigationStack {
                 ProfileSettingView(store: profileStore)
                     .tint(Color("AppTintColor"))
