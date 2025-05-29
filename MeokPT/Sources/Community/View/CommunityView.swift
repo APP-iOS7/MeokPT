@@ -45,7 +45,7 @@ struct CommunityView: View {
                     .padding()
                 }
             }
-            .padding(.horizontal, 24)
+//            .padding(.horizontal, 24)
             .navigationTitle("커뮤니티")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
