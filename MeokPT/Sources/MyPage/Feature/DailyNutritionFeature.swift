@@ -3,10 +3,11 @@ import Foundation
 import SwiftData
 
 @Reducer
-struct DailyNutritionFeature: Reducer {
+struct DailyNutritionFeature {
     
     private static let isEditableKey = "dailyNutritionIsEditablePreference"
-
+    
+    @ObservableState
     struct State: Equatable {
         var rows: [NutritionRowData] = NutritionType.allCases.map {
             NutritionRowData(type: $0, value: "")
@@ -14,7 +15,8 @@ struct DailyNutritionFeature: Reducer {
         var isEditable: Bool = false
     }
 
-    enum Action: Equatable {
+    enum Action: Equatable, BindableAction {
+        case binding(BindingAction<State>)
         case valueChanged(type: NutritionType, text: String)
         case loadSavedData(ModelContext)
         case toggleChanged(Bool)
@@ -93,6 +95,9 @@ struct DailyNutritionFeature: Reducer {
             case let .saveCurrentManualEntries(context):
                 print("저장 시작 (수동 입력 데이터) - 현재 Rows: \(state.rows.map { "\($0.type.rawValue): \($0.value)"})")
                 return performSave(state: state, context: context)
+                
+            case .binding(_):
+                return .none
             }
         }
     }

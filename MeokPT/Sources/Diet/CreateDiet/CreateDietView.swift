@@ -32,13 +32,22 @@ struct CreateDietView: View {
                     }
                     Spacer()
                     Button(action: {
-                        focusedField = false
-                        store.send(.scanBarcodeButtonTapped)
+                        if(focusedField == false) {
+                            store.send(.scanBarcodeButtonTapped)
+                        } else {
+                            store.send(.searchButtonTapped)
+                            focusedField = false
+                        }
                     }) {
-                        Image(systemName: "barcode.viewfinder")
-                            .font(.title)
+                        if(focusedField == false) {
+                            Image(systemName: "barcode.viewfinder")
+                                .font(.title)
+                        } else {
+                            Text("검색")
+                        }
                     }
                     .disabled(store.isLoading)
+                    .foregroundStyle(Color("TextButtonColor"))
                 }
             }
             .padding(.vertical, 8)
@@ -131,7 +140,7 @@ struct CreateDietView: View {
             ToolbarItem(placement: .topBarTrailing,
                         content: { Button(action: {
                 store.send(.closeButtonTapped)
-            }) { Text("완료") }})
+            }) { Text("완료").foregroundStyle(Color("TextButtonColor")) }})
         })
     }
     

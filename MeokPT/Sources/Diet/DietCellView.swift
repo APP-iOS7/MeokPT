@@ -24,6 +24,7 @@ struct DietCellView: View {
                         // TODO: 삭제 버튼 만들기
                     } label: {
                         Image(systemName: "ellipsis")
+                            .foregroundStyle(Color("AppSecondaryColor"))
                     }
                 }
                 Spacer().frame(height: 4)

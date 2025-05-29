@@ -6,60 +6,58 @@ struct BodyInfoInputView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @FocusState private var focusedField: Field?
+    @State private var showAlert = false
     
-    let store: StoreOf<BodyInfoInputFeature>
     let onSaveCompleted: (BodyInfoInputFeature.State) -> Void
+    @Bindable var store: StoreOf<BodyInfoInputFeature>
 
     enum Field: Hashable {
         case height, age, weight
     }
     
-
     var body: some View {
-        WithViewStore(store, observe: { $0 }) { viewStore in
             ScrollView {
                 VStack(spacing: 40) {
-                    
                     VStack(spacing: 30) {
-                        TextField("신장 (cm)", text: viewStore.binding(
-                            get: \.height,
-                            send: { .heightChanged($0) }
-                        ))
-                        .keyboardType(.numberPad)
-                        .focused($focusedField, equals: .height)
-                        .submitLabel(.next)
-                        .onSubmit {
-                            focusedField = .weight
+                        VStack {
+                            HStack(alignment: .firstTextBaseline, spacing: 2) {
+                                TextField("신장 (cm)", text: $store.height.sending(\.heightChanged))
+                                    .keyboardType(.numberPad)
+                                    .focused($focusedField, equals: .height)
+                                Text("cm")
+                            }
+                            Rectangle()
+                                .frame(height: 1)
+                                .foregroundColor(Color(UIColor.separator))
                         }
                         
-                        TextField("체중 (kg)", text: viewStore.binding(
-                            get: \.weight,
-                            send: { .weightChanged($0) }
-                        ))
-                        .keyboardType(.numberPad)
-                        .focused($focusedField, equals: .weight)
-                        .submitLabel(.next)
-                        .onSubmit {
-                            focusedField = .age
+                        VStack {
+                            HStack(alignment: .firstTextBaseline, spacing: 2) {
+                                TextField("체중 (kg)", text: $store.weight.sending(\.weightChanged))
+                                    .keyboardType(.numberPad)
+                                    .focused($focusedField, equals: .weight)
+                                Text("kg")
+                            }
+                            Rectangle()
+                                .frame(height: 1)
+                                .foregroundColor(Color(UIColor.separator))
                         }
                         
-                        TextField("나이", text: viewStore.binding(
-                            get: \.age,
-                            send: { .ageChanged($0) }
-                        ))
-                        .keyboardType(.numberPad)
-                        .focused($focusedField, equals: .age)
-                        .submitLabel(.done)
-                        .onSubmit {
-                            focusedField = nil
+                        VStack {
+                            HStack(alignment: .firstTextBaseline, spacing: 2) {
+                                TextField("나이", text: $store.age.sending(\.ageChanged))
+                                    .keyboardType(.numberPad)
+                                    .focused($focusedField, equals: .age)
+                                Text("세")
+                            }
+                            Rectangle()
+                                .frame(height: 1)
+                                .foregroundColor(Color(UIColor.separator))
                         }
                     }
 
                     VStack {
-                        Picker("성별 선택", selection: viewStore.binding(
-                            get: \.selectedGender,
-                            send: { .genderChanged($0) }
-                        )) {
+                        Picker("성별 선택", selection: $store.selectedGender.sending(\.genderChanged)) {
                             ForEach(Gender.allCases, id: \.self) { option in
                                 Text(option.rawValue).tag(option)
                             }
@@ -73,10 +71,7 @@ struct BodyInfoInputView: View {
                             .font(.title3)
                             .foregroundStyle(Color("App title"))
                         Spacer()
-                        Picker("식단 목표 선택", selection: viewStore.binding(
-                            get: \.selectedGoal,
-                            send: { .goalChanged($0) }
-                        )) {
+                        Picker("식단 목표 선택", selection: $store.selectedGoal.sending(\.goalChanged)) {
                             ForEach(Goal.allCases) { goal in
                                 Text(goal.rawValue).tag(goal)
                             }
@@ -86,48 +81,52 @@ struct BodyInfoInputView: View {
                     
 
                     ActivityLevelScrollView(
-                        selectedLevel: viewStore.binding(
-                            get: \.selectedActivityLevel,
-                            send: { .activityLevelChanged($0) }
-                        ),
+                        selectedLevel: $store.selectedActivityLevel.sending(\.activityLevelChanged),
                         onSelect: { level in
-                            viewStore.send(.activityLevelChanged(level))
+                            store.send(.activityLevelChanged(level))
                         }
                     )
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 24)
                 .padding(.top, 30)
             }
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("완료") {
+                        focusedField = nil
+                    }
+                }
+            }
+            .onTapGesture {
+                focusedField = nil
+            }
+            .scrollDismissesKeyboard(.immediately)
             .background(Color("AppBackgroundColor"))
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 Button(action: {
                     focusedField = nil
-                    viewStore.send(.saveButtonTapped(modelContext))
-                    onSaveCompleted(viewStore.state)
+                    store.send(.saveButtonTapped(modelContext))
+                    onSaveCompleted(store.state)
+                    showAlert = true
                 }) {
-                    Text("완료")
-                        .font(.system(size: 16, weight: .semibold))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(Color("AppTintColor", bundle: nil))
-                        .foregroundColor(.black)
-                        .cornerRadius(16)
+                    Text("저장")
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 10)
-                .padding(.bottom, 10)
-                .background(Color("AppBackgroundColor"))
+                .font(.headline.bold())
+                .frame(maxWidth: .infinity)
+                .frame(height: 60)
+                .foregroundColor(.black)
+                .buttonStyle(PlainButtonStyle())
+                .background(Color("AppTintColor"))
+                .cornerRadius(30)
+                .padding(.horizontal, 24)
+                .alert("신체정보가 저장되었습니다.", isPresented: $showAlert) {
+                    Button("확인", role: .cancel) {}
+                } message: {
+                    Text("하루 권장 섭취량을 업데이트 합니다.")
+                }
             }
             .ignoresSafeArea(.keyboard, edges: .bottom)
-//            .toolbar {
-//                ToolbarItemGroup(placement: .keyboard) {
-//                    Spacer()
-//                    Button("완료") {
-//                        focusedField = nil
-//                    }
-//                }
-//            }
             .toolbar(.hidden, for: .tabBar)
-        }
     }
 }

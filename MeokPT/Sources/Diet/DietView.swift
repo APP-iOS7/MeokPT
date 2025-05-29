@@ -47,6 +47,7 @@ struct DietView: View {
                         store.send(.addButtonTapped)
                     } label: {
                         Image(systemName: "plus")
+                            .foregroundStyle(Color("AppSecondaryColor"))
                     }
                 }
             }
@@ -59,7 +60,7 @@ struct DietView: View {
                 DietDetailView(store: detailStore)
             }
         }
-        .tint(Color("AppSecondaryColor"))
+        .tint(Color("TextButtonColor"))
     }
 }
 

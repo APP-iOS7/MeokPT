@@ -46,14 +46,14 @@ struct AppView: View {
             item: $store.scope(state: \.loginFullScreenCover, action: \.loginAction)) { loginStore in
             NavigationStack {
                 LoginView(store: loginStore)
-                    .tint(Color("AppTintColor"))
+                    .tint(Color("TextButtonColor"))
             }
         }
         .fullScreenCover(
             item: $store.scope(state: \.profileSettingFullScreenCover, action: \.profileSettingAction)) { profileStore in
             NavigationStack {
                 ProfileSettingView(store: profileStore)
-                    .tint(Color("AppTintColor"))
+                    .tint(Color("TextButtonColor"))
             }
         }
     }
