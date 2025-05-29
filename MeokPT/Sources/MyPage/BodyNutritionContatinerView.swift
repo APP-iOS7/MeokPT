@@ -101,5 +101,6 @@ struct BodyNutritionContainerView: View {
                 .onAppear {
                     bodyInfoStore.send(.loadSavedData(modelContext))
                 }
+                .tint(Color("TextButtonColor"))
     }
 }

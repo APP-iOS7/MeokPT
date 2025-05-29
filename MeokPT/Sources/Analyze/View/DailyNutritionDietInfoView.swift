@@ -64,7 +64,7 @@ struct DailyNutritionDietInfoView: View {
                             store.send(.presentDietSelectionSheet)
                         } label: {
                             Text("식단 추가")
-                                .foregroundStyle(Color("AppTintColor"))
+                                .foregroundStyle(Color("TextButtonColor"))
                                 .fontWeight(.semibold)
                         }
                     }
@@ -72,7 +72,7 @@ struct DailyNutritionDietInfoView: View {
                         Button {
                         } label: {
                             Text("비우기")
-                                .foregroundStyle(Color("AppTintColor"))
+                                .foregroundStyle(Color("TextButtonColor"))
                         }
                     }
                 }

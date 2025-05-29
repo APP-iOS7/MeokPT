@@ -101,13 +101,18 @@ struct MyPageView: View {
                             }
                         )) {
                             VStack {
-                                HStack {
-                                    Text("하루 목표 칼로리")
-                                        .foregroundColor(.white)
-                                        .font(.headline)
-                                    Spacer()
-                                    Image(systemName: "chevron.right")
-                                        .foregroundColor(Color("AppTintColor"))
+                                ZStack {
+                                    HStack {
+                                        Text("하루 섭취량 입력")
+                                            .foregroundColor(.white)
+                                            .font(.headline)
+                                        Spacer()
+                                    }
+                                    HStack {
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .foregroundColor(Color("AppTintColor"))
+                                    }
                                 }
                                 .padding()
                             }
@@ -165,6 +170,7 @@ struct MyPageView: View {
             }
             .background(Color("AppBackgroundColor"))
         }
+        .tint(Color("TextButtonColor"))
     }
 }
 

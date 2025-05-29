@@ -93,7 +93,7 @@ struct DietDetailView: View {
                 CreateDietView(store: store)
             }
         }
-        .tint(Color("AppTintColor"))
+        .tint(Color("TextButtonColor"))
     }
 }
 

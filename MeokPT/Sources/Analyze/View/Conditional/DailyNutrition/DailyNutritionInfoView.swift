@@ -23,9 +23,13 @@ struct DailyNutritionInfoView: View {
         .cornerRadius(16)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.gray, lineWidth: 1)
-                .background(Color("CardBackgroundColor"))
+                .fill(Color("CardBackgroundColor"))
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.gray, lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 16))
         .padding(24)
     }
 }
