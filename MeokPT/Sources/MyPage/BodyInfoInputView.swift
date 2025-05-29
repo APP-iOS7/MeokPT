@@ -17,30 +17,41 @@ struct BodyInfoInputView: View {
     var body: some View {
             ScrollView {
                 VStack(spacing: 40) {
-                    
                     VStack(spacing: 30) {
-                        TextField("신장 (cm)", text: $store.height.sending(\.heightChanged))
-                        .keyboardType(.numberPad)
-                        .focused($focusedField, equals: .height)
-                        .submitLabel(.next)
-                        .onSubmit {
-                            focusedField = .weight
+                        VStack {
+                            HStack(alignment: .firstTextBaseline, spacing: 2) {
+                                TextField("신장 (cm)", text: $store.height.sending(\.heightChanged))
+                                    .keyboardType(.numberPad)
+                                    .focused($focusedField, equals: .height)
+                                Text("cm")
+                            }
+                            Rectangle()
+                                .frame(height: 1)
+                                .foregroundColor(Color(UIColor.separator))
                         }
                         
-                        TextField("체중 (kg)", text: $store.weight.sending(\.weightChanged))
-                        .keyboardType(.numberPad)
-                        .focused($focusedField, equals: .weight)
-                        .submitLabel(.next)
-                        .onSubmit {
-                            focusedField = .age
+                        VStack {
+                            HStack(alignment: .firstTextBaseline, spacing: 2) {
+                                TextField("체중 (kg)", text: $store.weight.sending(\.weightChanged))
+                                    .keyboardType(.numberPad)
+                                    .focused($focusedField, equals: .weight)
+                                Text("kg")
+                            }
+                            Rectangle()
+                                .frame(height: 1)
+                                .foregroundColor(Color(UIColor.separator))
                         }
                         
-                        TextField("나이", text: $store.age.sending(\.ageChanged))
-                        .keyboardType(.numberPad)
-                        .focused($focusedField, equals: .age)
-                        .submitLabel(.done)
-                        .onSubmit {
-                            focusedField = nil
+                        VStack {
+                            HStack(alignment: .firstTextBaseline, spacing: 2) {
+                                TextField("나이", text: $store.age.sending(\.ageChanged))
+                                    .keyboardType(.numberPad)
+                                    .focused($focusedField, equals: .age)
+                                Text("세")
+                            }
+                            Rectangle()
+                                .frame(height: 1)
+                                .foregroundColor(Color(UIColor.separator))
                         }
                     }
 
@@ -75,9 +86,21 @@ struct BodyInfoInputView: View {
                         }
                     )
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 24)
                 .padding(.top, 30)
             }
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("완료") {
+                        focusedField = nil
+                    }
+                }
+            }
+            .onTapGesture {
+                focusedField = nil
+            }
+            .scrollDismissesKeyboard(.immediately)
             .background(Color("AppBackgroundColor"))
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 Button(action: {
@@ -97,14 +120,6 @@ struct BodyInfoInputView: View {
                 .padding(.horizontal, 24)
             }
             .ignoresSafeArea(.keyboard, edges: .bottom)
-//            .toolbar {
-//                ToolbarItemGroup(placement: .keyboard) {
-//                    Spacer()
-//                    Button("완료") {
-//                        focusedField = nil
-//                    }
-//                }
-//            }
             .toolbar(.hidden, for: .tabBar)
     }
 }
