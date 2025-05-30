@@ -65,8 +65,7 @@ func createNutritionInputForJSON(userRecommendedIntakeItems: [NutritionItem], co
     
     let mealsForJSON: [MealForJSON] = consumedDiets.map { diet in
         MealForJSON(
-//            mealType: diet.mealType,
-            mealType: "",
+            mealType: diet.mealType?.rawValue ?? MealType.breakfast.displayName,
             calories: Int(diet.kcal.rounded()),
             carbohydrates: Int(diet.carbohydrate.rounded()),
             protein: Int(diet.protein.rounded()),

@@ -6,7 +6,7 @@ final class DietItem: Identifiable {
     @Attribute(.unique) var id: UUID
     public var timestampe: Date
     public var name: String
-    public var mealType: String
+    public var mealTypeRawValue: String
     
     public var kcal: Double
     public var carbohydrate: Double
@@ -21,7 +21,7 @@ final class DietItem: Identifiable {
         id: UUID = UUID(),
         timestampe: Date = Date(),
         name: String,
-        mealType: String,
+        mealTypeRawValue: String,
         kcal: Double = 0.0,
         carbohydrate: Double = 0.0,
         protein: Double = 0.0,
@@ -34,7 +34,7 @@ final class DietItem: Identifiable {
         self.id = id
         self.timestampe = timestampe
         self.name = name
-        self.mealType = mealType
+        self.mealTypeRawValue = mealTypeRawValue
         self.kcal = kcal
         self.carbohydrate = carbohydrate
         self.protein = protein
@@ -43,5 +43,10 @@ final class DietItem: Identifiable {
         self.sugar = sugar
         self.sodium = sodium
         self.isFavorite = isFavorite
+    }
+    
+    var mealType: MealType? {
+        get { MealType(rawValue: self.mealTypeRawValue) }
+        set { self.mealTypeRawValue = newValue?.rawValue ?? ""}
     }
 }
