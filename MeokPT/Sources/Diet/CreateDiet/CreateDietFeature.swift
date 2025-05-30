@@ -270,7 +270,7 @@ struct CreateDietFeature {
                     state.showAlertToast = true
                     state.toastMessage = foodName.count > 30
                     ? "\(foodName.prefix(30))…"
-                    : "\(foodName) \(amount)g"
+                    : "\(foodName) \(Int(amount))g"
                     state.addFoodSheet = nil
                     return .run { send in
                         try await Task.sleep(for: .seconds(3))
