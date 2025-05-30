@@ -15,8 +15,7 @@ final class DietItem: Identifiable {
     public var dietaryFiber: Double
     public var sugar: Double
     public var sodium: Double
-    
-//    public var isFavorite: Bool
+    public var isFavorite: Bool
     
     init(
         id: UUID = UUID(),
@@ -29,7 +28,8 @@ final class DietItem: Identifiable {
         fat: Double = 0.0,
         dietaryFiber: Double = 0.0,
         sugar: Double = 0.0,
-        sodium: Double = 0.0
+        sodium: Double = 0.0,
+        isFavorite: Bool = false
     ) {
         self.id = id
         self.timestampe = timestampe
@@ -42,5 +42,6 @@ final class DietItem: Identifiable {
         self.dietaryFiber = dietaryFiber
         self.sugar = sugar
         self.sodium = sodium
+        self.isFavorite = isFavorite
     }
 }
