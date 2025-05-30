@@ -79,6 +79,7 @@ struct CreateDietFeature {
     
     enum DelegateAction: Equatable {
         case dismissSheet
+        case addFoodToDiet(foodName: String, amount: Double, calories: Double, carbohydrates: Double, protein: Double, fat: Double, dietaryFiber: Double, sugar: Double, sodium: Double)
     }
     
     @Dependency(\.foodNutritionClient) var apiClient
@@ -238,15 +239,24 @@ struct CreateDietFeature {
             case .addFoodSheet(.presented(.delegate(let addFoodDelegateAction))):
                 switch addFoodDelegateAction {
                 case .dismissSheet:
-                    state.addFoodSheet = nil // 시트 닫기
+                    state.addFoodSheet = nil
                     return .none
                 case .addFoodToDiet(let foodName, let amount, let calories, let carbohydrates, let protein, let fat, let dietFiber, let sugar, let sodium):
-                    // TODO: 식단에 음식을 추가하는 로직 구현 (예: 부모 Feature로 전달)
-                    // state.delegate(.foodAdded(foodItem, amount)) 와 같은 형태로 부모에게 전달 가능
-                    state.addFoodSheet = nil // 시트 닫기
-                    return .none
+                    state.addFoodSheet = nil
+                    // 상위로 델리게이트
+                    return .send(.delegate(.addFoodToDiet(
+                        foodName: foodName,
+                        amount: amount,
+                        calories: calories,
+                        carbohydrates: carbohydrates,
+                        protein: protein,
+                        fat: fat,
+                        dietaryFiber: dietFiber,
+                        sugar: sugar,
+                        sodium: sodium
+                    )))
                 }
-                
+            
             case .addFoodSheet(_):
                 return .none
                 

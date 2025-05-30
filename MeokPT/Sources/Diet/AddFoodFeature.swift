@@ -16,7 +16,7 @@ struct AddFoodFeature {
         var selectedFoodItem: FoodNutritionItem
         
         let cornerRadius: CGFloat = 20
-        var amountGram: Int
+        var amountGram: Double
         let maxInputLength = 4
         
         var currentCalories: Double
@@ -30,7 +30,7 @@ struct AddFoodFeature {
         init(selectedFoodItem: FoodNutritionItem) {
             self.selectedFoodItem = selectedFoodItem
             let initialAmount = selectedFoodItem.servingSize > 0 ? Int(selectedFoodItem.servingSize) : 100
-            self.amountGram = initialAmount
+            self.amountGram = Double(initialAmount)
             
             // 100g당 영양 정보를 기준으로 초기 amountGram에 맞게 계산
             self.currentCalories = (selectedFoodItem.calorie / 100.0) * Double(initialAmount)
@@ -64,7 +64,7 @@ struct AddFoodFeature {
     
     enum DelegateAction: Equatable {
         case dismissSheet
-        case addFoodToDiet(foodName: String, amount: Int, calories: Double, carbohydrates: Double, protein: Double, fat: Double, dietaryFiber: Double, sugar: Double, sodium: Double)
+        case addFoodToDiet(foodName: String, amount: Double, calories: Double, carbohydrates: Double, protein: Double, fat: Double, dietaryFiber: Double, sugar: Double, sodium: Double)
     }
     
     var body: some ReducerOf<Self> {
