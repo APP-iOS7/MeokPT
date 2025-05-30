@@ -16,7 +16,8 @@ struct DietCellView: View {
             VStack(alignment: .leading) {
                 HStack(spacing: 16) {
                     Text(diet.title)
-                        .font(.headline)
+                        .font(.title3.bold())
+                        .lineLimit(1)
                     Spacer()
                     Toggle("Favorite", isOn: $isFavorite)
                         .toggleStyle(FavoriteToggleStyle())

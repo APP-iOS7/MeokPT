@@ -21,7 +21,7 @@ struct CreateDietView: View {
                         TextField(
                             "",
                             text: $store.foodNameInput.sending(\.foodNameInputChanged),
-                            prompt: Text("식품 이름 (예: 고구마)")
+                            prompt: Text("식품 이름 (예: 고구마, 휠렛 버거)")
                         )
                         .focused($focusedField)
                         .autocapitalization(.none)
