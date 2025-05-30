@@ -4,6 +4,8 @@ import ComposableArchitecture
 struct DietDetailView: View {
     @Bindable var store: StoreOf<DietDetailFeature>
     
+    @FocusState private var titleFocusedField: Bool
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
@@ -16,6 +18,7 @@ struct DietDetailView: View {
                                 set: { store.send(.updateTitle($0)) }
                             )
                         )
+                        .focused($titleFocusedField)
                         .submitLabel(.done)
                         .font(.largeTitle)
                         .fontWeight(.bold)
@@ -113,6 +116,9 @@ struct DietDetailView: View {
                 )
             }
             .padding(.horizontal, 24)
+        }
+        .onTapGesture {
+            titleFocusedField = false
         }
         .scrollDismissesKeyboard(.immediately)
         .background(Color("AppBackgroundColor"))
