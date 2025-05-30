@@ -65,6 +65,7 @@ struct AddFoodFeature {
     enum DelegateAction: Equatable {
         case dismissSheet
         case addFoodToDiet(foodName: String, amount: Int, calories: Double, carbohydrates: Double, protein: Double, fat: Double, dietaryFiber: Double, sugar: Double, sodium: Double)
+        case createToast(foodName: String, amount: Int)
     }
     
     var body: some ReducerOf<Self> {
@@ -117,7 +118,7 @@ struct AddFoodFeature {
                     sodium = state.currentSodium
                 ] send in
                     await send(.delegate(.addFoodToDiet(foodName: foodName, amount: amount, calories: calories, carbohydrates: carbs, protein: protein, fat: fat, dietaryFiber: dietaryFiber, sugar: sugar, sodium: sodium)))
-                    await send(.delegate(.dismissSheet))
+                    await send(.delegate(.createToast(foodName: foodName, amount: amount)))
                 }
                 
             case .delegate:

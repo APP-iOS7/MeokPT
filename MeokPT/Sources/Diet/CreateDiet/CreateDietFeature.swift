@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import AlertToast
 import ComposableArchitecture
 
 struct CategorizedFoodSection: Identifiable, Equatable {
@@ -23,11 +24,14 @@ struct CreateDietFeature {
         var lastSearchType: FoodNutritionClient.SearchType? = nil
 
         var currentPage: Int = 1
-        var numOfRows: Int = 100
+        var numOfRows: Int = 50
         var totalItemsCount: Int = 0
         
         var fetchedFoodItems: [FoodNutritionItem] = []
         var isLoading: Bool = false
+        
+        var showAlertToast = false
+        var toastMessage = ""
         
         var categorizedSections: [CategorizedFoodSection] {
             let grouped = Dictionary(grouping: fetchedFoodItems, by: { $0.DB_CLASS_NM ?? "기타" })
@@ -76,6 +80,7 @@ struct CreateDietFeature {
         case sectionToggled(id: UUID)
 
         case addFoodSheet(PresentationAction<AddFoodFeature.Action>)
+        case hideToast
         
         case delegate(DelegateAction)
     }
@@ -250,9 +255,22 @@ struct CreateDietFeature {
                 case .addFoodToDiet(let foodName, let amount, let calories, let carbohydrates, let protein, let fat, let dietFiber, let sugar, let sodium):
                     // TODO: 식단에 음식을 추가하는 로직 구현 (예: 부모 Feature로 전달)
                     // state.delegate(.foodAdded(foodItem, amount)) 와 같은 형태로 부모에게 전달 가능
-                    state.addFoodSheet = nil // 시트 닫기
                     return .none
+                case .createToast(let foodName, let amount):
+                    state.showAlertToast = true
+                    state.toastMessage = foodName.count > 30
+                    ? "\(foodName.prefix(30))…"
+                    : "\(foodName) \(amount)g"
+                    state.addFoodSheet = nil
+                    return .run { send in
+                        try await Task.sleep(for: .seconds(3))
+                        await send(.hideToast)
+                    }
                 }
+                
+            case .hideToast:
+                state.showAlertToast = false
+                return .none
                 
             case .addFoodSheet(_):
                 return .none

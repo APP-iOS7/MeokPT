@@ -7,6 +7,7 @@
 
 import SwiftUI
 import ComposableArchitecture
+import AlertToast
 
 struct CreateDietView: View {
     @Bindable var store: StoreOf<CreateDietFeature>
@@ -145,6 +146,17 @@ struct CreateDietView: View {
             AddFoodView(store: store)
                 .presentationDragIndicator(.visible)
                 .presentationDetents([.fraction(0.8)])
+        }
+        .toast(isPresenting: Binding(
+            get: { store.showAlertToast },
+            set: { _ in }
+        )) {
+            AlertToast(
+                displayMode: .banner(.pop),
+                type: .complete(Color("AppSecondaryColor")),
+                title: "음식 추가 완료",
+                subTitle: store.toastMessage,
+            )
         }
         .toolbar(content: {
             ToolbarItem(placement: .topBarTrailing,
