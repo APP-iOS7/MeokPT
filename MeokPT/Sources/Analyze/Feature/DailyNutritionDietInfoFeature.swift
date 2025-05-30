@@ -33,9 +33,13 @@ struct DailyNutritionDietInfoFeature {
         
         case task
         case nutritionDataDidChangeNotification
+        case dietDataDidChangeNotification
         
-        case _internalLoadInfoCompleted([NutritionItem])
-        case _internalLoadInfoFailed(NutritionError)
+        case dietItemMealTypeChanged(id: DietItem.ID, mealType: MealType, context: ModelContext)
+        
+        case _internalLoadNutritionInfoCompleted([NutritionItem])
+        case _internalLoadDietItemsCompleted([DietItem])
+        case _internalLoadInfoFailed(DataFetchError)
         
         case myPageNavigationButtonTapped
         case delegate(DelegateAction)
@@ -45,13 +49,15 @@ struct DailyNutritionDietInfoFeature {
         case navigateToMyPage
     }
     
-    enum NutritionError: Error, Equatable {
-        case fetchFailed
-        case internalLoadInfoFailed
+    enum DataFetchError: Error, Equatable {
+        case nutritionFetchFailed
+        case dietItemFetchFailed
     }
     
     enum FeatureCancelID: Hashable {
+        case dataLoadListener
         case nutritionUpdateListener
+        case dietUpdateListener
     }
 
 
@@ -77,7 +83,8 @@ struct DailyNutritionDietInfoFeature {
                 state.isLoading = true
                 state.errorMessage = nil
                 print("➡️ DailyNutritionDietInfoFeature: .loadInfo called. Will perform ASYNC fetch.")
-                return .run { send in
+                return .concatenate(
+                    .run { send in
                     do {
                         let descriptor = FetchDescriptor<NutritionItem>()
                         let items = try context.fetch(descriptor)
@@ -93,35 +100,90 @@ struct DailyNutritionDietInfoFeature {
                                   let second = typeOrder.firstIndex(of: $1.type) else { return false }
                             return first < second
                         }
-                        await send(._internalLoadInfoCompleted(sortedItems))
+                        await send(._internalLoadNutritionInfoCompleted(sortedItems))
                     } catch {
                         print("DailyNutritionDietInfoFeature: Fetch failed after delay: \(error)")
-                        await send(._internalLoadInfoFailed(.fetchFailed)) // Use your defined error
+                        await send(._internalLoadInfoFailed(.nutritionFetchFailed))
                     }
-                }
+                },
+                    .run { send in
+                        do {
+                            let sortDescriptor = [SortDescriptor(\DietItem.timestamp, order: .reverse)]
+                            let descriptor = FetchDescriptor<DietItem>(sortBy: sortDescriptor)
+                            let items = try context.fetch(descriptor)
+                            print("DietItem count: \(items.count)")
+                            await send(._internalLoadDietItemsCompleted(items))
+                        } catch {
+                            print("DailyNutritionDietInfoFeature: DietItem fetch Failed")
+                            await send(._internalLoadInfoFailed(.dietItemFetchFailed))
+                        }
+                    }
+                )
             case .task:
-                return .run { send in
-                    for await _ in NotificationCenter.default.notifications(named: .didUpdateNutritionItems) {
-                        await send(.nutritionDataDidChangeNotification)
+                print("DailyNutritionDietInfoFeature: .task action received, setting up listeners.")
+                return .merge(
+                    .run { send in
+                        for await _ in NotificationCenter.default.notifications(named: .didUpdateNutritionItems) {
+                            print("Notification received: .didUpdateNutritionItems")
+                            await send(.nutritionDataDidChangeNotification)
+                        }
                     }
+                    .cancellable(id: FeatureCancelID.nutritionUpdateListener, cancelInFlight: true),
+
+                    .run { send in
+                        for await _ in NotificationCenter.default.notifications(named: .didUpdateDietItems) {
+                            print("Notification received: .didUpdateDietItems")
+                            await send(.dietDataDidChangeNotification)
+                        }
+                    }
+                    .cancellable(id: FeatureCancelID.dietUpdateListener, cancelInFlight: true)
+                )
+                
+            case let .dietItemMealTypeChanged(id, newMealType, context):
+                guard let index = state.dietItems?.firstIndex(where: { $0.id == id }) else {
+                    print("Error: DietItem with ID \(id) not found.")
+                    return .none
                 }
-                .cancellable(id: FeatureCancelID.nutritionUpdateListener, cancelInFlight: true)
+                state.dietItems?[index].mealType = newMealType
+                
+                do {
+                    try context.save()
+                    print("Successfully saved mealType change for DietItem \(id) to \(newMealType.rawValue)")
+                } catch {
+                    print("Error saving DietItem mealType change: \(error)")
+                    state.errorMessage = "Failed to update meal type."
+                }
+                return .none
 
             case .nutritionDataDidChangeNotification:
                 print("DailyNutritionDietInfoFeature: received notification")
                 state.lastDataChangeTimestamp = Date()
                 return .none
+                
+            case .dietDataDidChangeNotification:
+                 state.lastDataChangeTimestamp = Date()
+                 return .none
             
-            case let ._internalLoadInfoCompleted(items):
+            case let ._internalLoadNutritionInfoCompleted(items):
                 state.isLoading = false
                 state.nutritionItems = items
                 print("Nutrition 최대값 로딩 성공 (after async processing)")
                 return .none
                 
+            case let ._internalLoadDietItemsCompleted(items):
+                state.isLoading = false
+                state.dietItems = items
+                print("DietItems 로딩 성공")
+                return .none
             case let ._internalLoadInfoFailed(error):
                 state.isLoading = false
                 state.errorMessage = "Nutrition 정보 불러오기 실패 (async)"
-                print("에러 (async loadInfo): \(error.localizedDescription)")
+                switch error {
+                case .nutritionFetchFailed:
+                    state.errorMessage = "Nutrition Item Loaded Error"
+                case .dietItemFetchFailed:
+                    state.errorMessage = "Diet Item Loaded Error"
+                }
                 return .none
             case .myPageNavigationButtonTapped:
                 return .send(.delegate(.navigateToMyPage))
