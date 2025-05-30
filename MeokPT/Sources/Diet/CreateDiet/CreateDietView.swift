@@ -7,6 +7,7 @@
 
 import SwiftUI
 import ComposableArchitecture
+import AlertToast
 
 struct CreateDietView: View {
     @Bindable var store: StoreOf<CreateDietFeature>
@@ -21,7 +22,7 @@ struct CreateDietView: View {
                         TextField(
                             "",
                             text: $store.foodNameInput.sending(\.foodNameInputChanged),
-                            prompt: Text("식품 이름 (예: 고구마)")
+                            prompt: Text("식품 이름 (예: 고구마, 휠렛 버거)")
                         )
                         .focused($focusedField)
                         .autocapitalization(.none)
@@ -46,8 +47,9 @@ struct CreateDietView: View {
                             Text("검색")
                         }
                     }
+                    .frame(minWidth: 44)
                     .disabled(store.isLoading)
-                    .foregroundStyle(Color("TextButtonColor"))
+                    .foregroundStyle(Color("TextButton"))
                 }
             }
             .padding(.vertical, 8)
@@ -64,25 +66,36 @@ struct CreateDietView: View {
                 if !store.fetchedFoodItems.isEmpty {
                     List {
                         ForEach(store.categorizedSections) { sectionData in
+                            let isExpanded = store.sectionStates[sectionData.id, default: true]
+
                             Section {
-                                ForEach(sectionData.items) { foodInfo in
-                                    FoodItemRowView(
-                                        foodInfo: foodInfo
-                                    )
-                                    .onTapGesture { store.send(.foodItemRowTapped(foodInfo)) }
-                                    .listRowInsets(EdgeInsets())
+                                if isExpanded {
+                                    ForEach(sectionData.items) { foodInfo in
+                                        Button {
+                                            store.send(.foodItemRowTapped(foodInfo))
+                                        } label: {
+                                            FoodItemRowView(foodInfo: foodInfo)
+                                        }
+                                        .tint(.primary)
+                                        .listRowInsets(EdgeInsets())
+                                    }
                                 }
                             } header: {
-                                HStack {
-                                    Text(sectionData.categoryName)
-                                        .font(.subheadline)
-                                    Spacer()
-                                    Text("영양성분은 100g 기준입니다.")
-                                        .font(.subheadline.bold())
+                                Button (action: { store.send(.sectionToggled(id: sectionData.id)) }) {
+                                    HStack {
+                                        Text(sectionData.categoryName)
+                                            .font(.subheadline)
+                                        Spacer()
+                                        Text("영양성분은 100g 기준입니다.")
+                                            .font(.subheadline.bold())
+                                        Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                                            .frame(width:14)
+                                    }
+                                    .foregroundStyle(Color("AppSecondaryColor"))
+                                    .padding(.leading, -8)
+                                    .padding(.bottom, 4)
                                 }
-                                .foregroundStyle(Color("AppSecondaryColor"))
-                                .textCase(nil)
-                                .padding(.horizontal, -8)
+                                .buttonStyle(.plain)
                             }
                         }
                     }
@@ -108,7 +121,7 @@ struct CreateDietView: View {
                     Button(action: { store.send(.goToPage(store.currentPage - 1)) }) {
                         Text("이전")
                     }
-                    .foregroundStyle(Color("TextButtonColor"))
+                    .foregroundStyle(Color("TextButton"))
                     
                     Spacer()
                     Text("\(store.currentPage) / \(store.totalPages)")
@@ -118,7 +131,7 @@ struct CreateDietView: View {
                     Button(action: { store.send(.goToPage(store.currentPage + 1)) }) {
                         Text("다음")
                     }
-                    .foregroundStyle(Color("TextButtonColor"))
+                    .foregroundStyle(Color("TextButton"))
                     .disabled(store.currentPage >= store.totalPages)
                 }
                 .padding(.horizontal, 24)
@@ -136,11 +149,22 @@ struct CreateDietView: View {
                 .presentationDragIndicator(.visible)
                 .presentationDetents([.fraction(0.8)])
         }
+        .toast(isPresenting: Binding(
+            get: { store.showAlertToast },
+            set: { _ in }
+        )) {
+            AlertToast(
+                displayMode: .banner(.pop),
+                type: .complete(Color("AppSecondaryColor")),
+                title: "음식 추가 완료",
+                subTitle: store.toastMessage,
+            )
+        }
         .toolbar(content: {
             ToolbarItem(placement: .topBarTrailing,
                         content: { Button(action: {
                 store.send(.closeButtonTapped)
-            }) { Text("완료").foregroundStyle(Color("TextButtonColor")) }})
+            }) { Text("완료").foregroundStyle(Color("TextButton")) }})
         })
     }
     

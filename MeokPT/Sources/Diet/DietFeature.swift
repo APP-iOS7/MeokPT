@@ -74,7 +74,6 @@ struct DietFeature {
                     return .none
                 }
                 if dietToUpdate.isFavorite != isFavorite {
-                    _ = dietToUpdate.isFavorite
                     dietToUpdate.isFavorite = isFavorite
                     state.dietList[id: id] = dietToUpdate
                 }
@@ -88,6 +87,31 @@ struct DietFeature {
                     return .none
                 }
                 return .send(.likeButtonTapped(id: dietDetailState.dietID, isFavorite: isFavorite))
+
+            case let .path(.element(id: pathID, action: .detail(.delegate(.addFoodToDiet(foodName, amount, calories, carbohydrates, protein, fat, dietaryFiber, sugar, sodium))))):
+                guard let dietDetailState = state.path[id: pathID]?.detail,
+                      var dietToUpdate = state.dietList[id: dietDetailState.dietID] else {
+                    return .none
+                }
+                
+                // 새 음식 아이템 생성
+                let newFood = Food(
+                    name: foodName,
+                    amount: amount,
+                    kcal: calories,
+                    carbohydrate: carbohydrates,
+                    protein: protein,
+                    fat: fat,
+                    dietaryFiber: dietaryFiber,
+                    sodium: sodium,
+                    sugar: sugar
+                )
+                
+                // 식단에 음식 추가
+                dietToUpdate.foods.append(newFood)
+                state.dietList[id: dietDetailState.dietID] = dietToUpdate
+                
+                return .none
 
             case .path:
                 return .none

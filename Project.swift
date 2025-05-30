@@ -55,7 +55,8 @@ let project = Project(
                 .external(name: "FirebaseAI"),
                 .external(name: "MarkdownUI"),
                 .external(name: "KakaoSDKAuth"),
-                .external(name: "KakaoSDKUser")
+                .external(name: "KakaoSDKUser"),
+                .external(name: "AlertToast")
             ]
         ),
         .target(

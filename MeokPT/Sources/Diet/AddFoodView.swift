@@ -23,69 +23,14 @@ struct AddFoodView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 24) {
-                Text(store.selectedFoodItem.foodName)
-                    .font(.title2)
-                    .fontWeight(.bold)
-                
-                VStack {
-                    HStack(alignment: .firstTextBaseline, spacing: 1) {
-                        TextField("양", value: $store.amountGram, formatter: NumberFormatter())
-                            .font(.body)
-                            .multilineTextAlignment(.center)
-                            .frame(minWidth: 40, idealWidth: 50, maxWidth: 55)
-                            .keyboardType(.numberPad)
-                            .onChange(of: store.amountGram) {
-                                let amountText = String(store.amountGram)
-                                
-                                if amountText.count > store.maxInputLength {
-                                    store.amountGram = Int(amountText.prefix(store.maxInputLength)) ?? 0
-                                }
-                            }
-                        Text("g")
-                            .font(.body)
-                    }
-                    Rectangle()
-                        .frame(height: 1)
-                        .foregroundColor(Color(uiColor: UIColor.separator))
-                        .padding(.horizontal, 120)
-                }
+                foodInfoSection
                 
                 Text(store.info ?? "")
                     .font(.caption)
                     .foregroundColor(Color("AppSecondaryColor"))
                     .padding(.horizontal, 24)
                 
-                VStack(spacing: 16) {
-                    Text("\(store.currentCalories, specifier: "%.0f")kcal")
-                        .foregroundColor(Color("AppSecondaryColor"))
-                    Spacer().frame(height: 2)
-                    
-                    VStack(spacing: 16) {
-                        HStack {
-                            nutrientInputRow(label: "탄수화물", value: $store.currentCarbohydrates, field: .carbohydrate, unit: .gram)
-                            Spacer()
-                            nutrientInputRow(label: "단백질", value: $store.currentProtein, field: .protein, unit: .gram)
-                            Spacer()
-                            nutrientInputRow(label: "지방", value: $store.currentFat, field: .fat, unit: .gram)
-                        }
-                        
-                        HStack {
-                            nutrientInputRow(label: "식이섬유", value: $store.currentDietaryFiber, field: .dietFiber, unit: .gram)
-                            Spacer()
-                            nutrientInputRow(label: "당류", value: $store.currentSugar, field: .sugar, unit: .gram)
-                            Spacer()
-                            nutrientInputRow(label: "나트륨", value: $store.currentSodium, field: .sodium, unit: .milligram)
-                        }
-                    }
-                }
-                .padding(24)
-                .background(Color("AppBackgroundColor"))
-                .cornerRadius(store.cornerRadius)
-                .overlay(
-                    RoundedRectangle(cornerRadius: store.cornerRadius)
-                        .stroke(Color(uiColor: UIColor.separator), lineWidth: 1)
-                )
-                .padding(.horizontal, 24)
+                nutrientSection
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -95,7 +40,7 @@ struct AddFoodView: View {
                     Button (action: { store.send(.addButtonTapped) }) { Text("추가") }
                 }
             }
-            .tint(Color("TextButtonColor"))
+            .tint(Color("TextButton"))
             .onTapGesture {
                 focusedNutrientField = nil
                 UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
@@ -119,6 +64,71 @@ struct AddFoodView: View {
                 }
             }
         }
+    }
+    
+    @ViewBuilder
+    private var foodInfoSection: some View {
+        Text(store.selectedFoodItem.foodName)
+            .font(.title2)
+            .fontWeight(.bold)
+        
+        VStack {
+            HStack(alignment: .firstTextBaseline, spacing: 1) {
+                TextField("양", value: $store.amountGram, formatter: NumberFormatter())
+                    .font(.body)
+                    .multilineTextAlignment(.center)
+                    .frame(minWidth: 40, idealWidth: 50, maxWidth: 55)
+                    .keyboardType(.numberPad)
+                    .onChange(of: store.amountGram) {
+                        let amountText = String(store.amountGram)
+                        
+                        if amountText.count > store.maxInputLength {
+                            store.amountGram = Double(amountText.prefix(store.maxInputLength)) ?? 0
+                        }
+                    }
+                Text("g")
+                    .font(.body)
+            }
+            Rectangle()
+                .frame(height: 1)
+                .foregroundColor(Color(uiColor: UIColor.separator))
+                .padding(.horizontal, 120)
+        }
+    }
+    
+    @ViewBuilder
+    private var nutrientSection: some View {
+        VStack(spacing: 16) {
+            Text("\(store.currentCalories, specifier: "%.0f")kcal")
+                .foregroundColor(Color("AppSecondaryColor"))
+            Spacer().frame(height: 2)
+            
+            VStack(spacing: 16) {
+                HStack {
+                    nutrientInputRow(label: "탄수화물", value: $store.currentCarbohydrates, field: .carbohydrate, unit: .gram)
+                    Spacer()
+                    nutrientInputRow(label: "단백질", value: $store.currentProtein, field: .protein, unit: .gram)
+                    Spacer()
+                    nutrientInputRow(label: "지방", value: $store.currentFat, field: .fat, unit: .gram)
+                }
+                
+                HStack {
+                    nutrientInputRow(label: "식이섬유", value: $store.currentDietaryFiber, field: .dietFiber, unit: .gram)
+                    Spacer()
+                    nutrientInputRow(label: "당류", value: $store.currentSugar, field: .sugar, unit: .gram)
+                    Spacer()
+                    nutrientInputRow(label: "나트륨", value: $store.currentSodium, field: .sodium, unit: .milligram)
+                }
+            }
+        }
+        .padding(24)
+        .background(Color("AppBackgroundColor"))
+        .cornerRadius(store.cornerRadius)
+        .overlay(
+            RoundedRectangle(cornerRadius: store.cornerRadius)
+                .stroke(Color(uiColor: UIColor.separator), lineWidth: 1)
+        )
+        .padding(.horizontal, 24)
     }
     
     @ViewBuilder

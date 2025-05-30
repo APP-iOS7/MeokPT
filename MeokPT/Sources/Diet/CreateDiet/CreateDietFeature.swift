@@ -6,12 +6,14 @@
 //
 
 import Foundation
+import AlertToast
 import ComposableArchitecture
 
 struct CategorizedFoodSection: Identifiable, Equatable {
     let id = UUID()
     let categoryName: String
     let items: [FoodNutritionItem]
+    var isExpanded: Bool = true
 }
 
 @Reducer
@@ -22,11 +24,14 @@ struct CreateDietFeature {
         var lastSearchType: FoodNutritionClient.SearchType? = nil
 
         var currentPage: Int = 1
-        var numOfRows: Int = 30
+        var numOfRows: Int = 50
         var totalItemsCount: Int = 0
         
         var fetchedFoodItems: [FoodNutritionItem] = []
         var isLoading: Bool = false
+        
+        var showAlertToast = false
+        var toastMessage = ""
         
         var categorizedSections: [CategorizedFoodSection] {
             let grouped = Dictionary(grouping: fetchedFoodItems, by: { $0.DB_CLASS_NM ?? "기타" })
@@ -47,6 +52,7 @@ struct CreateDietFeature {
             }
             return sections
         }
+        var sectionStates: [UUID: Bool] = [:]
 
         var totalPages: Int {
             guard numOfRows > 0 else { return 0 }
@@ -71,14 +77,17 @@ struct CreateDietFeature {
         case scannerSheet(PresentationAction<Never>)
         case closeButtonTapped
         case foodItemRowTapped(FoodNutritionItem)
+        case sectionToggled(id: UUID)
 
         case addFoodSheet(PresentationAction<AddFoodFeature.Action>)
+        case hideToast
         
         case delegate(DelegateAction)
     }
     
     enum DelegateAction: Equatable {
         case dismissSheet
+        case addFoodToDiet(foodName: String, amount: Double, calories: Double, carbohydrates: Double, protein: Double, fat: Double, dietaryFiber: Double, sugar: Double, sodium: Double)
     }
     
     @Dependency(\.foodNutritionClient) var apiClient
@@ -234,19 +243,45 @@ struct CreateDietFeature {
             case .foodItemRowTapped(let foodItem):
                 state.addFoodSheet = AddFoodFeature.State(selectedFoodItem: foodItem)
                 return .none
-
+                
+            case .sectionToggled(let id):
+                state.sectionStates[id, default: true].toggle()
+                return .none
+                
             case .addFoodSheet(.presented(.delegate(let addFoodDelegateAction))):
                 switch addFoodDelegateAction {
                 case .dismissSheet:
-                    state.addFoodSheet = nil // 시트 닫기
+                    state.addFoodSheet = nil
                     return .none
                 case .addFoodToDiet(let foodName, let amount, let calories, let carbohydrates, let protein, let fat, let dietFiber, let sugar, let sodium):
-                    // TODO: 식단에 음식을 추가하는 로직 구현 (예: 부모 Feature로 전달)
-                    // state.delegate(.foodAdded(foodItem, amount)) 와 같은 형태로 부모에게 전달 가능
-                    state.addFoodSheet = nil // 시트 닫기
-                    return .none
+                    // 상위로 델리게이트
+                    return .send(.delegate(.addFoodToDiet(
+                        foodName: foodName,
+                        amount: amount,
+                        calories: calories,
+                        carbohydrates: carbohydrates,
+                        protein: protein,
+                        fat: fat,
+                        dietaryFiber: dietFiber,
+                        sugar: sugar,
+                        sodium: sodium
+                    )))
+                    case .createToast(let foodName, let amount):
+                    state.showAlertToast = true
+                    state.toastMessage = foodName.count > 30
+                    ? "\(foodName.prefix(30))…"
+                    : "\(foodName) \(Int(amount))g"
+                    state.addFoodSheet = nil
+                    return .run { send in
+                        try await Task.sleep(for: .seconds(3))
+                        await send(.hideToast)
+                    }
                 }
                 
+            case .hideToast:
+                state.showAlertToast = false
+                return .none
+            
             case .addFoodSheet(_):
                 return .none
                 

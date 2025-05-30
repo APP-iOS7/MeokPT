@@ -46,13 +46,17 @@ private struct EachNutrientView: View {
                 .font(.caption)
                 .foregroundColor(Color("AppSecondaryColor"))
             Spacer().frame(height:4)
-            name == "나트륨" ? Text("\(value, specifier: "%.1f")mg") : Text("\(value, specifier: "%.1f")g")
-                .font(.body)
+            if (value == 0) {
+                name == "나트륨" ? Text("--.- mg") : Text("--.- g")
+                    .font(.body)
+            } else {
+                name == "나트륨" ? Text("\(value, specifier: "%.1f")mg") : Text("\(value, specifier: "%.1f")g")
+                    .font(.body)
+            }
         }
     }
 }
 
 #Preview {
     NutrientView(carbohydrate: 50.0, protein: 20.0, fat: 10.0)
-        .padding()
 }

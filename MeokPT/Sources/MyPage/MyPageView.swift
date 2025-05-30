@@ -170,7 +170,7 @@ struct MyPageView: View {
             }
             .background(Color("AppBackgroundColor"))
         }
-        .tint(Color("TextButtonColor"))
+        .tint(Color("TextButton"))
     }
 }
 

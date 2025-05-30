@@ -64,7 +64,7 @@ struct DailyNutritionDietInfoView: View {
                             store.send(.presentDietSelectionSheet)
                         } label: {
                             Text("식단 추가")
-                                .foregroundStyle(Color("TextButtonColor"))
+                                .foregroundStyle(Color("TextButton"))
                                 .fontWeight(.semibold)
                         }
                     }
@@ -72,7 +72,7 @@ struct DailyNutritionDietInfoView: View {
                         Button {
                         } label: {
                             Text("비우기")
-                                .foregroundStyle(Color("TextButtonColor"))
+                                .foregroundStyle(Color("TextButton"))
                         }
                     }
                 }
@@ -103,14 +103,14 @@ struct DailyNutritionDietInfoView: View {
             print("DailyNutritionDietInfoView: Sending .task action to start listener.")
             store.send(.task)
         }
-//        .onChange(of: store.lastDataChangeTimestamp) { oldValue, newValue in
-//            if oldValue != newValue {
-//                print("Values are different. Sending .loadInfo(context)...")
-//                store.send(.loadInfo(context))
-//            } else {
-//                print("Values were identical in onChange. Not sending .loadInfo.")
-//            }
-//        }
+        .onChange(of: store.lastDataChangeTimestamp) { oldValue, newValue in
+            if oldValue != newValue {
+                print("Values are different. Sending .loadInfo(context)...")
+                store.send(.loadInfo(context))
+            } else {
+                print("Values were identical in onChange. Not sending .loadInfo.")
+            }
+        }
     }
 
     // TODO: - 신체정보가 있고 식단이 없는 경우

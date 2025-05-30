@@ -12,6 +12,7 @@ struct BodyInfoInputFeature {
         var selectedGoal: Goal = .loseWeight
         var selectedActivityLevel: ActivityLevel = .veryLow
         var error: String?
+        var showAlertToast = false
     }
     
     enum Action: Equatable, BindableAction {
@@ -24,6 +25,7 @@ struct BodyInfoInputFeature {
         case activityLevelChanged(ActivityLevel)
         case saveButtonTapped(ModelContext)
         case loadSavedData(ModelContext)
+        case hideToast
     }
     
     var body: some ReducerOf<Self> {
@@ -117,10 +119,19 @@ struct BodyInfoInputFeature {
                      }
                      try context.save()
                      print("데이터 저장 성공")
+                     
+                     state.showAlertToast = true
+                     return .run { send in
+                         try await Task.sleep(for: .seconds(4))
+                         await send(.hideToast)
+                     }
                  } catch {
                      print("저장 실패: \(error)")
+                     return .none
                  }
-                 return .none
+            case .hideToast:
+                state.showAlertToast = false
+                return .none
             }
         }
     }

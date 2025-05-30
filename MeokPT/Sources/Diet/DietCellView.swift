@@ -16,7 +16,8 @@ struct DietCellView: View {
             VStack(alignment: .leading) {
                 HStack(spacing: 16) {
                     Text(diet.title)
-                        .font(.headline)
+                        .font(.title3.bold())
+                        .lineLimit(1)
                     Spacer()
                     Toggle("Favorite", isOn: $isFavorite)
                         .toggleStyle(FavoriteToggleStyle())
@@ -28,12 +29,22 @@ struct DietCellView: View {
                     }
                 }
                 Spacer().frame(height: 4)
-                Text(String(format: "%.0f kcal", diet.kcal))
-                    .font(.body)
+                if (diet.foods.isEmpty) {
+                    Text("--- kcal")
+                } else {
+                    Text(String(format: "%.0f kcal", diet.kcal))
+                        .font(.body)
+                }
             }
             Spacer().frame(height: 8)
             HStack {
-                NutrientView(carbohydrate: diet.carbohydrate, protein: diet.protein, fat: diet.fat)
+                if (diet.foods.isEmpty) {
+                    EmptyNutrientView()
+                        .padding(.horizontal)
+                } else {
+                    NutrientView(carbohydrate: diet.carbohydrate, protein: diet.protein, fat: diet.fat)
+                        .padding(.horizontal)
+                }
             }
         }
         .padding(24)

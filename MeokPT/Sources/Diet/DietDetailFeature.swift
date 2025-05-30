@@ -21,6 +21,7 @@ struct DietDetailFeature {
 
     enum DelegateAction: Equatable {
         case favoriteToggled(isFavorite: Bool)
+        case addFoodToDiet(foodName: String, amount: Double, calories: Double, carbohydrates: Double, protein: Double, fat: Double, dietaryFiber: Double, sugar: Double, sodium: Double)
     }
     
     var body: some ReducerOf<Self> {
@@ -38,6 +39,32 @@ struct DietDetailFeature {
             case .createDietFullScreenCover(.presented(.delegate(.dismissSheet))):
                 state.createDietFullScreenCover = nil
                 return .none
+            case .createDietFullScreenCover(.presented(.delegate(.addFoodToDiet(let foodName, let amount, let calories, let carbohydrates, let protein, let fat, let dietaryFiber, let sugar, let sodium)))):
+                // 현재 상태의 diet에 음식 추가
+                let newFood = Food(
+                    name: foodName,
+                    amount: amount,
+                    kcal: calories,
+                    carbohydrate: carbohydrates,
+                    protein: protein,
+                    fat: fat,
+                    dietaryFiber: dietaryFiber,
+                    sodium: sodium,
+                    sugar: sugar
+                )
+                state.diet.foods.append(newFood)
+                // 상위로 델리게이트
+                return .send(.delegate(.addFoodToDiet(
+                    foodName: foodName,
+                    amount: amount,
+                    calories: calories,
+                    carbohydrates: carbohydrates,
+                    protein: protein,
+                    fat: fat,
+                    dietaryFiber: dietaryFiber,
+                    sugar: sugar,
+                    sodium: sodium
+                )))
             case .createDietFullScreenCover(_):
                 return .none
             case .delegate:
