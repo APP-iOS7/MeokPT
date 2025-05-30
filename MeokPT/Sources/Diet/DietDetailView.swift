@@ -7,7 +7,7 @@ struct DietDetailView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                VStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: 24) {
                     HStack {
                         TextField(
                             "제목",
@@ -30,31 +30,48 @@ struct DietDetailView: View {
                             )
                         )
                         .toggleStyle(FavoriteToggleStyle())
-                        .padding(.horizontal)
                     }
-                    Text("\(String(format: "%.0f", store.diet.kcal)) kcal")
-                        .font(.title2)
-                }
-
-                HStack {
-                    DetailNutrientView(
-                        carbohydrate: store.diet.carbohydrate,
-                        protein: store.diet.protein,
-                        fat: store.diet.fat,
-                        dietaryFiber: store.diet.dietaryFiber,
-                        sugar: store.diet.sugar,
-                        sodium: store.diet.sodium
-                    )
+                    VStack {
+                        VStack {
+                            HStack {
+                                Text("총 열량")
+                                    .foregroundStyle(Color("AppSecondaryColor"))
+                                Spacer()
+                                if(store.diet.kcal == 0) {
+                                    Text("- kacl")
+                                } else {
+                                    Text("\(String(format: "%.0f", store.diet.kcal)) kcal")
+                                }
+                            }
+                            .font(.body)
+                            Rectangle()
+                                .frame(height: 1)
+                                .foregroundColor(Color(.placeholderText))
+                        }
+                        .padding(.horizontal, 8)
+                        Spacer().frame(height: 24)
+                        HStack {
+                            DetailNutrientView(
+                                carbohydrate: store.diet.carbohydrate,
+                                protein: store.diet.protein,
+                                fat: store.diet.fat,
+                                dietaryFiber: store.diet.dietaryFiber,
+                                sugar: store.diet.sugar,
+                                sodium: store.diet.sodium
+                            )
+                        }
+                    }
                 }
 
                 VStack {
                     ForEach(store.diet.foods) { food in
-                        VStack(alignment: .leading, spacing: 24) {
+                        VStack(alignment: .leading) {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text(food.name)
                                     .font(.headline)
                                 Text("\(String(format: "%.0f", food.amount))g, \(String(format: "%.0f", food.kcal))kcal")
                             }
+                            .padding(24)
                             DetailNutrientView(
                                 carbohydrate: food.carbohydrate,
                                 protein: food.protein,
@@ -63,8 +80,8 @@ struct DietDetailView: View {
                                 sugar: food.sugar,
                                 sodium: food.sodium
                             )
+                            .padding(.bottom, 24)
                         }
-                        .padding(24)
                         if food != store.diet.foods.last {
                             Divider()
                         }
@@ -77,7 +94,7 @@ struct DietDetailView: View {
                         .stroke(Color(uiColor: UIColor.separator), lineWidth: 1)
                 )
             }
-            .padding()
+            .padding(.horizontal, 24)
         }
         .scrollDismissesKeyboard(.immediately)
         .background(Color("AppBackgroundColor"))
@@ -93,7 +110,7 @@ struct DietDetailView: View {
                 CreateDietView(store: store)
             }
         }
-        .tint(Color("TextButtonColor"))
+        .tint(Color("TextButton"))
     }
 }
 

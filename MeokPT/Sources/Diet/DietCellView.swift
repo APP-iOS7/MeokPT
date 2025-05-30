@@ -34,6 +34,7 @@ struct DietCellView: View {
             Spacer().frame(height: 8)
             HStack {
                 NutrientView(carbohydrate: diet.carbohydrate, protein: diet.protein, fat: diet.fat)
+                    .padding(.horizontal)
             }
         }
         .padding(24)
