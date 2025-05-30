@@ -28,13 +28,22 @@ struct DietCellView: View {
                     }
                 }
                 Spacer().frame(height: 4)
-                Text(String(format: "%.0f kcal", diet.kcal))
-                    .font(.body)
+                if (diet.foods.isEmpty) {
+                    Text("--- kcal")
+                } else {
+                    Text(String(format: "%.0f kcal", diet.kcal))
+                        .font(.body)
+                }
             }
             Spacer().frame(height: 8)
             HStack {
-                NutrientView(carbohydrate: diet.carbohydrate, protein: diet.protein, fat: diet.fat)
-                    .padding(.horizontal)
+                if (diet.foods.isEmpty) {
+                    EmptyNutrientView()
+                        .padding(.horizontal)
+                } else {
+                    NutrientView(carbohydrate: diet.carbohydrate, protein: diet.protein, fat: diet.fat)
+                        .padding(.horizontal)
+                }
             }
         }
         .padding(24)

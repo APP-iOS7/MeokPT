@@ -31,34 +31,52 @@ struct DietDetailView: View {
                         )
                         .toggleStyle(FavoriteToggleStyle())
                     }
-                    VStack {
+                    if(!store.diet.foods.isEmpty) {
                         VStack {
-                            HStack {
-                                Text("총 열량")
-                                    .foregroundStyle(Color("AppSecondaryColor"))
-                                Spacer()
-                                if(store.diet.kcal == 0) {
-                                    Text("- kacl")
-                                } else {
+                            VStack {
+                                HStack {
+                                    Text("총 열량")
+                                        .foregroundStyle(Color("AppSecondaryColor"))
+                                    Spacer()
                                     Text("\(String(format: "%.0f", store.diet.kcal)) kcal")
                                 }
+                                .font(.body)
+                                Rectangle()
+                                    .frame(height: 1)
+                                    .foregroundColor(Color(.placeholderText))
                             }
-                            .font(.body)
-                            Rectangle()
-                                .frame(height: 1)
-                                .foregroundColor(Color(.placeholderText))
+                            .padding(.horizontal, 8)
+                            Spacer().frame(height: 24)
+                            HStack {
+                                DetailNutrientView(
+                                    carbohydrate: store.diet.carbohydrate,
+                                    protein: store.diet.protein,
+                                    fat: store.diet.fat,
+                                    dietaryFiber: store.diet.dietaryFiber,
+                                    sugar: store.diet.sugar,
+                                    sodium: store.diet.sodium
+                                )
+                            }
                         }
-                        .padding(.horizontal, 8)
-                        Spacer().frame(height: 24)
-                        HStack {
-                            DetailNutrientView(
-                                carbohydrate: store.diet.carbohydrate,
-                                protein: store.diet.protein,
-                                fat: store.diet.fat,
-                                dietaryFiber: store.diet.dietaryFiber,
-                                sugar: store.diet.sugar,
-                                sodium: store.diet.sodium
-                            )
+                    } else {
+                        VStack {
+                            VStack {
+                                HStack {
+                                    Text("총 열량")
+                                        .foregroundStyle(Color("AppSecondaryColor"))
+                                    Spacer()
+                                    Text("--- kcal")
+                                }
+                                .font(.body)
+                                Rectangle()
+                                    .frame(height: 1)
+                                    .foregroundColor(Color(.placeholderText))
+                            }
+                            .padding(.horizontal, 8)
+                            Spacer().frame(height: 24)
+                            HStack {
+                                EmptyDetailNutrientView()
+                            }
                         }
                     }
                 }
