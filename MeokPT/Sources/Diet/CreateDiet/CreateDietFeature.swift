@@ -12,6 +12,7 @@ struct CategorizedFoodSection: Identifiable, Equatable {
     let id = UUID()
     let categoryName: String
     let items: [FoodNutritionItem]
+    var isExpanded: Bool = true
 }
 
 @Reducer
@@ -22,7 +23,7 @@ struct CreateDietFeature {
         var lastSearchType: FoodNutritionClient.SearchType? = nil
 
         var currentPage: Int = 1
-        var numOfRows: Int = 30
+        var numOfRows: Int = 100
         var totalItemsCount: Int = 0
         
         var fetchedFoodItems: [FoodNutritionItem] = []
@@ -47,6 +48,7 @@ struct CreateDietFeature {
             }
             return sections
         }
+        var sectionStates: [UUID: Bool] = [:]
 
         var totalPages: Int {
             guard numOfRows > 0 else { return 0 }
@@ -71,6 +73,7 @@ struct CreateDietFeature {
         case scannerSheet(PresentationAction<Never>)
         case closeButtonTapped
         case foodItemRowTapped(FoodNutritionItem)
+        case sectionToggled(id: UUID)
 
         case addFoodSheet(PresentationAction<AddFoodFeature.Action>)
         
@@ -234,7 +237,11 @@ struct CreateDietFeature {
             case .foodItemRowTapped(let foodItem):
                 state.addFoodSheet = AddFoodFeature.State(selectedFoodItem: foodItem)
                 return .none
-
+                
+            case .sectionToggled(let id):
+                state.sectionStates[id, default: true].toggle()
+                return .none
+                
             case .addFoodSheet(.presented(.delegate(let addFoodDelegateAction))):
                 switch addFoodDelegateAction {
                 case .dismissSheet:

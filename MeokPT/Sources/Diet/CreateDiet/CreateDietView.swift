@@ -46,6 +46,7 @@ struct CreateDietView: View {
                             Text("검색")
                         }
                     }
+                    .frame(minWidth: 44)
                     .disabled(store.isLoading)
                     .foregroundStyle(Color("TextButton"))
                 }
@@ -64,25 +65,34 @@ struct CreateDietView: View {
                 if !store.fetchedFoodItems.isEmpty {
                     List {
                         ForEach(store.categorizedSections) { sectionData in
+                            let isExpanded = store.sectionStates[sectionData.id, default: true]
+
                             Section {
-                                ForEach(sectionData.items) { foodInfo in
-                                    FoodItemRowView(
-                                        foodInfo: foodInfo
-                                    )
-                                    .onTapGesture { store.send(.foodItemRowTapped(foodInfo)) }
-                                    .listRowInsets(EdgeInsets())
+                                if isExpanded {
+                                    ForEach(sectionData.items) { foodInfo in
+                                        FoodItemRowView(
+                                            foodInfo: foodInfo
+                                        )
+                                        .onTapGesture { store.send(.foodItemRowTapped(foodInfo)) }
+                                        .listRowInsets(EdgeInsets())
+                                    }
                                 }
                             } header: {
-                                HStack {
-                                    Text(sectionData.categoryName)
-                                        .font(.subheadline)
-                                    Spacer()
-                                    Text("영양성분은 100g 기준입니다.")
-                                        .font(.subheadline.bold())
+                                Button (action: { store.send(.sectionToggled(id: sectionData.id)) }) {
+                                    HStack {
+                                        Text(sectionData.categoryName)
+                                            .font(.subheadline)
+                                        Spacer()
+                                        Text("영양성분은 100g 기준입니다.")
+                                            .font(.subheadline.bold())
+                                        Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                                            .frame(width:14)
+                                    }
+                                    .foregroundStyle(Color("AppSecondaryColor"))
+                                    .padding(.leading, -8)
+                                    .padding(.bottom, 4)
                                 }
-                                .foregroundStyle(Color("AppSecondaryColor"))
-                                .textCase(nil)
-                                .padding(.horizontal, -8)
+                                .buttonStyle(.plain)
                             }
                         }
                     }
