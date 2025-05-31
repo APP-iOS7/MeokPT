@@ -2,37 +2,37 @@ import SwiftData
 import Foundation
 
 @Model
-final class DietItem: Identifiable {
-    @Attribute(.unique) var id: UUID
-    public var timestampe: Date
-    public var name: String
-    public var mealTypeRawValue: String
+final class DietItem: Identifiable, Equatable {
+    var id: UUID
+    var timestamp: Date
+    var name: String
+    var mealTypeRawValue: String
     
-    public var kcal: Double
-    public var carbohydrate: Double
-    public var protein: Double
-    public var fat: Double
-    public var dietaryFiber: Double
-    public var sugar: Double
-    public var sodium: Double
-    public var isFavorite: Bool
+    var kcal: Double
+    var carbohydrate: Double
+    var protein: Double
+    var fat: Double
+    var dietaryFiber: Double
+    var sugar: Double
+    var sodium: Double
+    var isFavorite: Bool
     
     init(
         id: UUID = UUID(),
-        timestampe: Date = Date(),
+        timestamp: Date = Date(),
         name: String,
         mealTypeRawValue: String,
-        kcal: Double = 0.0,
-        carbohydrate: Double = 0.0,
-        protein: Double = 0.0,
-        fat: Double = 0.0,
-        dietaryFiber: Double = 0.0,
-        sugar: Double = 0.0,
-        sodium: Double = 0.0,
-        isFavorite: Bool = false
+        kcal: Double,
+        carbohydrate: Double,
+        protein: Double,
+        fat: Double,
+        dietaryFiber: Double,
+        sugar: Double,
+        sodium: Double,
+        isFavorite: Bool
     ) {
         self.id = id
-        self.timestampe = timestampe
+        self.timestamp = timestamp
         self.name = name
         self.mealTypeRawValue = mealTypeRawValue
         self.kcal = kcal
@@ -50,3 +50,65 @@ final class DietItem: Identifiable {
         set { self.mealTypeRawValue = newValue?.rawValue ?? ""}
     }
 }
+
+extension DietItem {
+    func nutrientValue(for type: NutritionType) -> Double {
+        switch type {
+        case .calorie: return self.kcal
+        case .carbohydrate: return self.carbohydrate
+        case .protein: return self.protein
+        case .fat: return self.fat
+        case .dietaryFiber: return self.dietaryFiber
+        case .sugar: return self.sugar
+        case .sodium: return self.sodium
+        }
+    }
+    
+    func formattedNutrient(for type: NutritionType) -> String {
+        let value = nutrientValue(for: type)
+        let formatString: String
+        
+        switch type {
+        case .calorie, .sodium:
+            formatString = "%.0f %@"
+        default:
+            formatString = "%.1f %@"
+        }
+        return String(format: formatString, value, type.unit)
+    }
+    
+    var formattedKcalOnly: String {
+        return String(format: "%.0f \(NutritionType.calorie.unit)", self.kcal)
+    }
+}
+
+let mockDietItemsForPreview = [
+        DietItem(
+            timestamp: Calendar.current.date(byAdding: .day, value: -2, to: Date())!,
+            name: "오트밀과 블루베리",
+            mealTypeRawValue: MealType.breakfast.rawValue,
+            kcal: 350, carbohydrate: 55.0, protein: 15.0, fat: 8.0,
+            dietaryFiber: 10.0, sugar: 12.0, sodium: 150, isFavorite: false
+        ),
+        DietItem(
+            timestamp: Calendar.current.date(byAdding: .hour, value: -5, to: Date())!,
+            name: "그릴드 치킨 샐러드",
+            mealTypeRawValue: MealType.lunch.rawValue,
+            kcal: 480, carbohydrate: 25.5, protein: 45.8, fat: 20.2,
+            dietaryFiber: 8.5, sugar: 5.0, sodium: 300, isFavorite: true
+        ),
+        DietItem(
+            timestamp: Calendar.current.date(byAdding: .minute, value: -120, to: Date())!,
+            name: "연어와 아스파라거스",
+            mealTypeRawValue: MealType.dinner.rawValue,
+            kcal: 620, carbohydrate: 30.0, protein: 50.1, fat: 30.5,
+            dietaryFiber: 7.0, sugar: 6.2, sodium: 250, isFavorite: false
+        ),
+        DietItem(
+            timestamp: Date(), 
+            name: "아몬드와 요거트",
+            mealTypeRawValue: MealType.snack.rawValue,
+            kcal: 180, carbohydrate: 10.0, protein: 7.0, fat: 14.0,
+            dietaryFiber: 3.0, sugar: 2.0, sodium: 5, isFavorite: true
+        )
+    ]
