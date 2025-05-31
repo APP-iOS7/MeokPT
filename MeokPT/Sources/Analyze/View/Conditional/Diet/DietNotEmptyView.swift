@@ -15,3 +15,10 @@ struct DietNotEmptyView: View {
     }
 }
 
+#Preview {
+    DietNotEmptyView(
+        dietItems: mockDietItemsForPreview,
+        onMealTypeChange: { _, _ in }
+    )
+}
+

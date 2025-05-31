@@ -9,6 +9,8 @@ struct DietItemView: View {
     var body: some View {
         VStack {
             DietPickerView(item: item, onMealTypeChange: onMealTypeChange)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 24)
 
             VStack(alignment: .leading, spacing: 16) {
                 VStack(alignment: .leading, spacing: 8) {
@@ -30,7 +32,6 @@ struct DietItemView: View {
                 .frame(maxWidth: .infinity)
             }
             .padding(24)
-            .padding(24)
             .background(
                 RoundedRectangle(cornerRadius: 20)
                     .fill(Color("App CardColor"))
@@ -42,4 +43,8 @@ struct DietItemView: View {
             .padding(.horizontal, 24)
         }
     }
+}
+
+#Preview {
+    DietItemView(item: mockDietItemsForPreview.first!, onMealTypeChange:  { _, _ in })
 }

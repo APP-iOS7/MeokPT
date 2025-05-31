@@ -11,7 +11,9 @@ struct DietPickerView: View {
         )) {
             ForEach(MealType.allCases, id: \.self) { meal in
                 Text(meal.rawValue.capitalized).tag(meal)
+                    .font(.title3)
             }
         }
+        .tint(Color("App ProfileColor"))
     }
 }
