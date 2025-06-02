@@ -59,7 +59,6 @@ struct ProfileSettingFeature {
         case saveProfileResponse(Result<Void, Error>)
         
         case cancelButtonTapped
-        case closeButtonTapped
 
         case onAppear
         case resetSaveStatus
@@ -197,7 +196,6 @@ struct ProfileSettingFeature {
                 state.initialUploadedImageUrl = state.uploadedImageUrl
                 return .run { send in
                     await send(.delegate(.profileSettingCompleted))
-                    await self.dismiss()
                 }
                 
             case .saveProfileResponse(.failure(let error)):
@@ -214,13 +212,7 @@ struct ProfileSettingFeature {
                 state.saveProfileError = nil
                 state.isUploading = false
                 state.profileSaveSuccess = false
-                return .run { send in
-                    await send(.delegate(.profileSettingCancelled))
-                    await self.dismiss()
-                }
-
-            case .closeButtonTapped:
-                return .run { send in await self.dismiss() }
+                return .send(.delegate(.profileSettingCancelled))
 
             case .onAppear:
                 state.nickName = state.userProfile?.nickname ?? state.initialNickName
