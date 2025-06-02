@@ -63,16 +63,11 @@ struct MyPageView: View {
                 
                 HStack {
                     HStack(spacing: 16) {
-                        NavigationLink(destination: BodyNutritionContainerView(
+                        NavigationLink { BodyNutritionContainerView(
                             initialTab: .bodyinInfoInput,
-                            bodyInfoStore: Store(initialState: BodyInfoInputFeature.State()) {
-                                BodyInfoInputFeature()
-                            },
-                            nutritionStore: Store(initialState:
-                                DailyNutritionFeature.State()) {
-                                    DailyNutritionFeature()
-                            }
-                        )) {
+                            bodyInfoStore: Store(initialState: BodyInfoInputFeature.State()) { BodyInfoInputFeature() },
+                            nutritionStore: Store(initialState: DailyNutritionFeature.State()) { DailyNutritionFeature() }
+                        )} label: {
                             VStack(alignment: .leading, spacing: 4) {
                                 HStack {
                                     Text("신체정보 입력")
@@ -90,16 +85,11 @@ struct MyPageView: View {
                         }
                         .navigationBarTitleDisplayMode(.inline)
                         
-                        NavigationLink(destination: BodyNutritionContainerView(
-                            initialTab: .dailyNutrition,
-                            bodyInfoStore: Store(initialState: BodyInfoInputFeature.State()) {
-                                BodyInfoInputFeature()
-                            },
-                            nutritionStore: Store(initialState:
-                                DailyNutritionFeature.State()) {
-                                    DailyNutritionFeature()
-                            }
-                        )) {
+                            NavigationLink { BodyNutritionContainerView(
+                                initialTab: .dailyNutrition,
+                                bodyInfoStore: Store(initialState: BodyInfoInputFeature.State()) { BodyInfoInputFeature() },
+                                nutritionStore: Store(initialState: DailyNutritionFeature.State()) { DailyNutritionFeature() }
+                            )} label: {
                             VStack {
                                 ZStack {
                                     HStack {
