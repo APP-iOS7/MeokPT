@@ -20,12 +20,12 @@ struct AddFoodFeature {
         let maxInputLength = 4
         
         var currentCalories: Double
-        var currentCarbohydrates: Double
-        var currentProtein: Double
-        var currentFat: Double
-        var currentDietaryFiber: Double
-        var currentSugar: Double
-        var currentSodium: Double
+        var currentCarbohydrates: Double?
+        var currentProtein: Double?
+        var currentFat: Double?
+        var currentDietaryFiber: Double?
+        var currentSugar: Double?
+        var currentSodium: Double?
         
         init(selectedFoodItem: FoodNutritionItem) {
             self.selectedFoodItem = selectedFoodItem
@@ -34,12 +34,12 @@ struct AddFoodFeature {
             
             // 100g당 영양 정보를 기준으로 초기 amountGram에 맞게 계산
             self.currentCalories = (selectedFoodItem.calorie / 100.0) * Double(initialAmount)
-            self.currentCarbohydrates = (selectedFoodItem.carbohydrate / 100.0) * Double(initialAmount)
-            self.currentProtein = (selectedFoodItem.protein / 100.0) * Double(initialAmount)
-            self.currentFat = (selectedFoodItem.fat / 100.0) * Double(initialAmount)
-            self.currentDietaryFiber = (selectedFoodItem.dietaryFiber / 100.0) * Double(initialAmount)
-            self.currentSugar = (selectedFoodItem.sugar / 100.0) * Double(initialAmount)
-            self.currentSodium = (selectedFoodItem.sodium / 100.0) * Double(initialAmount)
+            self.currentCarbohydrates = selectedFoodItem.carbohydrate.map { ($0 / 100.0) * Double(initialAmount) }
+            self.currentProtein = selectedFoodItem.protein.map { ($0 / 100.0) * Double(initialAmount) }
+            self.currentFat = selectedFoodItem.fat.map { ($0 / 100.0) * Double(initialAmount) }
+            self.currentDietaryFiber = selectedFoodItem.dietaryFiber.map { ($0 / 100.0) * Double(initialAmount) }
+            self.currentSugar = selectedFoodItem.sugar.map { ($0 / 100.0) * Double(initialAmount) }
+            self.currentSodium = selectedFoodItem.sodium.map { ($0 / 100.0) * Double(initialAmount) }
         }
         
         var info: AttributedString? {
@@ -50,6 +50,18 @@ struct AddFoodFeature {
                 markdownString = "식약처 DB에서 총 내용량을 제공하지 않습니다. **100g** 기준으로 표시됩니다."
             }
             return try? AttributedString(markdown: markdownString)
+        }
+        
+        var isCarbohydratesAvailable: Bool { currentCarbohydrates != nil }
+        var isProteinAvailable: Bool { currentProtein != nil }
+        var isFatAvailable: Bool { currentFat != nil }
+        var isDietaryFiberAvailable: Bool { currentDietaryFiber != nil }
+        var isSugarAvailable: Bool { currentSugar != nil }
+        var isSodiumAvailable: Bool { currentSodium != nil }
+        
+        var isNutrientEmpty: Bool {
+            currentCarbohydrates == nil || currentProtein == nil || currentFat == nil ||
+            currentDietaryFiber == nil || currentSugar == nil || currentSodium == nil
         }
     }
         
@@ -64,7 +76,7 @@ struct AddFoodFeature {
     
     enum DelegateAction: Equatable {
         case dismissSheet
-        case addFoodToDiet(foodName: String, amount: Double, calories: Double, carbohydrates: Double, protein: Double, fat: Double, dietaryFiber: Double, sugar: Double, sodium: Double)
+        case addFoodToDiet(foodName: String, amount: Double, calories: Double, carbohydrates: Double?, protein: Double?, fat: Double?, dietaryFiber: Double?, sugar: Double?, sodium: Double?)
         case createToast(foodName: String, amount: Double)
     }
     
@@ -80,21 +92,12 @@ struct AddFoodFeature {
                 }
                 // amountGram 변경 시, selectedFoodItem의 100g당 비율을 기준으로 모든 영양소 재계산
                 state.currentCalories = (state.selectedFoodItem.calorie / 100.0) * Double(state.amountGram)
-                state.currentCarbohydrates = (state.selectedFoodItem.carbohydrate / 100.0) * Double(state.amountGram)
-                state.currentProtein = (state.selectedFoodItem.protein / 100.0) * Double(state.amountGram)
-                state.currentFat = (state.selectedFoodItem.fat / 100.0) * Double(state.amountGram)
-                state.currentDietaryFiber = (state.selectedFoodItem.dietaryFiber / 100.0) * Double(state.amountGram)
-                state.currentSugar = (state.selectedFoodItem.sugar / 100.0) * Double(state.amountGram)
-                state.currentSodium = (state.selectedFoodItem.sodium / 100.0) * Double(state.amountGram)
-                return .none
-            
-            case .binding(\.currentCarbohydrates), .binding(\.currentProtein), .binding(\.currentFat), .binding(\.currentDietaryFiber), .binding(\.currentSugar), .binding(\.currentSodium):
-                if state.currentCarbohydrates < 0 { state.currentCarbohydrates = 0 }
-                if state.currentProtein < 0 { state.currentProtein = 0 }
-                if state.currentFat < 0 { state.currentFat = 0 }
-                if state.currentDietaryFiber < 0 { state.currentDietaryFiber = 0 }
-                if state.currentSugar < 0 { state.currentSugar = 0 }
-                if state.currentSodium < 0 { state.currentSodium = 0 }
+                state.currentCarbohydrates = state.selectedFoodItem.carbohydrate.map { ($0 / 100.0) * Double(state.amountGram) }
+                state.currentProtein = state.selectedFoodItem.protein.map { ($0 / 100.0) * Double(state.amountGram) }
+                state.currentFat = state.selectedFoodItem.fat.map { ($0 / 100.0) * Double(state.amountGram) }
+                state.currentDietaryFiber = state.selectedFoodItem.dietaryFiber.map { ($0 / 100.0) * Double(state.amountGram) }
+                state.currentSugar = state.selectedFoodItem.sugar.map { ($0 / 100.0) * Double(state.amountGram) }
+                state.currentSodium = state.selectedFoodItem.sodium.map { ($0 / 100.0) * Double(state.amountGram) }
                 return .none
 
             case .binding(_):

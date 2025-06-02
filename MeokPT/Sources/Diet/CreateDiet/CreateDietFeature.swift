@@ -87,7 +87,7 @@ struct CreateDietFeature {
     
     enum DelegateAction: Equatable {
         case dismissSheet
-        case addFoodToDiet(foodName: String, amount: Double, calories: Double, carbohydrates: Double, protein: Double, fat: Double, dietaryFiber: Double, sugar: Double, sodium: Double)
+        case addFoodToDiet(foodName: String, amount: Double, calories: Double, carbohydrates: Double?, protein: Double?, fat: Double?, dietaryFiber: Double?, sugar: Double?, sodium: Double?)
     }
     
     @Dependency(\.foodNutritionClient) var apiClient

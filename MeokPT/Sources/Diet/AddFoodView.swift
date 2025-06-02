@@ -31,6 +31,15 @@ struct AddFoodView: View {
                     .padding(.horizontal, 24)
                 
                 nutrientSection
+                
+                if(store.isNutrientEmpty) {
+                    HStack {
+                        Text("- 로 표시된 영양성분은 식약처 DB에서 제공하지 않습니다. 수정이 가능합니다.")
+                    }
+                    .font(.caption)
+                    .foregroundColor(Color("AppSecondaryColor"))
+                    .padding(.horizontal, 24)
+                }
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -44,24 +53,6 @@ struct AddFoodView: View {
             .onTapGesture {
                 focusedNutrientField = nil
                 UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-            }
-            .onChange(of: focusedNutrientField) { oldValue, newValue in
-                switch newValue {
-                case .carbohydrate:
-                    store.currentCarbohydrates = 0.0
-                case .protein:
-                    store.currentProtein = 0.0
-                case .fat:
-                    store.currentFat = 0.0
-                case .dietFiber:
-                    store.currentDietaryFiber = 0.0
-                case .sugar:
-                    store.currentSugar = 0.0
-                case .sodium:
-                    store.currentSodium = 0.0
-                case nil:
-                    break
-                }
             }
         }
     }
@@ -105,19 +96,19 @@ struct AddFoodView: View {
             
             VStack(spacing: 16) {
                 HStack {
-                    nutrientInputRow(label: "탄수화물", value: $store.currentCarbohydrates, field: .carbohydrate, unit: .gram)
+                    nutrientInputRow(label: "탄수화물", value: $store.currentCarbohydrates, field: .carbohydrate, unit: .gram, isAvailable: store.isCarbohydratesAvailable)
                     Spacer()
-                    nutrientInputRow(label: "단백질", value: $store.currentProtein, field: .protein, unit: .gram)
+                    nutrientInputRow(label: "단백질", value: $store.currentProtein, field: .protein, unit: .gram, isAvailable: store.isProteinAvailable)
                     Spacer()
-                    nutrientInputRow(label: "지방", value: $store.currentFat, field: .fat, unit: .gram)
+                    nutrientInputRow(label: "지방", value: $store.currentFat, field: .fat, unit: .gram, isAvailable: store.isFatAvailable)
                 }
                 
                 HStack {
-                    nutrientInputRow(label: "식이섬유", value: $store.currentDietaryFiber, field: .dietFiber, unit: .gram)
+                    nutrientInputRow(label: "식이섬유", value: $store.currentDietaryFiber, field: .dietFiber, unit: .gram, isAvailable: store.isDietaryFiberAvailable)
                     Spacer()
-                    nutrientInputRow(label: "당류", value: $store.currentSugar, field: .sugar, unit: .gram)
+                    nutrientInputRow(label: "당류", value: $store.currentSugar, field: .sugar, unit: .gram, isAvailable: store.isSugarAvailable)
                     Spacer()
-                    nutrientInputRow(label: "나트륨", value: $store.currentSodium, field: .sodium, unit: .milligram)
+                    nutrientInputRow(label: "나트륨", value: $store.currentSodium, field: .sodium, unit: .milligram, isAvailable: store.isSodiumAvailable)
                 }
             }
         }
@@ -132,7 +123,7 @@ struct AddFoodView: View {
     }
     
     @ViewBuilder
-    private func nutrientInputRow(label: String, value: Binding<Double>, field: NutrientField, unit: NutrientUnit) -> some View {
+    private func nutrientInputRow(label: String, value: Binding<Double?>, field: NutrientField, unit: NutrientUnit, isAvailable: Bool) -> some View {
         var nutrientFormatter: NumberFormatter {
             let formatter = NumberFormatter()
             formatter.numberStyle = .decimal
@@ -148,9 +139,17 @@ struct AddFoodView: View {
             return formatter
         }
         let isFocused = focusedNutrientField == field
-        let displayRed = value.wrappedValue == 0 && !isFocused
-        let currentForegroundColor = displayRed ? Color.red : Color(.label)
-
+        let currentForegroundColor = Color(.label)
+        
+        let editingValue = Binding<Double>(
+            get: {
+                value.wrappedValue ?? 0.0
+            },
+            set: { newValue in
+                value.wrappedValue = max(0, newValue)
+            }
+        )
+        
         VStack(alignment: .center, spacing: 12) {
             Text(label)
                 .font(.caption)
@@ -163,25 +162,35 @@ struct AddFoodView: View {
                     .contentShape(Rectangle())
                     .onTapGesture {
                         focusedNutrientField = field
+                        if !isAvailable {
+                            value.wrappedValue = 0.0
+                        }
                     }
                 
                 HStack(alignment: .firstTextBaseline, spacing: 2) {
-                    TextField("", value: value, formatter: nutrientFormatter)
-                        .keyboardType(.decimalPad)
-                        .multilineTextAlignment(.center)
-                        .font(.body)
-                        .foregroundColor(currentForegroundColor)
-                        .focused($focusedNutrientField, equals: field)
-                        .fixedSize(horizontal: true, vertical: false)
-                        .onChange(of: value.wrappedValue) { oldValue, newValue in
-                            if newValue < 0 {
-                                value.wrappedValue = 0
-                            }
+                    ZStack {
+                        // 실제 편집용 TextField
+                        TextField("", value: editingValue, formatter: nutrientFormatter)
+                            .keyboardType(.decimalPad)
+                            .multilineTextAlignment(.center)
+                            .font(.body)
+                            .foregroundColor(isFocused ? .black : .clear)
+                            .focused($focusedNutrientField, equals: field)
+                            .fixedSize(horizontal: true, vertical: false)
+                        
+                        // 표시용 텍스트 (포커스되지 않았을 때)
+                        if !isFocused {
+                            Text(isAvailable ? String(format: "%.1f", value.wrappedValue ?? 0.0) : "--.-")
+                                .font(.body)
+                                .foregroundColor(isAvailable ? currentForegroundColor : Color("AppSecondaryColor"))
+                                .fixedSize(horizontal: true, vertical: false)
+                                .allowsHitTesting(false)
                         }
+                    }
                     
                     Text(unit.rawValue)
                         .font(.body)
-                        .foregroundColor(currentForegroundColor)
+                        .foregroundColor(isFocused || isAvailable ? currentForegroundColor : Color("AppSecondaryColor"))
                         .fixedSize(horizontal: true, vertical: false)
                 }
             }

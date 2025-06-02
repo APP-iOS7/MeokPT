@@ -1,9 +1,9 @@
 import SwiftUI
 
 struct NutrientView: View {
-    let carbohydrate: Double
-    let protein: Double
-    let fat: Double
+    let carbohydrate: Double?
+    let protein: Double?
+    let fat: Double?
     
     var body: some View {
         HStack {
@@ -22,7 +22,7 @@ struct NutrientView: View {
 
 private struct EachNutrientView: View {
     let name: String
-    let value: Double
+    let value: Double?
     
     var body: some View {
         VStack(alignment: .center) {
@@ -30,8 +30,23 @@ private struct EachNutrientView: View {
                 .font(.caption)
                 .foregroundColor(Color("AppSecondaryColor"))
             Spacer().frame(height:4)
-            Text("\(value, specifier: "%.1f")g")
-                .font(.body)
+            if let value = value {
+                if name == "나트륨" {
+                    Text("\(value, specifier: "%.1f")mg")
+                        .font(.body)
+                } else {
+                    Text("\(value, specifier: "%.1f")g")
+                        .font(.body)
+                }
+            } else {
+                if name == "나트륨" {
+                    Text("--.- mg")
+                        .font(.body)
+                } else {
+                    Text("--.- g")
+                        .font(.body)
+                }
+            }
         }
     }
 }

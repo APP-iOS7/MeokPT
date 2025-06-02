@@ -115,7 +115,7 @@ struct DietDetailView: View {
                         .stroke(Color(uiColor: UIColor.separator), lineWidth: 1)
                 )
             }
-            .padding(.horizontal, 24)
+            .padding(24)
         }
         .onTapGesture {
             titleFocusedField = false
