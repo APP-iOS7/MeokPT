@@ -21,7 +21,7 @@ struct DietDetailFeature {
 
     enum DelegateAction: Equatable {
         case favoriteToggled(isFavorite: Bool)
-        case addFoodToDiet(foodName: String, amount: Double, calories: Double, carbohydrates: Double, protein: Double, fat: Double, dietaryFiber: Double, sugar: Double, sodium: Double)
+        case addFoodToDiet(foodName: String, amount: Double, calories: Double, carbohydrates: Double?, protein: Double?, fat: Double?, dietaryFiber: Double?, sugar: Double?, sodium: Double?)
     }
     
     var body: some ReducerOf<Self> {

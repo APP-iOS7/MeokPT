@@ -123,7 +123,7 @@ struct AddFoodView: View {
     }
     
     @ViewBuilder
-    private func nutrientInputRow(label: String, value: Binding<Double>, field: NutrientField, unit: NutrientUnit, isAvailable: Bool) -> some View {
+    private func nutrientInputRow(label: String, value: Binding<Double?>, field: NutrientField, unit: NutrientUnit, isAvailable: Bool) -> some View {
         var nutrientFormatter: NumberFormatter {
             let formatter = NumberFormatter()
             formatter.numberStyle = .decimal
@@ -141,13 +141,9 @@ struct AddFoodView: View {
         let isFocused = focusedNutrientField == field
         let currentForegroundColor = Color(.label)
         
-        // 음수(DB 값이 존재하지 않음)이면 0으로 시작
         let editingValue = Binding<Double>(
             get: {
-                if !isAvailable && value.wrappedValue < 0 {
-                    return 0.0
-                }
-                return value.wrappedValue
+                value.wrappedValue ?? 0.0
             },
             set: { newValue in
                 value.wrappedValue = max(0, newValue)
@@ -166,6 +162,9 @@ struct AddFoodView: View {
                     .contentShape(Rectangle())
                     .onTapGesture {
                         focusedNutrientField = field
+                        if !isAvailable {
+                            value.wrappedValue = 0.0
+                        }
                     }
                 
                 HStack(alignment: .firstTextBaseline, spacing: 2) {
@@ -181,7 +180,7 @@ struct AddFoodView: View {
                         
                         // 표시용 텍스트 (포커스되지 않았을 때)
                         if !isFocused {
-                            Text(isAvailable ? String(format: "%.1f", editingValue.wrappedValue) : "--.-")
+                            Text(isAvailable ? String(format: "%.1f", value.wrappedValue ?? 0.0) : "--.-")
                                 .font(.body)
                                 .foregroundColor(isAvailable ? currentForegroundColor : Color("AppSecondaryColor"))
                                 .fixedSize(horizontal: true, vertical: false)
