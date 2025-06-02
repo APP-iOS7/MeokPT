@@ -71,13 +71,13 @@ struct FoodNutritionItem: Decodable, Equatable, Identifiable {
             return FOOD_NM_KR?.replacingOccurrences(of: "_", with: ", ") ?? ""
         }
     }
-    var calorie: Double { Double(AMT_NUM1?.replacingOccurrences(of: ",", with: "") ?? "0.0") ?? 0.0 }
-    var protein: Double { Double(AMT_NUM3?.replacingOccurrences(of: ",", with: "") ?? "0.0") ?? 0.0 }
-    var fat: Double { Double(AMT_NUM4?.replacingOccurrences(of: ",", with: "") ?? "0.0") ?? 0.0 }
-    var carbohydrate: Double { Double(AMT_NUM6?.replacingOccurrences(of: ",", with: "") ?? "0.0") ?? 0.0 }
-    var sugar: Double { Double(AMT_NUM7?.replacingOccurrences(of: ",", with: "") ?? "0.0") ?? 0.0 }
-    var dietaryFiber: Double { Double(AMT_NUM8?.replacingOccurrences(of: ",", with: "") ?? "0.0") ?? 0.0 }
-    var sodium: Double { Double(AMT_NUM13?.replacingOccurrences(of: ",", with: "") ?? "0.0") ?? 0.0 }
+    var calorie: Double { Double(AMT_NUM1?.replacingOccurrences(of: "g", with: "") ?? "정보없음") ?? -1.0 }
+    var protein: Double { Double(AMT_NUM3?.replacingOccurrences(of: "g", with: "") ?? "정보없음") ?? -1.0 }
+    var fat: Double { Double(AMT_NUM4?.replacingOccurrences(of: "g", with: "") ?? "정보없음") ?? -1.0 }
+    var carbohydrate: Double { Double(AMT_NUM6?.replacingOccurrences(of: "g", with: "") ?? "정보없음") ?? -1.0 }
+    var sugar: Double { Double(AMT_NUM7?.replacingOccurrences(of: "g", with: "") ?? "정보없음") ?? -1.0 }
+    var dietaryFiber: Double { Double(AMT_NUM8?.replacingOccurrences(of: "g", with: "") ?? "정보없음") ?? -1.0 }
+    var sodium: Double { Double(AMT_NUM13?.replacingOccurrences(of: "mg", with: "") ?? "정보없음") ?? -1.0 }
     var servingSize: Double {Double(Z10500?.replacingOccurrences(of: "g", with: "") ?? "0.0") ?? 0.0}
     var makerName: String { MAKER_NM?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "" }
 }

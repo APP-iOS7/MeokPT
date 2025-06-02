@@ -30,8 +30,13 @@ private struct EachNutrientView: View {
                 .font(.caption)
                 .foregroundColor(Color("AppSecondaryColor"))
             Spacer().frame(height:4)
-            Text("\(value, specifier: "%.1f")g")
-                .font(.body)
+            if value >= 0 {
+                Text("\(value, specifier: "%.1f")g")
+                    .font(.body)
+            } else {
+                Text("--.-g")
+                    .font(.body)
+            }
         }
     }
 }

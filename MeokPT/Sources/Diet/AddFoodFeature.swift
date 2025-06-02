@@ -51,6 +51,16 @@ struct AddFoodFeature {
             }
             return try? AttributedString(markdown: markdownString)
         }
+        
+        // DB에 값이 없는 경우(음수)를 체크하는 Computed Property
+        var isCarbohydratesAvailable: Bool { currentCarbohydrates >= 0 }
+        var isProteinAvailable: Bool { currentProtein >= 0 }
+        var isFatAvailable: Bool { currentFat >= 0 }
+        var isDietaryFiberAvailable: Bool { currentDietaryFiber >= 0 }
+        var isSugarAvailable: Bool { currentSugar >= 0 }
+        var isSodiumAvailable: Bool { currentSodium >= 0 }
+        
+        var isNutrientEmpty: Bool { !isCarbohydratesAvailable || !isProteinAvailable || !isFatAvailable || !isDietaryFiberAvailable || !isSugarAvailable || !isSodiumAvailable }
     }
         
     
@@ -87,15 +97,6 @@ struct AddFoodFeature {
                 state.currentSugar = (state.selectedFoodItem.sugar / 100.0) * Double(state.amountGram)
                 state.currentSodium = (state.selectedFoodItem.sodium / 100.0) * Double(state.amountGram)
                 return .none
-            
-            case .binding(\.currentCarbohydrates), .binding(\.currentProtein), .binding(\.currentFat), .binding(\.currentDietaryFiber), .binding(\.currentSugar), .binding(\.currentSodium):
-                if state.currentCarbohydrates < 0 { state.currentCarbohydrates = 0 }
-                if state.currentProtein < 0 { state.currentProtein = 0 }
-                if state.currentFat < 0 { state.currentFat = 0 }
-                if state.currentDietaryFiber < 0 { state.currentDietaryFiber = 0 }
-                if state.currentSugar < 0 { state.currentSugar = 0 }
-                if state.currentSodium < 0 { state.currentSodium = 0 }
-                return .none
 
             case .binding(_):
                 return .none
@@ -110,12 +111,12 @@ struct AddFoodFeature {
                     foodName = state.selectedFoodItem.foodName,
                     amount = state.amountGram,
                     calories = state.currentCalories,
-                    carbs = state.currentCarbohydrates,
-                    protein = state.currentProtein,
-                    fat = state.currentFat,
-                    dietaryFiber = state.currentDietaryFiber,
-                    sugar = state.currentSugar,
-                    sodium = state.currentSodium
+                    carbs = max(0, state.currentCarbohydrates),
+                    protein = max(0, state.currentProtein),
+                    fat = max(0, state.currentFat),
+                    dietaryFiber = max(0, state.currentDietaryFiber),
+                    sugar = max(0, state.currentSugar),
+                    sodium = max(0, state.currentSodium)
                 ] send in
                     await send(.delegate(.addFoodToDiet(foodName: foodName, amount: amount, calories: calories, carbohydrates: carbs, protein: protein, fat: fat, dietaryFiber: dietaryFiber, sugar: sugar, sodium: sodium)))
                     await send(.delegate(.createToast(foodName: foodName, amount: amount)))
