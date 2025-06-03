@@ -22,7 +22,7 @@ struct MyPageView: View {
                                         .resizable()
                                         .scaledToFit()
                                         .frame(width: 60, height: 60)
-                                        .foregroundColor(.gray.opacity(0.5))
+                                        .foregroundStyle(.gray.opacity(0.5))
                                 }
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
@@ -36,7 +36,7 @@ struct MyPageView: View {
 
                             Spacer()
                             Image(systemName: "chevron.right")
-                                .foregroundColor(.gray)
+                                .foregroundStyle(.gray)
                         }
                         .padding(.vertical, 8)
                     }
@@ -79,7 +79,7 @@ struct MyPageView: View {
                             showAlert = true
                         } label: {
                             Label("로그아웃", systemImage: "lock.open")
-                                .foregroundColor(.primary)
+                                .foregroundStyle(.primary)
                         }
                         .alert("로그아웃", isPresented: $showAlert) {
                             Button("취소", role: .cancel) {}
@@ -92,7 +92,7 @@ struct MyPageView: View {
                             store.send(.withDrawalButtonTapped)
                         } label: {
                             Label("회원탈퇴", systemImage: "xmark.circle")
-                                .foregroundColor(.red)
+                                .foregroundStyle(.red)
                         }
                     }
                 }
