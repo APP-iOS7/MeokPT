@@ -29,7 +29,7 @@ struct DailyNutritionDietInfoFeature {
         case presentDietSelectionSheet
         case presentAISheet
         
-        case loadInfo(ModelContext)
+        case loadInfo
         
         case task
         case nutritionDataDidChangeNotification
@@ -54,6 +54,7 @@ struct DailyNutritionDietInfoFeature {
         case nutritionUpdateListener
     }
 
+    @Dependency(\.modelContainer) var modelContainer
 
     var body: some ReducerOf<Self> {
         Reduce { state, action in
@@ -73,30 +74,33 @@ struct DailyNutritionDietInfoFeature {
             case .dietSelectionSheetAction, .aiSheetAction:
                 return .none
                 
-            case let .loadInfo(context):
+            case .loadInfo:
                 state.isLoading = true
                 state.errorMessage = nil
                 print("➡️ DailyNutritionDietInfoFeature: .loadInfo called. Will perform ASYNC fetch.")
                 return .run { send in
-                    do {
-                        let descriptor = FetchDescriptor<NutritionItem>()
-                        let items = try context.fetch(descriptor)
-                        
-                        print("Nutriitem 개수 (after delay): \(items.count)")
-                        for item in items {
-                            print("  Fetched (after delay): \(item.type.rawValue) - Value: \(item.value)\(item.unit), Max: \(item.max)\(item.unit)")
+                    await MainActor.run {
+                        do {
+                            let context = modelContainer.mainContext
+                            let descriptor = FetchDescriptor<NutritionItem>()
+                            let items = try context.fetch(descriptor)
+                            
+                            print("Nutriitem 개수 (after delay): \(items.count)")
+                            for item in items {
+                                print("  Fetched (after delay): \(item.type.rawValue) - Value: \(item.value)\(item.unit), Max: \(item.max)\(item.unit)")
+                            }
+                            
+                            let typeOrder = NutritionType.allCases
+                            let sortedItems = items.sorted {
+                                guard let first = typeOrder.firstIndex(of: $0.type),
+                                      let second = typeOrder.firstIndex(of: $1.type) else { return false }
+                                return first < second
+                            }
+                            send(._internalLoadInfoCompleted(sortedItems))
+                        } catch {
+                            print("DailyNutritionDietInfoFeature: Fetch failed after delay: \(error)")
+                            send(._internalLoadInfoFailed(.fetchFailed))
                         }
-                        
-                        let typeOrder = NutritionType.allCases
-                        let sortedItems = items.sorted {
-                            guard let first = typeOrder.firstIndex(of: $0.type),
-                                  let second = typeOrder.firstIndex(of: $1.type) else { return false }
-                            return first < second
-                        }
-                        await send(._internalLoadInfoCompleted(sortedItems))
-                    } catch {
-                        print("DailyNutritionDietInfoFeature: Fetch failed after delay: \(error)")
-                        await send(._internalLoadInfoFailed(.fetchFailed)) // Use your defined error
                     }
                 }
             case .task:
