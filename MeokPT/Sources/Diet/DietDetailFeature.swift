@@ -49,7 +49,7 @@ struct DietDetailFeature {
             case .createDietFullScreenCover(.presented(.delegate(.addFoodToDiet(let foodName, let amount, let calories, let carbohydrates, let protein, let fat, let dietaryFiber, let sugar, let sodium)))):
                 return .send(.delegate(.addFoodToDiet(
                     foodName: foodName,
-                    amount: amount,
+                    amount: amount ?? 0,
                     calories: calories,
                     carbohydrates: carbohydrates,
                     protein: protein,

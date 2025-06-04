@@ -90,7 +90,7 @@ struct CreateDietFeature {
     
     enum DelegateAction: Equatable {
         case dismissSheet
-        case addFoodToDiet(foodName: String, amount: Double, calories: Double, carbohydrates: Double?, protein: Double?, fat: Double?, dietaryFiber: Double?, sugar: Double?, sodium: Double?)
+        case addFoodToDiet(foodName: String, amount: Double?, calories: Double, carbohydrates: Double?, protein: Double?, fat: Double?, dietaryFiber: Double?, sugar: Double?, sodium: Double?)
     }
     
     @Dependency(\.foodNutritionClient) var apiClient
@@ -277,7 +277,7 @@ struct CreateDietFeature {
                     state.showAlertToast = true
                     state.toastMessage = foodName.count > 30
                     ? "\(foodName.prefix(30))…"
-                    : "\(foodName) \(Int(amount))g"
+                    : "\(foodName) \(Int(amount ?? 0))g"
                     state.addFoodSheet = nil
                     return .run { send in
                         try await Task.sleep(for: .seconds(3))
