@@ -15,49 +15,30 @@ struct DailyNutritionDietInfoView: View {
                     VStack {
                         content(for: store)
                         
-                        if store.isAIbuttonEnabled {
-                            Button {
-                                store.send(.presentAISheet)
-                            } label: {
-                                Text("AI 식단 분석")
-                                    .font(.headline.bold())
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 60)
-                                    .foregroundColor(.black)
-                                    .buttonStyle(PlainButtonStyle())
-                                    .background(Color("AppTintColor"))
-                                    .cornerRadius(30)
-                                    .padding(.horizontal, 24)
-                                    .padding(.bottom, 10)
-                            }
-                        } else {
-                            EmptyView()
-                        }
-                        
                     }
                     .navigationTitle("분석")
                     .navigationBarTitleDisplayMode(.inline)
                     .background(Color("AppBackgroundColor"))
                 }
                 .scrollContentBackground(.hidden)
-//                .safeAreaInset(edge: .bottom) {
-//                    if store.isAIbuttonEnabled {
-//                        Button {
-//                            store.send(.presentAISheet)
-//                        } label: {
-//                            Text("AI 식단 분석")
-//                                .frame(maxWidth: .infinity)
-//                                .padding()
-//                                .foregroundStyle(.black)
-//                                .background(Color("AppTintColor"))
-//                                .clipShape(RoundedRectangle(cornerRadius: 10))
-//                                .padding(.horizontal, 24)
-//                                .padding(.bottom, 10)
-//                        }
-//                    } else {
-//                        EmptyView()
-//                    }
-//                }
+                .safeAreaInset(edge: .bottom) {
+                    if store.isAIbuttonEnabled {
+                        Button {
+                            store.send(.presentAISheet)
+                        } label: {
+                            Text("AI 식단 분석")
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .foregroundStyle(.black)
+                                .background(Color("AppTintColor"))
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                .padding(.horizontal, 24)
+                                .padding(.bottom, 20)
+                        }
+                    } else {
+                        EmptyView()
+                    }
+                }
                 .toolbar {
                     ToolbarItem(placement: .confirmationAction) {
                         Button {
@@ -96,7 +77,7 @@ struct DailyNutritionDietInfoView: View {
         }
         
         .onAppear {
-            if store.nutritionItems == nil && !store.isLoading {
+            if store.nutritionItems == nil && store.dietItems == nil && !store.isLoading {
                 print("DailyNutritionDietInfoView: Initial load on appear.")
                 store.send(.loadInfo)
             }
@@ -113,11 +94,10 @@ struct DailyNutritionDietInfoView: View {
         }
     }
 
-    // TODO: - 신체정보가 있고 식단이 없는 경우
     @ViewBuilder
     private func content(for store: Store<DailyNutritionDietInfoFeature.State, DailyNutritionDietInfoFeature.Action>) -> some View {
         VStack {
-            if store.isLoading {
+            if store.isLoading && store.nutritionItems == nil && store.dietItems == nil {
                 ProgressView("로딩 중입니다…")
                     .padding()
             } else if let nutritionItems = store.nutritionItems {
@@ -130,11 +110,16 @@ struct DailyNutritionDietInfoView: View {
                 } else {
                     DailyNutritionInfoView(nutritionItems: nutritionItems)
                     
-                    if let dietItem = store.dietItems {
-                        if dietItem.isEmpty {
+                    if let dietItems = store.dietItems {
+                        if dietItems.isEmpty {
                             DietEmptyView()
                         } else {
-                            DietNotEmptyView()
+                            DietNotEmptyView(
+                                dietItems: dietItems,
+                                onMealTypeChange: { itemId, newMealType in
+                                    store.send(.dietItemMealTypeChanged(id: itemId,mealType: newMealType, context: context))
+                                }
+                            )
                         }
                     } else {
                         DietEmptyView()

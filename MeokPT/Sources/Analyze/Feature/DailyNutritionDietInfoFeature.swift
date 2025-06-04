@@ -33,9 +33,12 @@ struct DailyNutritionDietInfoFeature {
         
         case task
         case nutritionDataDidChangeNotification
+        case dietDataDidChangeNotification
         
+        case dietItemMealTypeChanged(id: DietItem.ID, mealType: MealType)
+
         case _internalLoadInfoCompleted([NutritionItem])
-        case _internalLoadInfoFailed(NutritionError)
+        case _internalLoadInfoFailed(DataFetchError)
         
         case myPageNavigationButtonTapped
         case delegate(DelegateAction)
@@ -45,13 +48,16 @@ struct DailyNutritionDietInfoFeature {
         case navigateToMyPage
     }
     
-    enum NutritionError: Error, Equatable {
+    enum DataFetchError: Error, Equatable {
+        case nutritionFetchFailed
+        case dietItemFetchFailed
         case fetchFailed
-        case internalLoadInfoFailed
     }
     
     enum FeatureCancelID: Hashable {
+        case dataLoadListener
         case nutritionUpdateListener
+        case dietUpdateListener
     }
 
     @Dependency(\.modelContainer) var modelContainer
@@ -104,17 +110,68 @@ struct DailyNutritionDietInfoFeature {
                     }
                 }
             case .task:
-                return .run { send in
-                    for await _ in NotificationCenter.default.notifications(named: .didUpdateNutritionItems) {
-                        await send(.nutritionDataDidChangeNotification)
+                print("DailyNutritionDietInfoFeature: .task action received, setting up listeners.")
+                return .merge(
+                    .run { send in
+                        for await _ in NotificationCenter.default.notifications(named: .didUpdateNutritionItems) {
+                            print("Notification received: .didUpdateNutritionItems")
+                            await send(.nutritionDataDidChangeNotification)
+                        }
+                    }
+                    .cancellable(id: FeatureCancelID.nutritionUpdateListener, cancelInFlight: true),
+
+                    .run { send in
+                        for await _ in NotificationCenter.default.notifications(named: .didUpdateDietItems) {
+                            print("Notification received: .didUpdateDietItems")
+                            await send(.dietDataDidChangeNotification)
+                        }
+                    }
+                    .cancellable(id: FeatureCancelID.dietUpdateListener, cancelInFlight: true)
+                )
+                
+            case let .dietItemMealTypeChanged(id, newMealType):
+                guard let index = state.dietItems?.firstIndex(where: { $0.id == id }) else {
+                    print("Error: DietItem with ID \(id) not found.")
+                    return .none
+                }
+                state.dietItems?[index].mealType = newMealType
+
+                return .run { [modelContainer] send in
+                    await MainActor.run {
+                        do {
+                            let context = modelContainer.mainContext
+                            
+                            let descriptor = FetchDescriptor<DietItem>(predicate: #Predicate {
+                                $0.id == id
+                            })
+                            
+                            if let dietItemToUpdate = try context.fetch(descriptor).first {
+                                dietItemToUpdate.mealType = newMealType // fetched된 객체 수정
+                                try context.save()
+                                print("Successfully saved mealType change for DietItem \(id) to \(newMealType.rawValue)")
+                            } else {
+                                print("Error: DietItem with ID \(id) not found in context for update.")
+                                Task {
+                                    send(._internalLoadInfoFailed(.dietItemFetchFailed))
+                                }
+                            }
+                        } catch {
+                            print("Error saving DietItem mealType change: \(error)")
+                            Task {
+                                send(._internalLoadInfoFailed(.dietItemFetchFailed))
+                            }
+                        }
                     }
                 }
-                .cancellable(id: FeatureCancelID.nutritionUpdateListener, cancelInFlight: true)
 
             case .nutritionDataDidChangeNotification:
                 print("DailyNutritionDietInfoFeature: received notification")
                 state.lastDataChangeTimestamp = Date()
                 return .none
+                
+            case .dietDataDidChangeNotification:
+                 state.lastDataChangeTimestamp = Date()
+                 return .none
             
             case let ._internalLoadInfoCompleted(items):
                 state.isLoading = false
@@ -127,6 +184,7 @@ struct DailyNutritionDietInfoFeature {
                 state.errorMessage = "Nutrition 정보 불러오기 실패 (async)"
                 print("에러 (async loadInfo): \(error.localizedDescription)")
                 return .none
+                
             case .myPageNavigationButtonTapped:
                 return .send(.delegate(.navigateToMyPage))
             case .delegate(_):
@@ -141,5 +199,3 @@ struct DailyNutritionDietInfoFeature {
         }
     }
 }
-
-

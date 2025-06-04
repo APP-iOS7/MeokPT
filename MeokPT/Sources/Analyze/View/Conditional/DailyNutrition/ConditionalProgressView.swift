@@ -5,7 +5,7 @@ struct ConditionalProgressView: View {
     var max: Double
     
     var progressColor: Color {
-        current > max ? Color("Red") :  Color(red: 102.0/255.0, green: 204.0/255.0, blue: 102.0/255.0)
+        current > max ? Color("Red") :  Color("Green")
     }
     
     var progressValue: Double {

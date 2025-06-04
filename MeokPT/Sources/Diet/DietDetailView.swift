@@ -158,5 +158,6 @@ struct DietDetailView: View {
             }
         )
     }
+    .modelContainer(for: [Diet.self, Food.self], inMemory: true)
 }
 

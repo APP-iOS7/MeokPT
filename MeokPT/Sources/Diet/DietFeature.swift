@@ -1,5 +1,6 @@
 import ComposableArchitecture
 import Foundation
+import SwiftData
 
 enum DietFilter: String, CaseIterable, Identifiable {
     case all = "전체"
@@ -35,47 +36,82 @@ struct DietFeature {
     }
     
     enum Action: BindableAction {
-        
         case binding(BindingAction<State>)
+        case onAppear
+        case dietsLoaded([Diet])
         case addButtonTapped
-        case dietCellTapped(id: Diet.ID)
-        case likeButtonTapped(id: Diet.ID, isFavorite: Bool)
+        case dietCellTapped(id: UUID)
+        case likeButtonTapped(id: UUID, isFavorite: Bool)
+        case dietCreated(Diet)
+        case navigateToNewDiet(UUID)
         
         case path(StackActionOf<Path>)
-
     }
+    
+    @Dependency(\.modelContainer) var modelContainer
     
     var body: some ReducerOf<Self> {
         BindingReducer()
         
         Reduce { state, action in
             switch action {
-            case .addButtonTapped:
-                let newDiet = Diet(title: "새로운 식단", isFavorite: false, foods: [])
-                state.dietList.append(newDiet)
+            case .onAppear:
+                return .run { send in
+                    await MainActor.run {
+                        do {
+                            let context = modelContainer.mainContext
+                            let descriptor = FetchDescriptor<Diet>(sortBy: [SortDescriptor(\.title)])
+                            let diets = try context.fetch(descriptor)
+                            send(.dietsLoaded(diets))
+                        } catch {
+                            print("Failed to fetch diets: \(error)")
+                            send(.dietsLoaded([]))
+                        }
+                    }
+                }
                 
-                // DetailView -> CreateDietView 열기
+            case let .dietsLoaded(diets):
+                state.dietList = IdentifiedArrayOf(uniqueElements: diets)
+                return .none
+
+            case .addButtonTapped:
+                return .run { send in
+                    await MainActor.run {
+                        let context = modelContainer.mainContext
+                        let newDiet = Diet(title: "새로운 식단", isFavorite: false, foods: [])
+                        context.insert(newDiet)
+                        
+                        send(.dietCreated(newDiet))
+                    }
+                }
+
+            case let .dietCreated(newDiet):
+                state.dietList.append(newDiet)
+                return .send(.navigateToNewDiet(newDiet.id))
+
+            case let .navigateToNewDiet(dietID):
+                guard let diet = state.dietList[id: dietID] else { return .none }
                 let detailState = DietDetailFeature.State(
-                    diet: newDiet,
-                    dietID: newDiet.id,
+                    diet: diet,
+                    dietID: dietID,
                     createDietFullScreenCover: CreateDietFeature.State()
                 )
                 state.path.append(.detail(detailState))
                 return .none
                 
             case let .dietCellTapped(id):
-                if let diet = state.dietList.first(where: { $0.id == id }) {
-                    state.path.append(.detail(DietDetailFeature.State(diet: diet, dietID: id)))
+                if let diet = state.dietList[id: id] {
+                    let detailState = DietDetailFeature.State(
+                        diet: diet,
+                        dietID: id,
+                    )
+                    state.path.append(.detail(detailState))
                 }
                 return .none
                 
             case let .likeButtonTapped(id, isFavorite):
-                guard var dietToUpdate = state.dietList[id: id] else {
-                    return .none
-                }
-                if dietToUpdate.isFavorite != isFavorite {
+                if let dietToUpdate = state.dietList[id: id] {
                     dietToUpdate.isFavorite = isFavorite
-                    state.dietList[id: id] = dietToUpdate
                 }
                 return .none
                 
@@ -90,7 +126,7 @@ struct DietFeature {
 
             case let .path(.element(id: pathID, action: .detail(.delegate(.addFoodToDiet(foodName, amount, calories, carbohydrates, protein, fat, dietaryFiber, sugar, sodium))))):
                 guard let dietDetailState = state.path[id: pathID]?.detail,
-                      var dietToUpdate = state.dietList[id: dietDetailState.dietID] else {
+                      let dietToUpdate = state.dietList[id: dietDetailState.dietID] else {
                     return .none
                 }
                 
@@ -106,11 +142,8 @@ struct DietFeature {
                     sodium: sodium,
                     sugar: sugar
                 )
-                
                 // 식단에 음식 추가
                 dietToUpdate.foods.append(newFood)
-                state.dietList[id: dietDetailState.dietID] = dietToUpdate
-                
                 return .none
 
             case .path:

@@ -157,7 +157,7 @@ struct CreateDietView: View {
                 displayMode: .banner(.pop),
                 type: .complete(Color("AppSecondaryColor")),
                 title: "음식 추가 완료",
-                subTitle: store.toastMessage,
+                subTitle: store.toastMessage
             )
         }
         .toolbar(content: {

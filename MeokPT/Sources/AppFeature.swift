@@ -97,13 +97,16 @@ struct AppFeature {
                 state.loginFullScreenCover = nil
                 return .send(.handleAuthenticatedUser(user))
                 
+            case .profileSettingAction(.presented(.delegate(.profileSettingCancelled))):
+                state.profileSettingFullScreenCover = nil
+                return .none
+                
             case .profileSettingAction(.presented(.delegate(.profileSettingCompleted))):
                 state.profileSettingFullScreenCover = nil
                 return state.currentUser != nil ? .send(.fetchUserProfile(state.currentUser!.uid)) : .none
                 
             case .profileSettingAction(.presented(.saveProfileResponse(.success))):
-                state.profileSettingFullScreenCover = nil
-                return state.currentUser != nil ? .send(.fetchUserProfile(state.currentUser!.uid)) : .none
+                return .none
                 
             // MARK: - @Presents 사용으로 필수로 작성해야 하는 present Action
             case .presentLoginFullScreenCover:
