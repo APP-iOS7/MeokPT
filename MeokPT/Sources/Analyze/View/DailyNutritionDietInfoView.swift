@@ -79,7 +79,7 @@ struct DailyNutritionDietInfoView: View {
         .onAppear {
             if store.nutritionItems == nil && store.dietItems == nil && !store.isLoading {
                 print("DailyNutritionDietInfoView: Initial load on appear.")
-                store.send(.loadInfo(context))
+                store.send(.loadInfo)
             }
             print("DailyNutritionDietInfoView: Sending .task action to start listener.")
             store.send(.task)
@@ -87,7 +87,7 @@ struct DailyNutritionDietInfoView: View {
         .onChange(of: store.lastDataChangeTimestamp) { oldValue, newValue in
             if oldValue != newValue {
                 print("Values are different. Sending .loadInfo(context)...")
-                store.send(.loadInfo(context))
+                store.send(.loadInfo)
             } else {
                 print("Values were identical in onChange. Not sending .loadInfo.")
             }
@@ -117,7 +117,7 @@ struct DailyNutritionDietInfoView: View {
                             DietNotEmptyView(
                                 dietItems: dietItems,
                                 onMealTypeChange: { itemId, newMealType in
-                                    store.send(.dietItemMealTypeChanged(id: itemId,mealType: newMealType, context: context))
+                                    store.send(.dietItemMealTypeChanged(id: itemId,mealType: newMealType))
                                 }
                             )
                         }
