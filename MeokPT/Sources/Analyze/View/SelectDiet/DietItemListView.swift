@@ -1,21 +1,30 @@
 import SwiftUI
+import ComposableArchitecture
 
 struct DietItemListView: View {
-    // 샘플 데이터
-    let items = Array(repeating: "Sample Item", count: 10)
-    @State private var selectedStates: [Bool] = Array(repeating: false, count: 10)
+    @Bindable var store: StoreOf<DietSelectionSheetFeature>
 
     var body: some View {
         ScrollView {
-            LazyVStack(spacing: 20) {
-                ForEach(items.indices, id:\.self) { index in
-                    DietItemCellView(isSelected: $selectedStates[index])
+            if store.filteredDiets.isEmpty {
+                DietEmptyView()
+            } else {
+                LazyVStack(spacing: 20) {
+                    ForEach(store.filteredDiets) { diet in
+                        DietItemCellView(
+                            diet: diet,
+                            isSelected: store.selectedDiets.contains(diet.id),
+                            toggleSelection: {
+                                store.send(.toggleDietSelection(diet.id))
+                            }
+                        )
+                    }
                 }
             }
         }
     }
 }
 
-#Preview {
-    DietItemListView()
-}
+//#Preview {
+//    DietItemListView()
+//}
