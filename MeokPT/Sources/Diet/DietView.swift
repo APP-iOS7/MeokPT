@@ -22,7 +22,9 @@ struct DietView: View {
                             )
                             DietCellView(
                                 diet: diet,
-                                isFavorite: favoriteBinding
+                                isFavorite: favoriteBinding,
+                                onRename: { store.send(.renameButtonTapped(id: diet.id)) },
+                                onDelete: { store.send(.deleteButtonTapped(id: diet.id)) }
                             )
                         }
                         .buttonStyle(PlainButtonStyle())
@@ -64,6 +66,23 @@ struct DietView: View {
         .onAppear {
             store.send(.onAppear)
         }
+        .alert(
+            "식단 이름 변경",
+            isPresented: $store.isRenameAlertPresented,
+            actions: {
+                TextField("새로운 이름", text: $store.renameInputText)
+                Button("변경") {
+                    store.send(.confirmRenameTapped)
+                }
+                .tint(Color("TextButton"))
+                Button("취소", role: .cancel) {
+                    store.send(.cancelRenameTapped)
+                }
+            },
+            message: {
+                Text("새로운 식단 이름을 입력해주세요.")
+            }
+        )
     }
 }
 

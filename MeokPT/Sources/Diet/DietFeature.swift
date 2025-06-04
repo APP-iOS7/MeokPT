@@ -24,6 +24,11 @@ struct DietFeature {
         
         var path = StackState<Path.State>()
         
+        // MARK: Rename Alert State
+        var isRenameAlertPresented: Bool = false
+        var dietIDForRename: UUID?
+        var renameInputText: String = ""
+        
         var filteredDiets: [Diet] {
             let searchedDiets = searchText.isEmpty ? dietList.elements : dietList.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
             switch selectedFilter {
@@ -46,10 +51,17 @@ struct DietFeature {
         case dietCreated(Diet)
         case navigateToNewDiet(UUID)
         
+        // MARK: Context Menu Actions
+        case deleteButtonTapped(id: UUID)
+        case renameButtonTapped(id: UUID)
+        case confirmRenameTapped
+        case cancelRenameTapped
+        
         case path(StackActionOf<Path>)
     }
     
     @Dependency(\.modelContainer) var modelContainer
+    @Dependency(\.modelContainer.mainContext) var modelContext
     
     var body: some ReducerOf<Self> {
         BindingReducer()
@@ -122,7 +134,35 @@ struct DietFeature {
                 }
                 return .none
                 
+            case .binding(\.renameInputText):
+                return .none
+
             case .binding(_):
+                return .none
+
+            case let .deleteButtonTapped(id):
+                guard let dietToDelete = state.dietList[id: id] else { return .none }
+                modelContext.delete(dietToDelete)
+                state.dietList.remove(id: id)
+                return .none
+
+            case let .renameButtonTapped(id):
+                guard let dietToRename = state.dietList[id: id] else { return .none }
+                state.dietIDForRename = id
+                state.renameInputText = dietToRename.title
+                state.isRenameAlertPresented = true
+                return .none
+
+            case .confirmRenameTapped:
+                guard let id = state.dietIDForRename else { return .none }
+                state.isRenameAlertPresented = false
+                state.dietIDForRename = nil
+                return .send(.updateDietTitle(id: id, newTitle: state.renameInputText))
+
+            case .cancelRenameTapped:
+                state.isRenameAlertPresented = false
+                state.dietIDForRename = nil
+                state.renameInputText = "" // 입력 필드 초기화
                 return .none
                 
             case let .path(.element(id: pathID, action: .detail(.delegate(.updateTitle(newTitle))))):

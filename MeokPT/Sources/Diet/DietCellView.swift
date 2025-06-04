@@ -10,6 +10,8 @@ import ComposableArchitecture
 struct DietCellView: View {    
     var diet: Diet
     @Binding var isFavorite: Bool
+    var onRename: () -> Void
+    var onDelete: () -> Void
     
     var body: some View {
         VStack(spacing: 10) {
@@ -21,11 +23,13 @@ struct DietCellView: View {
                     Spacer()
                     Toggle("Favorite", isOn: $isFavorite)
                         .toggleStyle(FavoriteToggleStyle())
-                    Button {
-                        // TODO: 삭제 버튼 만들기
+                    Menu {
+                        Button("이름 변경", action: onRename)
+                        Button("삭제", role: .destructive, action: onDelete)
                     } label: {
                         Image(systemName: "ellipsis")
                             .foregroundStyle(Color("AppSecondaryColor"))
+                            .frame(width: 24, height: 24) // 터치 영역 확보
                     }
                 }
                 Spacer().frame(height: 4)
@@ -79,7 +83,9 @@ struct FavoriteToggleStyle: ToggleStyle {
                 Food(name: "고구마", amount: 100, kcal: 301390, carbohydrate: 32.4, protein: 1.6, fat: 0.2, dietaryFiber: 4.1, sodium: 1.1, sugar: 2.2),
             ]
         ),
-        isFavorite: $isFavoritePreview
+        isFavorite: $isFavoritePreview,
+        onRename: { print("Rename tapped") },
+        onDelete: { print("Delete tapped") }
     )
     .padding()
     .frame(height: 162)
