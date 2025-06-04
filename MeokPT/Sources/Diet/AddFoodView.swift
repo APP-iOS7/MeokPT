@@ -46,7 +46,7 @@ struct AddFoodView: View {
                     Button (action: { store.send(.cancelButtonTapped) }) { Text("취소") }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button (action: { store.send(.addButtonTapped) }) { Text("추가") }
+                    Button (action: { store.send(.addButtonTapped) }) { Text("추가") }.disabled(store.checkAmount)
                 }
             }
             .tint(Color("TextButton"))
@@ -64,14 +64,13 @@ struct AddFoodView: View {
             .fontWeight(.bold)
         
         VStack {
-            HStack(alignment: .firstTextBaseline, spacing: 1) {
-                TextField("양", value: $store.amountGram, formatter: NumberFormatter())
+            HStack(alignment: .firstTextBaseline, spacing: 2) {
+                TextField("양 (필수)", value: $store.amountGram, formatter: NumberFormatter())
                     .font(.body)
                     .multilineTextAlignment(.center)
-                    .frame(minWidth: 40, idealWidth: 50, maxWidth: 55)
                     .keyboardType(.numberPad)
                     .onChange(of: store.amountGram) {
-                        let amountText = String(store.amountGram)
+                        let amountText = String(store.amountGram ?? 0)
                         
                         if amountText.count > store.maxInputLength {
                             store.amountGram = Double(amountText.prefix(store.maxInputLength)) ?? 0
@@ -83,8 +82,8 @@ struct AddFoodView: View {
             Rectangle()
                 .frame(height: 1)
                 .foregroundColor(Color(uiColor: UIColor.separator))
-                .padding(.horizontal, 120)
         }
+        .padding(.horizontal, 120)
     }
     
     @ViewBuilder
@@ -127,28 +126,13 @@ struct AddFoodView: View {
         var nutrientFormatter: NumberFormatter {
             let formatter = NumberFormatter()
             formatter.numberStyle = .decimal
-            formatter.minimumFractionDigits = 1
+            formatter.minimumFractionDigits = (focusedNutrientField == field) ? 0 : 1
             formatter.maximumFractionDigits = 1
             formatter.minimum = 0.0
             formatter.usesGroupingSeparator = false
-            if focusedNutrientField == field {
-                formatter.minimumFractionDigits = 0
-            } else {
-                formatter.minimumFractionDigits = 1
-            }
             return formatter
         }
         let isFocused = focusedNutrientField == field
-        let currentForegroundColor = Color(.label)
-        
-        let editingValue = Binding<Double>(
-            get: {
-                value.wrappedValue ?? 0.0
-            },
-            set: { newValue in
-                value.wrappedValue = max(0, newValue)
-            }
-        )
         
         VStack(alignment: .center, spacing: 12) {
             Text(label)
@@ -170,19 +154,55 @@ struct AddFoodView: View {
                 HStack(alignment: .firstTextBaseline, spacing: 2) {
                     ZStack {
                         // 실제 편집용 TextField
-                        TextField("", value: editingValue, formatter: nutrientFormatter)
+                        TextField("", value: value, formatter: nutrientFormatter)
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.center)
                             .font(.body)
                             .foregroundColor(isFocused ? .black : .clear)
                             .focused($focusedNutrientField, equals: field)
                             .fixedSize(horizontal: true, vertical: false)
+                            .onChange(of: value.wrappedValue) { _, newValue in
+                                guard let unwrappedValue = newValue else { return }
+
+                                if unwrappedValue < 0 {
+                                    value.wrappedValue = 0
+                                    return
+                                }
+
+                                let numberString = String(unwrappedValue)
+                                let components = numberString.components(separatedBy: ".")
+                                let integerPart = components[0]
+                                let maxIntegerLength = 4
+                                
+                                if integerPart.count > maxIntegerLength {
+                                    let trimmedIntegerPart = String(integerPart.prefix(maxIntegerLength))
+                                    var newStringValue = trimmedIntegerPart
+                                    
+                                    if components.count > 1 {
+                                        let decimalPart = String(components[1].prefix(1))
+                                        newStringValue += "." + decimalPart
+                                    }
+                                    
+                                    if let limitedDouble = Double(newStringValue) {
+                                        value.wrappedValue = limitedDouble
+                                    } else {
+                                        value.wrappedValue = Double(trimmedIntegerPart) ?? 0
+                                    }
+                                } else if components.count > 1, components[1].count > 1 {
+                                    let decimalPart = String(components[1].prefix(1))
+                                    let newStringValue = integerPart + "." + decimalPart
+                                    
+                                    if let limitedDouble = Double(newStringValue) {
+                                        value.wrappedValue = limitedDouble
+                                    }
+                                }
+                            }
                         
                         // 표시용 텍스트 (포커스되지 않았을 때)
                         if !isFocused {
                             Text(isAvailable ? String(format: "%.1f", value.wrappedValue ?? 0.0) : "--.-")
                                 .font(.body)
-                                .foregroundColor(isAvailable ? currentForegroundColor : Color("AppSecondaryColor"))
+                                .foregroundColor(.primary)
                                 .fixedSize(horizontal: true, vertical: false)
                                 .allowsHitTesting(false)
                         }
@@ -190,7 +210,7 @@ struct AddFoodView: View {
                     
                     Text(unit.rawValue)
                         .font(.body)
-                        .foregroundColor(isFocused || isAvailable ? currentForegroundColor : Color("AppSecondaryColor"))
+                        .foregroundColor(Color("AppSecondaryColor"))
                         .fixedSize(horizontal: true, vertical: false)
                 }
             }

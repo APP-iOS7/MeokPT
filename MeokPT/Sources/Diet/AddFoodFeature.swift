@@ -16,7 +16,7 @@ struct AddFoodFeature {
         var selectedFoodItem: FoodNutritionItem
         
         let cornerRadius: CGFloat = 20
-        var amountGram: Double
+        var amountGram: Double?
         let maxInputLength = 4
         
         var currentCalories: Double
@@ -26,6 +26,10 @@ struct AddFoodFeature {
         var currentDietaryFiber: Double?
         var currentSugar: Double?
         var currentSodium: Double?
+        
+        var checkAmount: Bool {
+            (amountGram ?? 0) == 0
+        }
         
         init(selectedFoodItem: FoodNutritionItem) {
             self.selectedFoodItem = selectedFoodItem
@@ -76,8 +80,8 @@ struct AddFoodFeature {
     
     enum DelegateAction: Equatable {
         case dismissSheet
-        case addFoodToDiet(foodName: String, amount: Double, calories: Double, carbohydrates: Double?, protein: Double?, fat: Double?, dietaryFiber: Double?, sugar: Double?, sodium: Double?)
-        case createToast(foodName: String, amount: Double)
+        case addFoodToDiet(foodName: String, amount: Double?, calories: Double, carbohydrates: Double?, protein: Double?, fat: Double?, dietaryFiber: Double?, sugar: Double?, sodium: Double?)
+        case createToast(foodName: String, amount: Double?)
     }
     
     var body: some ReducerOf<Self> {
@@ -86,18 +90,14 @@ struct AddFoodFeature {
         Reduce { state, action in
             switch action {
             case .binding(\.amountGram):
-                // amountGram이 0 미만이 되지 않도록 보정
-                if state.amountGram < 0 {
-                    state.amountGram = 0
-                }
                 // amountGram 변경 시, selectedFoodItem의 100g당 비율을 기준으로 모든 영양소 재계산
-                state.currentCalories = (state.selectedFoodItem.calorie / 100.0) * Double(state.amountGram)
-                state.currentCarbohydrates = state.selectedFoodItem.carbohydrate.map { ($0 / 100.0) * Double(state.amountGram) }
-                state.currentProtein = state.selectedFoodItem.protein.map { ($0 / 100.0) * Double(state.amountGram) }
-                state.currentFat = state.selectedFoodItem.fat.map { ($0 / 100.0) * Double(state.amountGram) }
-                state.currentDietaryFiber = state.selectedFoodItem.dietaryFiber.map { ($0 / 100.0) * Double(state.amountGram) }
-                state.currentSugar = state.selectedFoodItem.sugar.map { ($0 / 100.0) * Double(state.amountGram) }
-                state.currentSodium = state.selectedFoodItem.sodium.map { ($0 / 100.0) * Double(state.amountGram) }
+                state.currentCalories = (state.selectedFoodItem.calorie / 100.0) * Double(state.amountGram ?? 0)
+                state.currentCarbohydrates = state.selectedFoodItem.carbohydrate.map { ($0 / 100.0) * Double(state.amountGram ?? 0) }
+                state.currentProtein = state.selectedFoodItem.protein.map { ($0 / 100.0) * Double(state.amountGram ?? 0) }
+                state.currentFat = state.selectedFoodItem.fat.map { ($0 / 100.0) * Double(state.amountGram ?? 0) }
+                state.currentDietaryFiber = state.selectedFoodItem.dietaryFiber.map { ($0 / 100.0) * Double(state.amountGram ?? 0) }
+                state.currentSugar = state.selectedFoodItem.sugar.map { ($0 / 100.0) * Double(state.amountGram ?? 0) }
+                state.currentSodium = state.selectedFoodItem.sodium.map { ($0 / 100.0) * Double(state.amountGram ?? 0) }
                 return .none
 
             case .binding(_):
@@ -107,8 +107,8 @@ struct AddFoodFeature {
                 return .run { send in await send(.delegate(.dismissSheet)) }
 
             case .addButtonTapped:
-                guard state.amountGram > 0 else { return .none }
-                
+                guard let amount = state.amountGram, amount > 0 else { return .none }
+
                 return .run { [
                     foodName = state.selectedFoodItem.foodName,
                     amount = state.amountGram,

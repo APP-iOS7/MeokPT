@@ -63,6 +63,7 @@ struct CreateDietFeature {
         
         @Presents var scanner: ScannerPresentationMarker?
         @Presents var addFoodSheet: AddFoodFeature.State?
+        @Presents var addCustomFoodSheet: AddCustomFoodFeature.State?
     }
     
     enum Action {
@@ -77,9 +78,11 @@ struct CreateDietFeature {
         case scannerSheet(PresentationAction<Never>)
         case closeButtonTapped
         case foodItemRowTapped(FoodNutritionItem)
+        case addCustomFoodTapped
         case sectionToggled(id: UUID)
 
         case addFoodSheet(PresentationAction<AddFoodFeature.Action>)
+        case addCustomFoodSheet(PresentationAction<AddCustomFoodFeature.Action>)
         case hideToast
         
         case delegate(DelegateAction)
@@ -87,7 +90,7 @@ struct CreateDietFeature {
     
     enum DelegateAction: Equatable {
         case dismissSheet
-        case addFoodToDiet(foodName: String, amount: Double, calories: Double, carbohydrates: Double?, protein: Double?, fat: Double?, dietaryFiber: Double?, sugar: Double?, sodium: Double?)
+        case addFoodToDiet(foodName: String, amount: Double?, calories: Double, carbohydrates: Double?, protein: Double?, fat: Double?, dietaryFiber: Double?, sugar: Double?, sodium: Double?)
     }
     
     @Dependency(\.foodNutritionClient) var apiClient
@@ -244,6 +247,10 @@ struct CreateDietFeature {
                 state.addFoodSheet = AddFoodFeature.State(selectedFoodItem: foodItem)
                 return .none
                 
+            case .addCustomFoodTapped:
+                state.addCustomFoodSheet = AddCustomFoodFeature.State()
+                return .none
+                
             case .sectionToggled(let id):
                 state.sectionStates[id, default: true].toggle()
                 return .none
@@ -270,8 +277,38 @@ struct CreateDietFeature {
                     state.showAlertToast = true
                     state.toastMessage = foodName.count > 30
                     ? "\(foodName.prefix(30))…"
-                    : "\(foodName) \(Int(amount))g"
+                    : "\(foodName) \(Int(amount ?? 0))g"
                     state.addFoodSheet = nil
+                    return .run { send in
+                        try await Task.sleep(for: .seconds(3))
+                        await send(.hideToast)
+                    }
+                }
+                
+            case .addCustomFoodSheet(.presented(.delegate(let addFoodDelegateAction))):
+                switch addFoodDelegateAction {
+                case .dismissSheet:
+                    state.addCustomFoodSheet = nil
+                    return .none
+                case .addFoodToDiet(let foodName, let amount, let calories, let carbohydrates, let protein, let fat, let dietFiber, let sugar, let sodium):
+                    // 상위로 델리게이트
+                    return .send(.delegate(.addFoodToDiet(
+                        foodName: foodName,
+                        amount: amount ?? 0,
+                        calories: calories ?? 0,
+                        carbohydrates: carbohydrates,
+                        protein: protein,
+                        fat: fat,
+                        dietaryFiber: dietFiber,
+                        sugar: sugar,
+                        sodium: sodium
+                    )))
+                    case .createToast(let foodName, let amount):
+                    state.showAlertToast = true
+                    state.toastMessage = foodName.count > 30
+                    ? "\(foodName.prefix(30))…"
+                    : "\(foodName) \(Int(amount ?? 0))g"
+                    state.addCustomFoodSheet = nil
                     return .run { send in
                         try await Task.sleep(for: .seconds(3))
                         await send(.hideToast)
@@ -285,6 +322,9 @@ struct CreateDietFeature {
             case .addFoodSheet(_):
                 return .none
                 
+            case .addCustomFoodSheet(_):
+                return .none
+                
             case .delegate(_):
                 return .none
             }
@@ -294,6 +334,9 @@ struct CreateDietFeature {
         }
         .ifLet(\.$addFoodSheet, action: \.addFoodSheet) {
             AddFoodFeature()
+        }
+        .ifLet(\.$addCustomFoodSheet, action: \.addCustomFoodSheet) {
+            AddCustomFoodFeature()
         }
     }
 }

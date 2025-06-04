@@ -31,21 +31,11 @@ private struct EachNutrientView: View {
                 .foregroundColor(Color("AppSecondaryColor"))
             Spacer().frame(height:4)
             if let value = value {
-                if name == "나트륨" {
-                    Text("\(value, specifier: "%.1f")mg")
-                        .font(.body)
-                } else {
-                    Text("\(value, specifier: "%.1f")g")
-                        .font(.body)
-                }
+                Text(String(format: "%.1fg", value))
+                    .font(.body)
             } else {
-                if name == "나트륨" {
-                    Text("--.- mg")
-                        .font(.body)
-                } else {
-                    Text("--.- g")
-                        .font(.body)
-                }
+                Text("--.- g")
+                    .font(.body)
             }
         }
     }

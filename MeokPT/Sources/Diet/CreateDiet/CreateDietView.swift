@@ -104,11 +104,15 @@ struct CreateDietView: View {
                     .background(Color("AppBackgroundColor"))
                     .padding(.horizontal, 4)
                 } else if store.lastSearchType != nil { // 검색결과가 없는 경우
-                    VStack {
+                    VStack(spacing: 24) {
                         Spacer()
                         Text("검색 결과가 없습니다.")
                             .foregroundColor(.gray)
                             .frame(maxWidth: .infinity, alignment: .center)
+                        Button(action: { store.send(.addCustomFoodTapped) }) {
+                            Text("직접 입력 후 음식 추가")
+                        }
+                        .foregroundStyle(Color("TextButton"))
                         Spacer()
                     }
                 } else {
@@ -122,6 +126,7 @@ struct CreateDietView: View {
                         Text("이전")
                     }
                     .foregroundStyle(Color("TextButton"))
+                    .disabled(store.currentPage == 1)
                     
                     Spacer()
                     Text("\(store.currentPage) / \(store.totalPages)")
@@ -146,6 +151,11 @@ struct CreateDietView: View {
         }
         .sheet(item: $store.scope(state: \.addFoodSheet, action: \.addFoodSheet)) { store in
             AddFoodView(store: store)
+                .presentationDragIndicator(.visible)
+                .presentationDetents([.fraction(0.8)])
+        }
+        .sheet(item: $store.scope(state: \.addCustomFoodSheet, action: \.addCustomFoodSheet)) { store in
+            AddCustomFoodView(store: store)
                 .presentationDragIndicator(.visible)
                 .presentationDetents([.fraction(0.8)])
         }
