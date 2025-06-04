@@ -27,6 +27,7 @@ struct DietDetailFeature {
     }
 
     enum DelegateAction: Equatable {
+        case updateTitle(String)
         case favoriteToggled(isFavorite: Bool)
         case addFoodToDiet(foodName: String, amount: Double, calories: Double, carbohydrates: Double?, protein: Double?, fat: Double?, dietaryFiber: Double?, sugar: Double?, sodium: Double?)
     }
@@ -39,7 +40,7 @@ struct DietDetailFeature {
                 return .send(.delegate(.favoriteToggled(isFavorite: state.diet.isFavorite)))
             case let .updateTitle(newTitle):
                 state.diet.title = newTitle
-                return .none
+                return .send(.delegate(.updateTitle(newTitle)))
             case .addFoodButtonTapped:
                 state.createDietFullScreenCover = CreateDietFeature.State()
                 return .none
