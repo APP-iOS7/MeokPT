@@ -117,7 +117,7 @@ struct DailyNutritionDietInfoView: View {
                             DietNotEmptyView(
                                 dietItems: dietItems,
                                 onMealTypeChange: { itemId, newMealType in
-                                    store.send(.dietItemMealTypeChanged(id: itemId,mealType: newMealType, context: context))
+                                    store.send(.dietItemMealTypeChanged(id: itemId,mealType: newMealType))
                                 }
                             )
                         }
