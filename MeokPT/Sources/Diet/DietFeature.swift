@@ -42,6 +42,7 @@ struct DietFeature {
         case addButtonTapped
         case dietCellTapped(id: UUID)
         case likeButtonTapped(id: UUID, isFavorite: Bool)
+        case updateDietTitle(id: UUID, newTitle: String)
         case dietCreated(Diet)
         case navigateToNewDiet(UUID)
         
@@ -109,6 +110,12 @@ struct DietFeature {
                 }
                 return .none
                 
+            case let .updateDietTitle(id, newTitle):
+                if let dietToUpdate = state.dietList[id: id] {
+                    dietToUpdate.title = newTitle
+                }
+                return .none
+                
             case let .likeButtonTapped(id, isFavorite):
                 if let dietToUpdate = state.dietList[id: id] {
                     dietToUpdate.isFavorite = isFavorite
@@ -117,6 +124,12 @@ struct DietFeature {
                 
             case .binding(_):
                 return .none
+                
+            case let .path(.element(id: pathID, action: .detail(.delegate(.updateTitle(newTitle))))):
+                guard let dietDetailState = state.path[id: pathID]?.detail else {
+                    return .none
+                }
+                return .send(.updateDietTitle(id: dietDetailState.dietID, newTitle: newTitle))
                 
             case let .path(.element(id: pathID, action: .detail(.delegate(.favoriteToggled(isFavorite))))):
                 guard let dietDetailState = state.path[id: pathID]?.detail else {
