@@ -74,15 +74,12 @@ struct DietView: View {
                 Button("변경") {
                     store.send(.confirmRenameTapped)
                 }
-                .tint(Color("TextButton"))
                 Button("취소", role: .cancel) {
                     store.send(.cancelRenameTapped)
                 }
-            },
-            message: {
-                Text("새로운 식단 이름을 입력해주세요.")
             }
         )
+        .tint(Color("TextButton"))
     }
 }
 
