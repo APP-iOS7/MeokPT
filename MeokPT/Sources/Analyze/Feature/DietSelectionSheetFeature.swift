@@ -69,7 +69,7 @@ struct DietSelectionSheetFeature: Reducer {
         case .loadDiets:
             state.isLoading = true
             state.errorMessage = nil
-
+            
             return .run { send in
                 await MainActor.run {
                     do {
@@ -79,7 +79,6 @@ struct DietSelectionSheetFeature: Reducer {
                         
                         send(._internalDietsLoadComplted(items))
                     } catch {
-                        let errorMessage = error.localizedDescription
                         send(._internalDietsLoadFailed(.fetchFailed))
                     }
                 }
@@ -98,7 +97,28 @@ struct DietSelectionSheetFeature: Reducer {
             
             return .none
         case .addDietButtonTapped:
-            return .none
+            let selected = state.diets.filter { state.selectedDiets.contains($0.id) }
+            return .run { send in
+                await MainActor.run {
+                    let context = modelContainer.mainContext
+
+                    for diet in selected {
+                        let dietItem = DietItem.fromDiet(diet)
+                        context.insert(dietItem)
+                        
+                        print("\(dietItem.name)")
+                    }
+                    
+                    do {
+                        try context.save()
+//                        send(.delegate(.dietSelected(IdentifiedArrayOf(uniqueElements: selected))))
+                        
+                    } catch {
+                        print("DietItem 저장 실패: \(error.localizedDescription)")
+                    }
+                }
+            }
+            
 
         case .delegate:
             return .none
