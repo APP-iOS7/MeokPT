@@ -5,7 +5,6 @@ import AlertToast
 
 struct BodyInfoInputView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.modelContext) private var modelContext
     @FocusState private var focusedField: Field?
     
     let onSaveCompleted: (BodyInfoInputFeature.State) -> Void
@@ -106,7 +105,7 @@ struct BodyInfoInputView: View {
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 Button(action: {
                     focusedField = nil
-                    store.send(.saveButtonTapped(modelContext))
+                    store.send(.saveButtonTapped)
                     onSaveCompleted(store.state)
                 }) {
                     Text("저장")

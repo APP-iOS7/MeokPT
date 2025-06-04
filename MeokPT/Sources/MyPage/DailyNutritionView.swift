@@ -93,7 +93,7 @@ struct DailyNutritionView: View {
         .toolbar(.hidden, for: .tabBar)
         .onAppear {
             store.send(.onAppear)
-            store.send(.loadSavedData(context))
+            store.send(.loadSavedData)
         }
         .onTapGesture {
             focusedItemID = nil

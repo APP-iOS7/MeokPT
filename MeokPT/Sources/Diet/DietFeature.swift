@@ -103,7 +103,7 @@ struct DietFeature {
                 if let diet = state.dietList[id: id] {
                     let detailState = DietDetailFeature.State(
                         diet: diet,
-                        dietID: id,
+                        dietID: id
                     )
                     state.path.append(.detail(detailState))
                 }
