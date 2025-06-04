@@ -4,142 +4,82 @@ import Kingfisher
 
 struct MyPageView: View {
     
-    @State private var savedWeight: String = ""
-    
-    let store: StoreOf<MyPageFeature>
-    
     @State private var showAlert = false
-    
-    
+    let store: StoreOf<MyPageFeature>
+
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading) {
-                Spacer().frame(height: 24)
-                Button(action: {
-                    if store.userProfile == nil {
-                        store.send(.loginSignUpButtonTapped)
-                    } else {
-                        store.send(.profileEditButtonTapped)
-                    }
-                }) {
-                    HStack {
-                        HStack {
+            List {
+                // MARK: - Profile Section
+                Section {
+                    Button {
+                        store.send(store.userProfile == nil ? .loginSignUpButtonTapped : .profileEditButtonTapped)
+                    } label: {
+                        HStack(spacing: 16) {
                             KFImage(URL(string: store.userProfile?.profileImageUrl ?? ""))
                                 .placeholder {
-                                    ZStack {
-                                        Circle()
-                                            .fill(Color("AppBackgroundColor"))
-                                            .frame(width: 100, height: 100)
-                                        Image(systemName: "person.circle.fill")
-                                            .resizable()
-                                            .scaledToFit()
-                                            .frame(width: 108, height: 108)
-                                            .foregroundColor(Color("AppTertiaryColor"))
-                                    }
+                                    Image(systemName: "person.circle.fill")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 60, height: 60)
+                                        .foregroundStyle(.gray.opacity(0.5))
                                 }
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
-                                .frame(width: 108, height: 108)
+                                .frame(width: 60, height: 60)
                                 .clipShape(Circle())
-                            Spacer().frame(width: 26)
-                            HStack {
-                                Text(store.userProfile?.nickname ?? "회원가입 / 로그인")
-                                    .foregroundColor(Color(.systemBackground))
-                                    .font(.title2.bold())
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .foregroundColor(Color("AppTintColor"))
-                            }
-                        }
-                        .padding()
-                    }
-                    .frame(maxWidth: .infinity, minHeight: 157)
-                    .background(Color("AppSecondaryColor"))
-                    .cornerRadius(20)
-                    .padding(.horizontal, 24)
-                }
-//                .disabled(store.userProfile != nil)
-                Spacer().frame(height: 16)
-                
-                HStack {
-                    HStack(spacing: 16) {
-                        NavigationLink(destination: BodyNutritionContainerView(
-                            initialTab: .bodyinInfoInput,
-                            bodyInfoStore: Store(initialState: BodyInfoInputFeature.State()) {
-                                BodyInfoInputFeature()
-                            },
-                            nutritionStore: Store(initialState:
-                                DailyNutritionFeature.State()) {
-                                    DailyNutritionFeature()
-                            }
-                        )) {
-                            VStack(alignment: .leading, spacing: 4) {
-                                HStack {
-                                    Text("신체정보 입력")
-                                        .foregroundColor(Color(.systemBackground))
-                                        .font(.headline)
-                                    Spacer()
-                                    Image(systemName: "chevron.right")
-                                        .foregroundColor(Color("AppTintColor"))
-                                }
-                                .padding()
-                                .frame(maxWidth: 145, minHeight: 145)
-                                .background(Color("AppSecondaryColor"))
-                                .cornerRadius(20)
-                            }
-                        }
-                        .navigationBarTitleDisplayMode(.inline)
-                        
-                        NavigationLink(destination: BodyNutritionContainerView(
-                            initialTab: .dailyNutrition,
-                            bodyInfoStore: Store(initialState: BodyInfoInputFeature.State()) {
-                                BodyInfoInputFeature()
-                            },
-                            nutritionStore: Store(initialState:
-                                DailyNutritionFeature.State()) {
-                                    DailyNutritionFeature()
-                            }
-                        )) {
-                            VStack {
-                                ZStack {
-                                    HStack {
-                                        Text("하루 섭취량 입력")
-                                            .foregroundColor(Color(.systemBackground))
-                                            .font(.headline)
-                                        Spacer()
-                                    }
-                                    HStack {
-                                        Spacer()
-                                        Image(systemName: "chevron.right")
-                                            .foregroundColor(Color("AppTintColor"))
-                                    }
-                                }
-                                .padding()
-                            }
-                            .frame(maxWidth: 192, minHeight: 145)
-                            .background(Color("AppSecondaryColor"))
-                            .cornerRadius(20)
-                        }
-                        .navigationBarTitleDisplayMode(.inline)
 
+                            VStack(alignment: .leading) {
+                                Text(store.userProfile?.nickname ?? "회원가입 / 로그인")
+                                    .font(.headline)
+                            }
+
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .foregroundStyle(.gray)
+                        }
+                        .padding(.vertical, 8)
                     }
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, 24)
-                
-                Spacer().frame(height: 40)
-                
+
+                // MARK: - 주요 기능
+                Section {
+                    NavigationLink {
+                        BodyNutritionContainerView(
+                            initialTab: .bodyinInfoInput,
+                            bodyInfoStore: Store(initialState: BodyInfoInputFeature.State()) { BodyInfoInputFeature() },
+                            nutritionStore: Store(initialState: DailyNutritionFeature.State()) { DailyNutritionFeature() }
+                        )
+                    } label: {
+                        Label("신체정보 입력", systemImage: "person.fill")
+                    }
+
+                    NavigationLink {
+                        BodyNutritionContainerView(
+                            initialTab: .dailyNutrition,
+                            bodyInfoStore: Store(initialState: BodyInfoInputFeature.State()) { BodyInfoInputFeature() },
+                            nutritionStore: Store(initialState: DailyNutritionFeature.State()) { DailyNutritionFeature() }
+                        )
+                    } label: {
+                        Label("하루 섭취량 입력", systemImage: "fork.knife")
+                    }
+                }
+
+                // MARK: - 내 활동
                 if store.currentUser != nil {
-                    VStack(alignment: .leading, spacing: 24) {
+                    Section(header: Text("내 활동")) {
                         NavigationLink(destination: MyPostsView()) {
-                            Text("내가 쓴 글")
-                                .font(.headline)
+                            Label("내가 쓴 글", systemImage: "pencil")
                         }
-                        Button(action: {
+                    }
+
+                    // MARK: - 계정 설정
+                    Section(header: Text("계정")) {
+                        Button {
                             showAlert = true
-                        }) {
-                            Text("로그아웃")
-                                .font(.headline)
+                        } label: {
+                            Label("로그아웃", systemImage: "lock.open")
+                                .foregroundStyle(.primary)
                         }
                         .alert("로그아웃", isPresented: $showAlert) {
                             Button("취소", role: .cancel) {}
@@ -147,40 +87,28 @@ struct MyPageView: View {
                                 store.send(.logoutButtonTapped)
                             }
                         }
-                        Button(action: {
+
+                        Button {
                             store.send(.withDrawalButtonTapped)
-                        }) {
-                            Text("회원탈퇴")
-                                .font(.headline)
+                        } label: {
+                            Label("회원탈퇴", systemImage: "xmark.circle")
+                                .foregroundStyle(.red)
                         }
                     }
-                    .foregroundColor(Color("AppTertiaryColor"))
-                    .font(.system(size: 16, weight: .semibold))
-                    .padding(.horizontal, 32)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, 8)
                 }
-                Spacer()
             }
             .navigationTitle("마이페이지")
-            .onAppear {
-                if let saved = UserDefaults.standard.dictionary(forKey: "BodyInfo") as? [String: String] {
-                    savedWeight = saved["weight"] ?? ""
-                }
-            }
+            .scrollContentBackground(.hidden)
             .background(Color("AppBackgroundColor"))
         }
-        .tint(Color("TextButton"))
+        .tint(Color("AppTintColor"))
     }
 }
 
-
 #Preview {
-    NavigationStack {
         MyPageView(
             store: Store(initialState: MyPageFeature.State()) {
                 MyPageFeature()
             }
         )
-    }
 }
