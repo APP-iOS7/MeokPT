@@ -46,8 +46,8 @@ struct AISheetFeature: Reducer {
                 // MARK: - MOCK 데이터 사용
                 let recommendedIntakeItems = mockNutritionItems
                 let consumedDietItems: [DietItem] = [
-                    DietItem(name: "스크램블 에그와 토스트", mealTypeRawValue: MealType.breakfast.displayName, kcal: 450, carbohydrate: 60, protein: 20, fat: 15, dietaryFiber: 5, sugar: 10, sodium: 300),
-                    DietItem(name: "치킨 샐러드", mealTypeRawValue: MealType.lunch.displayName, kcal: 600, carbohydrate: 70, protein: 30, fat: 20, dietaryFiber: 8, sugar: 15, sodium: 500)
+                    DietItem(name: "스크램블 에그와 토스트", mealTypeRawValue: MealType.breakfast.displayName, kcal: 450, carbohydrate: 60, protein: 20, fat: 15, dietaryFiber: 5, sugar: 10, sodium: 300, isFavorite: true),
+                    DietItem(name: "치킨 샐러드", mealTypeRawValue: MealType.lunch.displayName, kcal: 600, carbohydrate: 70, protein: 30, fat: 20, dietaryFiber: 8, sugar: 15, sodium: 500, isFavorite: false)
                 ]
                 
                 guard let nutritionInputForJSON = createNutritionInputForJSON(
