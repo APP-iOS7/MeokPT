@@ -61,6 +61,9 @@ struct DietView: View {
             }
         }
         .tint(Color("TextButton"))
+        .onAppear {
+            store.send(.onAppear)
+        }
     }
 }
 
@@ -70,4 +73,5 @@ struct DietView: View {
             DietFeature()
         }
     )
+    .modelContainer(for: [Diet.self, Food.self], inMemory: true)
 }
