@@ -67,19 +67,21 @@ struct DailyNutritionView: View {
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            Button("저장") {
+            Button(action: {
                 focusedItemID = nil
                 onSaveTapped(store, context)
                 dismiss()
+            }) {
+                Text("저장")
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 60)
+                    .background(Color("AppTintColor"))
+                    .cornerRadius(30)
             }
             .font(.headline.bold())
-            .frame(maxWidth: .infinity)
-            .frame(height: 60)
             .foregroundColor(.black)
             .buttonStyle(PlainButtonStyle())
-            .background(Color("AppTintColor"))
-            .cornerRadius(30)
-            .background(Color("AppBackgroundColor"))
+            .contentShape(Rectangle())
             .padding(.horizontal, 24)
         }
         .toolbar {
