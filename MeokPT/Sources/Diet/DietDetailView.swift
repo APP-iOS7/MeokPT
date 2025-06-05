@@ -5,6 +5,7 @@ struct DietDetailView: View {
     @Bindable var store: StoreOf<DietDetailFeature>
     
     @FocusState private var titleFocusedField: Bool
+    @Environment(\.editMode) private var editMode
     
     var body: some View {
         ScrollView {
@@ -83,31 +84,52 @@ struct DietDetailView: View {
                         }
                     }
                 }
-
+                
                 VStack {
-                    ForEach(store.diet.foods) { food in
-                        VStack(alignment: .leading) {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text(food.name)
-                                    .font(.headline)
-                                Text("\(String(format: "%.0f", food.amount))g, \(String(format: "%.0f", food.kcal))kcal")
+                    ForEach(Array(store.diet.foods.enumerated()), id: \.element.id) { index, food in
+                        HStack {
+                            if editMode?.wrappedValue.isEditing == true {
+                                Button(role: .destructive) {
+                                    store.send(.deleteFood(at: IndexSet(integer: index)))
+                                } label: {
+                                    Image(systemName: "minus.circle.fill")
+                                }
+                                .padding(.leading)
+                                .transition(.asymmetric(
+                                    insertion: .move(edge: .leading).combined(with: .opacity),
+                                    removal: .move(edge: .leading).combined(with: .opacity)
+                                ))
                             }
-                            .padding(24)
-                            DetailNutrientView(
-                                carbohydrate: food.carbohydrate,
-                                protein: food.protein,
-                                fat: food.fat,
-                                dietaryFiber: food.dietaryFiber,
-                                sugar: food.sugar,
-                                sodium: food.sodium
-                            )
-                            .padding(.bottom, 24)
+                            VStack(alignment: .leading) {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text(food.name)
+                                        .font(.headline)
+                                    Text("\(String(format: "%.0f", food.amount))g, \(String(format: "%.0f", food.kcal))kcal")
+                                }
+                                .padding(24)
+                                DetailNutrientView(
+                                    carbohydrate: food.carbohydrate,
+                                    protein: food.protein,
+                                    fat: food.fat,
+                                    dietaryFiber: food.dietaryFiber,
+                                    sugar: food.sugar,
+                                    sodium: food.sodium
+                                )
+                                .padding(.bottom, 24)
+                            }
                         }
+                        .transition(.asymmetric(
+                            insertion: .slide.combined(with: .opacity),
+                            removal: .slide.combined(with: .opacity)
+                        ))
+                        .animation(.easeInOut(duration: 0.3), value: editMode?.wrappedValue)
                         if food != store.diet.foods.last {
                             Divider()
                         }
                     }
+                    .deleteDisabled(false)
                 }
+                .animation(.easeInOut(duration: 0.3), value: store.diet.foods.count)
                 .background(Color("AppCellBackgroundColor"))
                 .cornerRadius(20)
                 .overlay(
@@ -124,7 +146,11 @@ struct DietDetailView: View {
         .background(Color("AppBackgroundColor"))
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
+                EditButton()
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
                 Button("음식 추가") {
+                    editMode?.wrappedValue = .inactive
                     store.send(.addFoodButtonTapped)
                 }
             }
