@@ -41,7 +41,6 @@ struct DietSelectionModalView: View {
                     } label: {
                         Text("추가")
                     }
-                    .foregroundStyle(Color("AppTintColor"))
                     .fontWeight(.semibold)
                 }
                 
@@ -51,7 +50,6 @@ struct DietSelectionModalView: View {
                     } label: {
                         Text("취소")
                     }
-                    .foregroundStyle(Color("AppTintColor"))
                 }
             }
         }
