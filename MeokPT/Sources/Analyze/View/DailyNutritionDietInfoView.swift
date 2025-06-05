@@ -23,18 +23,21 @@ struct DailyNutritionDietInfoView: View {
                 .scrollContentBackground(.hidden)
                 .safeAreaInset(edge: .bottom) {
                     if store.isAIbuttonEnabled {
-                        Button {
+                        Button(action: {
                             store.send(.presentAISheet)
-                        } label: {
+                        }) {
                             Text("AI 식단 분석")
                                 .frame(maxWidth: .infinity)
-                                .padding()
-                                .foregroundStyle(.black)
+                                .frame(height: 60)
                                 .background(Color("AppTintColor"))
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
-                                .padding(.horizontal, 24)
-                                .padding(.bottom, 20)
+                                .cornerRadius(30)
                         }
+                        .font(.headline.bold())
+                        .foregroundColor(.black)
+                        .buttonStyle(PlainButtonStyle())
+                        .contentShape(Rectangle())
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 20)
                     } else {
                         EmptyView()
                     }
@@ -46,7 +49,6 @@ struct DailyNutritionDietInfoView: View {
                         } label: {
                             Text("식단 추가")
                                 .foregroundStyle(Color("TextButton"))
-                                .fontWeight(.semibold)
                         }
                     }
                     ToolbarItem(placement: .cancellationAction) {
@@ -62,10 +64,9 @@ struct DailyNutritionDietInfoView: View {
         .sheet(
             item: $store.scope(state: \.dietSelectionSheet, action: \.dietSelectionSheetAction)
         ) { modalStore in
-            NavigationStack {
-                DietSelectionModalView(store: modalStore)
-            }
-            .presentationDragIndicator(.visible)
+            DietSelectionModalView(store: modalStore)
+                .presentationDragIndicator(.visible)
+                .tint(Color("TextButton"))
         }
         .sheet(
             item: $store.scope(state: \.aiSheet, action: \.aiSheetAction)

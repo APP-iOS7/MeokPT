@@ -31,7 +31,8 @@ struct MyPageView: View {
 
                             VStack(alignment: .leading) {
                                 Text(store.userProfile?.nickname ?? "회원가입 / 로그인")
-                                    .font(.headline)
+                                    .font(.title3)
+                                    .foregroundStyle(Color.primary)
                             }
 
                             Spacer()
@@ -43,7 +44,7 @@ struct MyPageView: View {
                 }
 
                 // MARK: - 주요 기능
-                Section {
+                Section(header: Text("분석용 정보 입력")) {
                     NavigationLink {
                         BodyNutritionContainerView(
                             initialTab: .bodyinInfoInput,
@@ -97,11 +98,12 @@ struct MyPageView: View {
                     }
                 }
             }
+            .padding(.top, 2)
             .navigationTitle("마이페이지")
             .scrollContentBackground(.hidden)
             .background(Color("AppBackgroundColor"))
         }
-        .tint(Color("AppTintColor"))
+        .tint(Color("TextButton"))
     }
 }
 

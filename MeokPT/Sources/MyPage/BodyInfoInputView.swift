@@ -110,14 +110,15 @@ struct BodyInfoInputView: View {
                     onSaveCompleted(store.state)
                 }) {
                     Text("저장")
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 60)
+                        .background(Color("AppTintColor"))
+                        .cornerRadius(30)
                 }
                 .font(.headline.bold())
-                .frame(maxWidth: .infinity)
-                .frame(height: 60)
                 .foregroundColor(.black)
                 .buttonStyle(PlainButtonStyle())
-                .background(Color("AppTintColor"))
-                .cornerRadius(30)
+                .contentShape(Rectangle())
                 .padding(.horizontal, 24)
 //                .alert("신체정보가 저장되었습니다.", isPresented: $showAlert) {
 //                    Button("확인", role: .cancel) {}

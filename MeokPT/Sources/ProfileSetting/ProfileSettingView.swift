@@ -9,103 +9,107 @@ struct ProfileSettingView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 32) {
-                Spacer().frame(height: 40)
-
-                // MARK: - 프로필 이미지
-                VStack(spacing: 12) {
-                    Group {
-                        if let selectedImage = store.selectedImage {
-                            Image(uiImage: selectedImage)
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                        } else if let imageUrl = store.uploadedImageUrl {
-                            KFImage(imageUrl)
-                                .resizable()
-                                .placeholder {
-                                    Image(systemName: "person.circle.fill")
-                                        .resizable()
-                                        .foregroundStyle(.gray.opacity(0.5))
-                                }
-                                .aspectRatio(contentMode: .fill)
-                        } else {
-                            Image(systemName: "person.circle.fill")
-                                .resizable()
-                                .foregroundStyle(.gray.opacity(0.5))
-                        }
-                    }
-                    .frame(width: 104, height: 104)
-                    .clipShape(Circle())
-                    .overlay(Circle().stroke(Color.gray.opacity(0.3), lineWidth: 1))
-
-                    PhotosPicker(
-                        selection: $store.selectedItem,
-                        matching: .images,
-                        photoLibrary: .shared()
-                    ) {
-                        Label("프로필 사진 변경", systemImage: "photo.on.rectangle")
-                            .font(.subheadline.bold())
-                            .frame(width: 180, height: 44)
-                            .background(Color("AppTintColor"))
-                            .foregroundStyle(.black)
-                            .clipShape(Capsule())
-                    }
-
-                    if store.isUploading {
-                        ProgressView("업로드 중...", value: store.uploadProgress, total: 1.0)
-                            .font(.caption)
-                            .frame(width: 180)
-                    }
-
-                    if let errorMessage = store.errorMessage {
-                        Text(errorMessage)
-                            .font(.caption)
-                            .foregroundStyle(.red)
+            VStack {
+                Spacer().frame(height: 70)
+                Group {
+                    if let selectedImage = store.selectedImage {
+                        Image(uiImage: selectedImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    } else if let imageUrl = store.uploadedImageUrl {
+                        KFImage(imageUrl)
+                            .resizable()
+                            .placeholder {
+                                Image(systemName: "person.circle.fill")
+                                    .resizable()
+                                    .foregroundColor(Color("AppSecondaryColor").opacity(0.5))
+                            }
+                            .aspectRatio(contentMode: .fill)
+                    } else {
+                        Image(systemName: "person.circle.fill")
+                            .resizable()
+                            .foregroundStyle(Color("App ProfileColor").opacity(0.5))
                     }
                 }
+                .frame(width: 104, height: 104)
+                .clipShape(Circle())
+                .overlay(Circle().stroke(Color.gray.opacity(0.5), lineWidth: 1))
+                
+                Spacer().frame(height: 20)
 
-                // MARK: - 닉네임 입력
-                VStack(alignment: .leading, spacing: 6) {
+                PhotosPicker(
+                    selection: $store.selectedItem,
+                    matching: .images,
+                    photoLibrary: .shared()
+                ) {
+                    Text("프로필 사진 변경")
+                        .font(.subheadline.bold())
+                        .foregroundColor(.black)
+                        .frame(width: 176, height: 50)
+                        .background(Color("AppTintColor"))
+                        .clipShape(.rect(cornerRadius: 25))
+                }
+                
+                if store.isUploading {
+                    ProgressView("업로드 중...", value: store.uploadProgress, total: 1.0)
+                        .padding(.top, 10)
+                        .frame(width: 176, height:80)
+                } else {
+                    Spacer().frame(width: 176, height:80)
+                }
+                
+                if let errorMessage = store.errorMessage {
+                    Text(errorMessage)
+                        .font(.caption)
+                        .foregroundColor(.red)
+                        .padding(.top, 5)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
                     Text("닉네임")
-                        .font(.subheadline)
-                        .foregroundStyle(.gray)
-
-                    TextField("", text: $store.nickName, prompt: Text("2자 이상 입력해주세요"))
-                        .autocapitalization(.none)
-                        .focused($nickNameFocused)
-                        .padding(.vertical, 10)
-
+                        .font(.callout)
+                        .foregroundColor(Color.gray)
+                    TextField(
+                        "",
+                        text: $store.nickName,
+                        prompt: Text(verbatim: "2자 이상 입력해주세요")
+                    )
+                    .autocapitalization(.none)
+                    .focused($nickNameFocused)
+                    .padding(.vertical, 10)
                     Rectangle()
                         .frame(height: 1)
-                        .foregroundStyle(nickNameFocused ? Color("AppTintColor") : Color(.placeholderText))
-
-                    if let saveError = store.saveProfileError {
-                        Text(saveError)
-                            .font(.caption)
-                            .foregroundStyle(.red)
-                    }
+                        .foregroundColor(nickNameFocused ? Color("AppTintColor") : Color(.placeholderText))
                 }
-
-                // MARK: - 저장 버튼
-                Button {
+                if let saveError = store.saveProfileError {
+                    Text(saveError)
+                        .font(.caption)
+                        .foregroundColor(.red)
+                        .padding(.top, 10)
+                }
+                Spacer()
+                Button(action: {
                     store.send(.saveProfile)
-                } label: {
+                }) {
                     HStack {
                         Spacer()
                         if store.isSavingProfile {
                             ProgressView()
                                 .progressViewStyle(CircularProgressViewStyle(tint: .black))
                         } else {
-                            Label("프로필 저장", systemImage: "checkmark.circle.fill")
+                            Text("프로필 저장")
                         }
                         Spacer()
                     }
                     .font(.headline.bold())
-                    .frame(height: 56)
-                    .background(Color("AppTintColor"))
                     .foregroundColor(.black)
-                    .clipShape(Capsule())
+                    .frame(maxWidth: .infinity)
+                    .contentShape(Rectangle())
                 }
+                .frame(height: 60)
+                .background(Color("AppTintColor"))
+                .clipShape(.rect(cornerRadius: 30))
+                .buttonStyle(PlainButtonStyle())
                 .disabled(store.isUploading || store.isSavingProfile)
                 .opacity((store.isUploading || store.isSavingProfile) ? 0.7 : 1.0)
 
@@ -119,14 +123,16 @@ struct ProfileSettingView: View {
                     Button("취소") {
                         store.send(.cancelButtonTapped)
                     }
-                    .foregroundStyle(Color("AppTintColor"))
                 }
             }
+            .containerRelativeFrame([.horizontal, .vertical])
+            .contentShape(Rectangle())
             .onTapGesture {
                 nickNameFocused = false
             }
         }
-        .background(Color("AppBackgroundColor").ignoresSafeArea())
+        .scrollDisabled(true)
+        .background(Color("AppBackgroundColor"))
         .onAppear {
             store.send(.onAppear)
         }
