@@ -114,7 +114,7 @@ struct DailyNutritionDietInfoView: View {
                         if dietItem.isEmpty {
                             DietEmptyView()
                         } else {
-//                            DietNotEmptyView()
+                            DietNotEmptyView(dietItems: dietItem, onMealTypeChange: { _, _ in })
                         }
                     } else {
                         DietEmptyView()

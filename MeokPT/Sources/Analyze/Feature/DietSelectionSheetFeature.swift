@@ -111,7 +111,7 @@ struct DietSelectionSheetFeature: Reducer {
                     
                     do {
                         try context.save()
-//                        send(.delegate(.dietSelected(IdentifiedArrayOf(uniqueElements: selected))))
+                        send(.delegate(.dietSelected(Array(selected))))
                         
                     } catch {
                         print("DietItem 저장 실패: \(error.localizedDescription)")
