@@ -25,7 +25,7 @@ struct AddFoodView: View {
             VStack(spacing: 24) {
                 foodInfoSection
                 
-                Text(store.info ?? "")
+                Text(store.info)
                     .font(.caption)
                     .foregroundColor(Color("AppSecondaryColor"))
                     .padding(.horizontal, 24)

@@ -42,14 +42,18 @@ struct AddFoodFeature {
             self.currentSodium = selectedFoodItem.sodium.map { ($0 / 100.0) * Double(initialAmount) }
         }
         
-        var info: AttributedString? {
+        var info: AttributedString {
             let markdownString: String
             if selectedFoodItem.servingSize > 0 {
                 markdownString = "식약처 DB에서 제공하는 총 내용량(1회 제공량)은 **\(Int(selectedFoodItem.servingSize))g** 입니다."
             } else {
                 markdownString = "식약처 DB에서 총 내용량을 제공하지 않습니다. **100g** 기준으로 표시됩니다."
             }
-            return try? AttributedString(markdown: markdownString)
+            do {
+                return try AttributedString(markdown: markdownString)
+            } catch {
+                return AttributedString(markdownString)
+            }
         }
         
         var isCarbohydratesAvailable: Bool { currentCarbohydrates != nil }
