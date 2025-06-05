@@ -1,5 +1,5 @@
 import ComposableArchitecture
-import Foundation
+import SwiftUI
 
 @Reducer
 struct CommunityPath {
@@ -23,8 +23,20 @@ struct CommunityPath {
 struct CommunityFeature {
     @ObservableState
     struct State: Equatable{
-        var searchText: String = ""
+        static func == (lhs: CommunityFeature.State, rhs: CommunityFeature.State) -> Bool {
+            lhs.searchText == rhs.searchText &&
+            lhs.path == rhs.path
+        }
         
+        var columns: [GridItem] = Array(repeating: .init(.flexible(), spacing: 16), count: 2)
+        var searchText: String = ""
+        var filteredPosts: [CommunityPost] {
+            if searchText.isEmpty {
+                return dummyPosts
+            } else {
+                return dummyPosts.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
+            }
+        }
         var path = StackState<CommunityPath.State>()
     }
     

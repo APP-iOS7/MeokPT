@@ -4,30 +4,12 @@ import ComposableArchitecture
 struct CommunityView: View {
     @Bindable var store: StoreOf<CommunityFeature>
 
-    let columns: [GridItem] = Array(repeating: .init(.flexible(), spacing: 16), count: 2)
-
-    var filteredPosts: [CommunityPost] {
-        if store.searchText.isEmpty {
-            return dummyPosts
-        } else {
-            return dummyPosts.filter { $0.title.localizedCaseInsensitiveContains(store.searchText) }
-        }
-    }
-
     var body: some View {
         NavigationStack (path: $store.scope(state: \.path, action: \.path)){
-            VStack(spacing: 0) {
-                // 🔍 검색창
-                TextField("검색", text: $store.searchText)
-                    .padding(12)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
-                    .padding([.horizontal, .top])
-
-                // 📸 게시물 그리드
+            VStack {
                 ScrollView {
-                    LazyVGrid(columns: columns, spacing: 16) {
-                        ForEach(filteredPosts) { post in
+                    LazyVGrid(columns: store.columns, spacing: 16) {
+                        ForEach(store.filteredPosts) { post in
                                 VStack(alignment: .leading, spacing: 8) {
                                     GeometryReader { geometry in
                                         post.imageColor
@@ -45,18 +27,18 @@ struct CommunityView: View {
                     .padding(24)
                 }
             }
-//            .padding(.horizontal, 24)
             .navigationTitle("커뮤니티")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button (action: { store.send(.navigateToAddButtonTapped) }) {
                         Image(systemName: "plus")
-                            .foregroundColor(.black)
+                            .foregroundStyle(Color("AppSecondaryColor"))
                     }
                 }
             }
             .background(Color("AppBackgroundColor"))
+            .searchable(text: $store.searchText, prompt: "검색")
         } destination: { storeForElement in
             switch storeForElement.state {
             case .addPost:
@@ -65,6 +47,7 @@ struct CommunityView: View {
                 }
             }
         }
+        .tint(Color("TextButton"))
     }
 }
 

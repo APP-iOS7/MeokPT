@@ -1,134 +1,152 @@
 import SwiftUI
 import ComposableArchitecture
+import _PhotosUI_SwiftUI
+import Kingfisher
 
 struct CommunityWriteView: View {
+    enum Field: Hashable {
+        case title, content
+    }
+    @FocusState private var focusedField: Field?
     @Bindable var store: StoreOf<CommunityWriteFeature>
-    @Environment(\.dismiss) var dismiss
-
+    
     var body: some View {
-        VStack(spacing: 16) {
-            // 커스텀 내비게이션 바
-            HStack {
-                Button(action: {
-                    dismiss()
-                }) {
-                    Image(systemName: "chevron.left")
-                        .foregroundColor(.black)
-                        .font(.system(size: 18, weight: .medium))
+        ScrollView {
+            VStack(spacing: 24) {
+                // 제목 입력
+                VStack {
+                    TextField("제목", text: $store.title)
+                        .focused($focusedField, equals: .title)
+                    Rectangle()
+                        .frame(height: 1)
+                        .foregroundStyle(Color(.placeholderText))
                 }
-                Spacer()
-                Text("내용 작성")
-                    .font(.headline)
-                    .foregroundColor(.black)
-                Spacer()
-                Image(systemName: "chevron.left")
-                    .opacity(0)
-            }
-            .padding(.top, 16)
-
-            // 제목 입력
-            VStack(alignment: .leading, spacing: 4) {
-                TextField("제목을 입력해주세요.", text: $store.title)
-                    .padding(.horizontal, 4)
-                    .foregroundColor(.black)
-
-                Rectangle()
-                    .frame(height: 1)
-                    .foregroundColor(Color.gray.opacity(0.3))
-            }
-
-            // 내용 입력
-            VStack(alignment: .leading) {
+                .padding(.horizontal, 16)
+                
+                // 내용 입력
                 ZStack(alignment: .topLeading) {
-                    if store.content.isEmpty {
-                        Text("내용을 입력해주세요.")
-                            .foregroundColor(.gray)
-                            .padding(.top, 12)
-                            .padding(.leading, 10)
-                    }
-
-                    TextEditor(text: $store.content)
-                        .padding(8)
-                        .background(Color.white)
-                        .cornerRadius(10)
-                        .frame(height: 108)
-                        .opacity(1)
-                }
-            }
-            
-            Button(action: {
-                store.send(.presentMealSelectionSheet)
-            }) {
                     RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.white)
+                        .fill(Color("App CardColor"))
+                        .frame(height: 160)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 20)
+                                .stroke(Color(.placeholderText))
+                        )
+                    TextEditor(text: $store.content)
+                        .scrollContentBackground(.hidden)
+                        .padding(8)
+                        .cornerRadius(20)
+                        .frame(height:160)
+                        .focused($focusedField, equals: .content)
+                    if store.content.isEmpty {
+                            Text("내용")
+                        .padding(16)
+                        .foregroundStyle(Color(.placeholderText))
+                    }
+                }
+                
+                Button(action: {
+                    focusedField = nil
+                    store.send(.presentMealSelectionSheet)
+                }) {
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(Color("App CardColor"))
                         .frame(height: 160)
                         .overlay(
                             HStack {
-                                Text("＋")
-                                    .font(.system(size: 70, weight: .medium))
-                                    .padding(.trailing, 6)
-                                    .foregroundColor(.black)
+                                Image(systemName: "plus")
                                 Text("식단 선택")
-                                    .foregroundColor(.black)
                             }
-                                .padding()
                         )
                         .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.gray.opacity(0.3))
+                            RoundedRectangle(cornerRadius: 20)
+                                .stroke(Color(.placeholderText))
                         )
                 }
-            
-            // 사진 선택
-            VStack(alignment: .leading, spacing: 8) {
-                Text("사진 (선택)")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
+                .buttonStyle(PlainButtonStyle())
+                .contentShape(Rectangle())
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("사진 (선택)")
+                        .font(.body)
+                        .foregroundStyle(Color("AppSecondaryColor"))
+                        .padding(.leading, 8)
 
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.white)
-                    .frame(height: 210)
-                    .overlay(
-                        Image(systemName: "photo.badge.plus")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 100, height: 90)
-                            .foregroundColor(.black)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.gray.opacity(0.3))
-                    )
+                    PhotosPicker(
+                        selection: $store.selectedItem,
+                        matching: .images,
+                        photoLibrary: .shared()
+                    ) {
+                        imageDisplayView
+                            .frame(height: 210)
+                            .background(Color("App CardColor"))
+                            .cornerRadius(20)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .stroke(Color(.placeholderText))
+                            )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+
+                    if let errorMessage = store.errorMessage {
+                        Text(errorMessage)
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                            .padding(.horizontal)
+                    }
+                }
+
+                Button(action: {
+                    focusedField = nil
+                }) {
+                    Text(store.isUploading ? "사진 업로드 중" : "글 등록")
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 60)
+                        .background(Color("AppTintColor"))
+                        .cornerRadius(30)
+                }
+                .font(.headline.bold())
+                .foregroundStyle(.black)
+                .buttonStyle(PlainButtonStyle())
+                .contentShape(Rectangle())
+                .disabled(store.isUploading)
             }
-
-            Spacer()
-
-            // 글 등록 버튼
-            Button(action: {
-                // 글 등록 처리
-            }) {
-                Text("글 등록")
-                    .foregroundColor(.black)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-            }
-            .frame(height: 60)
-            .background(Color("AppTintColor"))
-            .cornerRadius(30)
+            .padding(24)
+            .navigationTitle("글 작성")
         }
-        .padding(.horizontal, 24)
-        .background(Color("AppBackgroundColor").ignoresSafeArea())
-        .navigationBarHidden(true)              // ✅ 시스템 네비게이션 숨김
-        .navigationBarBackButtonHidden(true)    // ✅ 시스템 뒤로가기 숨김
-        .navigationBarTitle("")                 // ✅ 시스템 제목 제거
-        .sheet (
-            item: $store.scope(state: \.mealSelectionSheet, action: \.mealSelectionAction)) { store in
-            NavigationStack {
-                MealSelectionView(store: store)
-                    .presentationDragIndicator(.visible)
-                    .presentationDetents([.large])
+        .onTapGesture {
+            focusedField = nil
+        }
+        .scrollDismissesKeyboard(.immediately)
+        .background(Color("AppBackgroundColor"))
+    }
+    
+    private var imageDisplayView: some View {
+        Group {
+            if let selectedImage = store.selectedImage {
+                Image(uiImage: selectedImage)
+                    .resizable()
+                    .scaledToFill()
+            } else if let imageUrl = store.uploadedImageUrl {
+                KFImage(imageUrl)
+                    .resizable()
+                    .placeholder {
+                        ProgressView()
+                    }
+                    .onFailure { error in
+                        print("KFImage load failed: \(error.localizedDescription)")
+                    }
+                    .scaledToFill()
+            } else {
+                Image(systemName: "photo.badge.plus")
+                    .resizable()
+                    .scaledToFill()
+                    .foregroundStyle(Color.primary.opacity(0.7))
+                    .frame(width: 100, height: 90)
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
     }
 }
 
