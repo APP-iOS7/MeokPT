@@ -23,19 +23,21 @@ struct DailyNutritionDietInfoView: View {
                 .scrollContentBackground(.hidden)
                 .safeAreaInset(edge: .bottom) {
                     if store.isAIbuttonEnabled {
-                        Button {
+                        Button(action: {
                             store.send(.presentAISheet)
-                        } label: {
+                        }) {
                             Text("AI 식단 분석")
-                                .font(.headline.bold())
                                 .frame(maxWidth: .infinity)
-                                .padding()
-                                .foregroundStyle(.black)
+                                .frame(height: 60)
                                 .background(Color("AppTintColor"))
-                                .clipShape(RoundedRectangle(cornerRadius: 30))
-                                .padding(.horizontal, 24)
-                                .padding(.bottom, 20)
+                                .cornerRadius(30)
                         }
+                        .font(.headline.bold())
+                        .foregroundColor(.black)
+                        .buttonStyle(PlainButtonStyle())
+                        .contentShape(Rectangle())
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 20)
                     } else {
                         EmptyView()
                     }
