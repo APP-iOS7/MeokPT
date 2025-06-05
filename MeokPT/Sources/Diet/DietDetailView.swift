@@ -127,7 +127,6 @@ struct DietDetailView: View {
                             Divider()
                         }
                     }
-                    .deleteDisabled(false)
                 }
                 .animation(.easeInOut(duration: 0.3), value: store.diet.foods.count)
                 .background(Color("AppCellBackgroundColor"))
