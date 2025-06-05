@@ -15,5 +15,6 @@ struct DietPickerView: View {
             }
         }
         .tint(Color("App ProfileColor"))
+        .background(.clear)
     }
 }

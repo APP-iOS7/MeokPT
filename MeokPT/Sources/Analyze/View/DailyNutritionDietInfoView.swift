@@ -32,8 +32,7 @@ struct DailyNutritionDietInfoView: View {
                                 .foregroundStyle(.black)
                                 .background(Color("AppTintColor"))
                                 .clipShape(RoundedRectangle(cornerRadius: 16))
-                                .padding(.horizontal, 24)
-                                .padding(.bottom, 20)
+                                .padding(20 )
                         }
                     } else {
                         EmptyView()
