@@ -119,6 +119,13 @@ struct CommunityWriteView: View {
         }
         .scrollDismissesKeyboard(.immediately)
         .background(Color("AppBackgroundColor"))
+        .sheet(item: $store.scope(state: \.mealSelectionSheet, action: \.mealSelectionAction)) { store in
+            NavigationStack {
+                MealSelectionView(store: store)
+                    .presentationDragIndicator(.visible)
+                    .presentationDetents([.large])
+            }
+        }
     }
     
     private var imageDisplayView: some View {
