@@ -22,6 +22,7 @@ struct DietDetailFeature {
         case likeButtonTapped
         case updateTitle(String)
         case addFoodButtonTapped
+        case deleteFood(at: IndexSet)
         case createDietFullScreenCover(PresentationAction<CreateDietFeature.Action>)
         case delegate(DelegateAction)
     }
@@ -44,6 +45,11 @@ struct DietDetailFeature {
             case .addFoodButtonTapped:
                 state.createDietFullScreenCover = CreateDietFeature.State()
                 return .none
+            
+            case let .deleteFood(offsets):
+                state.diet.foods.remove(atOffsets: offsets)
+                return .none
+                
             case .createDietFullScreenCover(.presented(.delegate(.dismissSheet))):
                 state.createDietFullScreenCover = nil
                 return .none
