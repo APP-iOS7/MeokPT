@@ -163,39 +163,7 @@ struct AddFoodView: View {
                             .fixedSize(horizontal: true, vertical: false)
                             .onChange(of: value.wrappedValue) { _, newValue in
                                 guard let unwrappedValue = newValue else { return }
-
-                                if unwrappedValue < 0 {
-                                    value.wrappedValue = 0
-                                    return
-                                }
-
-                                let numberString = String(unwrappedValue)
-                                let components = numberString.components(separatedBy: ".")
-                                let integerPart = components[0]
-                                let maxIntegerLength = 4
-                                
-                                if integerPart.count > maxIntegerLength {
-                                    let trimmedIntegerPart = String(integerPart.prefix(maxIntegerLength))
-                                    var newStringValue = trimmedIntegerPart
-                                    
-                                    if components.count > 1 {
-                                        let decimalPart = String(components[1].prefix(1))
-                                        newStringValue += "." + decimalPart
-                                    }
-                                    
-                                    if let limitedDouble = Double(newStringValue) {
-                                        value.wrappedValue = limitedDouble
-                                    } else {
-                                        value.wrappedValue = Double(trimmedIntegerPart) ?? 0
-                                    }
-                                } else if components.count > 1, components[1].count > 1 {
-                                    let decimalPart = String(components[1].prefix(1))
-                                    let newStringValue = integerPart + "." + decimalPart
-                                    
-                                    if let limitedDouble = Double(newStringValue) {
-                                        value.wrappedValue = limitedDouble
-                                    }
-                                }
+                                onChangeValue(unwrappedValue, value)
                             }
                         
                         // 표시용 텍스트 (포커스되지 않았을 때)
@@ -222,5 +190,51 @@ struct AddFoodView: View {
 
         }
         .frame(maxWidth: .infinity)
+    }
+}
+
+func onChangeValue(_ unwrappedValue: Double, _ value: Binding<Double?>) {
+    // 입력값이 음수면 0으로 설정
+    if unwrappedValue < 0 {
+        value.wrappedValue = 0
+        return
+    }
+
+    // 입력값을 문자열로 변환
+    let numberString = String(unwrappedValue)
+    // 소수점 기준으로 나눔
+    let components = numberString.components(separatedBy: ".")
+    // 정수부만 추출
+    let integerPart = components[0]
+
+    // 정수부가 4자리보다 길면 잘라냄
+    if integerPart.count > 4 {
+        // 정수부를 4자리로 자름
+        let trimmedIntegerPart = String(integerPart.prefix(4))
+        var newStringValue = trimmedIntegerPart
+
+        // 소수부가 있으면 한 자리만 남김
+        if components.count > 1 {
+            let decimalPart = String(components[1].prefix(1))
+            newStringValue += "." + decimalPart
+        }
+
+        // Double로 변환해서 적용 (실패 시 정수부만 적용)
+        if let limitedDouble = Double(newStringValue) {
+            value.wrappedValue = limitedDouble
+        } else {
+            value.wrappedValue = Double(trimmedIntegerPart) ?? 0
+        }
+    }
+    // 정수부가 4자리 이하이고 소수부가 2자리 이상이면
+    else if components.count > 1, components[1].count > 1 {
+        // 소수부를 한 자리로 자름
+        let decimalPart = String(components[1].prefix(1))
+        let newStringValue = integerPart + "." + decimalPart
+
+        // Double로 변환해서 적용
+        if let limitedDouble = Double(newStringValue) {
+            value.wrappedValue = limitedDouble
+        }
     }
 }

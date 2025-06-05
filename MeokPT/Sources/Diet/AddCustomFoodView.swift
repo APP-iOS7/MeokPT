@@ -151,42 +151,7 @@ struct AddCustomFoodView: View {
                         .fixedSize(horizontal: true, vertical: false)
                         .onChange(of: value.wrappedValue) { _, newValue in
                             guard let unwrappedValue = newValue else { return }
-
-                            if unwrappedValue < 0 {
-                                value.wrappedValue = 0
-                                return
-                            }
-
-                            let numberString = String(unwrappedValue)
-                            let components = numberString.components(separatedBy: ".")
-
-                            let integerPart = components[0]
-                            let maxIntegerLength = 4
-
-                            if integerPart.count > maxIntegerLength {
-                                let trimmedIntegerPart = String(integerPart.prefix(maxIntegerLength))
-                                var newStringValue = trimmedIntegerPart
-                                
-                                // 소수점 이하 처리
-                                if components.count > 1 {
-                                    let decimalPart = String(components[1].prefix(1))  // 소수점 이하 한 자리만
-                                    newStringValue += "." + decimalPart
-                                }
-                                
-                                if let limitedDouble = Double(newStringValue) {
-                                    value.wrappedValue = limitedDouble
-                                } else {
-                                    value.wrappedValue = Double(trimmedIntegerPart) ?? 0
-                                }
-                            } else if components.count > 1, components[1].count > 1 {
-                                // 이미 소수점 이하가 두 자리 이상이라면 잘라내기
-                                let decimalPart = String(components[1].prefix(1))
-                                let newStringValue = integerPart + "." + decimalPart
-                                
-                                if let limitedDouble = Double(newStringValue) {
-                                    value.wrappedValue = limitedDouble
-                                }
-                            }
+                            onChangeValue(unwrappedValue, value)
                         }
                     
                     Text(unit.rawValue)
