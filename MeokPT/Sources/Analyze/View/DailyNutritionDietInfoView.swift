@@ -27,11 +27,12 @@ struct DailyNutritionDietInfoView: View {
                             store.send(.presentAISheet)
                         } label: {
                             Text("AI 식단 분석")
+                                .font(.headline.bold())
                                 .frame(maxWidth: .infinity)
                                 .padding()
                                 .foregroundStyle(.black)
                                 .background(Color("AppTintColor"))
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                .clipShape(RoundedRectangle(cornerRadius: 30))
                                 .padding(.horizontal, 24)
                                 .padding(.bottom, 20)
                         }
@@ -46,7 +47,6 @@ struct DailyNutritionDietInfoView: View {
                         } label: {
                             Text("식단 추가")
                                 .foregroundStyle(Color("TextButton"))
-                                .fontWeight(.semibold)
                         }
                     }
                     ToolbarItem(placement: .cancellationAction) {
@@ -62,10 +62,9 @@ struct DailyNutritionDietInfoView: View {
         .sheet(
             item: $store.scope(state: \.dietSelectionSheet, action: \.dietSelectionSheetAction)
         ) { modalStore in
-            NavigationStack {
-                DietSelectionModalView(store: modalStore)
-            }
-            .presentationDragIndicator(.visible)
+            DietSelectionModalView(store: modalStore)
+                .presentationDragIndicator(.visible)
+                .tint(Color("TextButton"))
         }
         .sheet(
             item: $store.scope(state: \.aiSheet, action: \.aiSheetAction)
