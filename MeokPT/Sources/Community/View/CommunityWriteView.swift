@@ -102,18 +102,31 @@ struct CommunityWriteView: View {
 
                 Button(action: {
                     focusedField = nil
+                    store.showAlert = true
                 }) {
-                    Text(store.isUploading ? "사진 업로드 중" : "글 등록")
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 60)
-                        .background(Color("AppTintColor"))
-                        .cornerRadius(30)
+                    HStack {
+                        Text(store.isUploading ? "사진 업로드 중" : "글 게시")
+                        if store.isUploading {
+                            ProgressView()
+                                .tint(.primary)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 60)
+                    .background(Color("AppTintColor"))
+                    .cornerRadius(30)
                 }
                 .font(.headline.bold())
                 .foregroundStyle(.black)
                 .buttonStyle(PlainButtonStyle())
                 .contentShape(Rectangle())
-                .disabled(store.isUploading)
+                .disabled(store.postInvalid || store.isUploading)
+                .alert("커뮤니티에 글을 게시합니다.", isPresented: $store.showAlert) {
+                    Button("취소", role: .cancel) {}
+                    Button("게시") {
+                        store.send(.submitButtonTapped)
+                    }
+                }
             }
             .padding(24)
             .navigationTitle("글 작성")

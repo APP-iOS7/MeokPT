@@ -1,5 +1,6 @@
 import SwiftUI
 import ComposableArchitecture
+import AlertToast
 
 struct CommunityView: View {
     @Bindable var store: StoreOf<CommunityFeature>
@@ -7,25 +8,6 @@ struct CommunityView: View {
     var body: some View {
         NavigationStack (path: $store.scope(state: \.path, action: \.path)){
             VStack {
-                ScrollView {
-                    LazyVGrid(columns: store.columns, spacing: 16) {
-                        ForEach(store.filteredPosts) { post in
-                                VStack(alignment: .leading, spacing: 8) {
-                                    GeometryReader { geometry in
-                                        post.imageColor
-                                            .frame(width: geometry.size.width, height: geometry.size.width)
-                                            .cornerRadius(8)
-                                    }
-                                    .aspectRatio(1, contentMode: .fit)
-
-                                    Text(post.title)
-                                        .font(.headline)
-                                        .foregroundColor(.primary)
-                                }
-                        }
-                    }
-                    .padding(24)
-                }
             }
             .navigationTitle("커뮤니티")
             .navigationBarTitleDisplayMode(.inline)
@@ -46,6 +28,16 @@ struct CommunityView: View {
                     CommunityWriteView(store: AddStore)
                 }
             }
+        }
+        .toast(isPresenting: Binding(
+            get: { store.showAlertToast },
+            set: { _ in }
+        )) {
+            AlertToast(
+                displayMode: .banner(.pop),
+                type: store.isSuccess ? .complete(Color("AppSecondaryColor")) : .error(.red),
+                title: store.toastMessage,
+            )
         }
         .tint(Color("TextButton"))
     }

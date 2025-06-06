@@ -22,6 +22,12 @@ struct CommunityWriteFeature {
         
         var selectedDiet: Diet?
         
+        var postInvalid: Bool {
+            title.isEmpty || content.isEmpty || selectedDiet == nil
+        }
+        
+        var showAlert = false
+        
         @Presents var mealSelectionSheet: MealSelectionFeature.State?
     }
     

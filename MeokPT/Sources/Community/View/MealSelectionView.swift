@@ -28,7 +28,7 @@ struct MealSelectionView: View {
         .toolbar(content: {
             ToolbarItem(placement: .topBarLeading,
                         content: { Button(action: {
-//                store.send(.closeButtonTapped)
+                store.send(.dismissButtonTapped)
             }) { Text("취소").foregroundStyle(Color("TextButton")) }})
         })
     }
