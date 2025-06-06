@@ -143,7 +143,7 @@ struct DailyNutritionDietInfoFeature {
                             })
                             
                             if let dietItemToUpdate = try context.fetch(descriptor).first {
-                                dietItemToUpdate.mealType = newMealType // fetched된 객체 수정
+                                dietItemToUpdate.mealType = newMealType
                                 try context.save()
                                 print("Successfully saved mealType change for DietItem \(id) to \(newMealType.rawValue)")
                             } else {
@@ -188,7 +188,7 @@ struct DailyNutritionDietInfoFeature {
             case .delegate(_):
                 return .none
                 
-            case let .dietSelectionSheetAction(.presented(.delegate(.dietSelected(diets)))):
+            case .dietSelectionSheetAction(.presented(.delegate(.dietSelected(_)))):
                 print("Diets selected in sheet")
                 state.dietSelectionSheet = nil
                 return .send(.loadInfo)
