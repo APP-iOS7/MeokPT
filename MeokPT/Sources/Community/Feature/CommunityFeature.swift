@@ -30,13 +30,6 @@ struct CommunityFeature {
         
         var columns: [GridItem] = Array(repeating: .init(.flexible(), spacing: 16), count: 2)
         var searchText: String = ""
-        var filteredPosts: [CommunityPost] {
-            if searchText.isEmpty {
-                return dummyPosts
-            } else {
-                return dummyPosts.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
-            }
-        }
         var path = StackState<CommunityPath.State>()
     }
     
@@ -59,6 +52,10 @@ struct CommunityFeature {
                 
             case .navigateToAddButtonTapped:
                 state.path.append(.addPost(CommunityWriteFeature.State()))
+                return .none
+                
+            case .path(.element(id: _, action: .addPost(.delegate(.createPost(let title, let content, let photoURL, let diet))))):
+                // TODO: 파이어베이스 저장 로직 구현
                 return .none
                 
             case .binding(_):

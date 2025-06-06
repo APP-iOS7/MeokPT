@@ -19,7 +19,8 @@ struct CommunityWriteFeature {
         var initialUploadedImageUrl: URL?
 
         var errorMessage: String?
-
+        
+        var selectedDiet: Diet?
         
         @Presents var mealSelectionSheet: MealSelectionFeature.State?
     }
@@ -35,9 +36,11 @@ struct CommunityWriteFeature {
         case loadImageResponse(Result<UIImage, Error>)
         case initiateImageUpload
         case imageUploadCompleted(Result<URL, Error>)
+        case submitButtonTapped
     }
     
     enum DelegateAction: Equatable {
+        case createPost(title: String, content: String, photoURL: String, diet: Diet)
     }
     
     private enum CancelID { case loadImage, imageUpload }
@@ -71,10 +74,21 @@ struct CommunityWriteFeature {
                 return .none
             case .binding(_):
                 return .none
-            case .mealSelectionAction(_):
-                return .none
+                
             case .presentMealSelectionSheet:
                 state.mealSelectionSheet = MealSelectionFeature.State()
+                return .none
+                
+            case .mealSelectionAction(.presented(.delegate(.dismissSheet))):
+                state.mealSelectionSheet = nil
+                return .none
+                
+            case .mealSelectionAction(.presented(.delegate(.selectDiet(let diet)))):
+                state.mealSelectionSheet = nil
+                state.selectedDiet = diet
+                return .none
+                
+            case .mealSelectionAction(_):
                 return .none
                 
             case .loadImageResponse(.success(let image)):
@@ -83,9 +97,9 @@ struct CommunityWriteFeature {
                 return .send(.initiateImageUpload)
                 
             case .loadImageResponse(.failure(let error)):
-                 state.selectedImage = nil
-                 state.errorMessage = error.localizedDescription
-                 return .none
+                state.selectedImage = nil
+                state.errorMessage = error.localizedDescription
+                return .none
                 
             case .initiateImageUpload:
                 guard let imageToUpload = state.selectedImage else {
@@ -121,6 +135,14 @@ struct CommunityWriteFeature {
                 state.selectedImage = nil
                 state.selectedItem = nil
                 state.errorMessage = error.localizedDescription
+                return .none
+                
+            case .submitButtonTapped:
+                if let diet = state.selectedDiet {
+                    return .send(.delegate(.createPost(title: state.title, content: state.content, photoURL: state.uploadedImageUrl?.description ?? "", diet: diet)))
+                } else { return .none }
+                
+            case .delegate(_):
                 return .none
             }
         }

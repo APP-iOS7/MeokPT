@@ -25,10 +25,19 @@ struct MealSelectionFeature {
     }
     
     enum Action: BindableAction {
+        case delegate(DelegateAction)
         case binding(BindingAction<State>)
         case onAppear
         case dietsLoaded([Diet])
+        case dietCellTapped(id: UUID)
+        case dismissButtonTapped
     }
+    
+    enum DelegateAction: Equatable {
+        case dismissSheet
+        case selectDiet(diet: Diet)
+    }
+
     
     enum CancelID { case timer }
     
@@ -56,8 +65,21 @@ struct MealSelectionFeature {
             case let .dietsLoaded(diets):
                 state.dietList = IdentifiedArrayOf(uniqueElements: diets)
                 return .none
+                
+            case let .dietCellTapped(id):
+                if let diet = state.dietList[id: id] {
+                    return .send(.delegate(.selectDiet(diet: diet)))
+                }
+                return .none
+                
+            case .dismissButtonTapped:
+                return .send(.delegate(.dismissSheet))
+                
             case .binding(_):
                 return .none
+            case .delegate(_):
+                return .none
+
             }
         }
     }

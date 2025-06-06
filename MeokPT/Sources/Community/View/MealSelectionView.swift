@@ -9,7 +9,7 @@ struct MealSelectionView: View {
             LazyVStack(spacing: 12) {
                 ForEach(store.currentDietList) { diet in
                     Button {
-//                        store.send(.dietCellTapped(id: diet.id))
+                        store.send(.dietCellTapped(id: diet.id))
                     } label: {
                         CommunityDietSelectView(diet: diet)
                     }

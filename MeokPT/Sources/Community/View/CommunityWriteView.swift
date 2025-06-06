@@ -49,19 +49,23 @@ struct CommunityWriteView: View {
                     focusedField = nil
                     store.send(.presentMealSelectionSheet)
                 }) {
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color("App CardColor"))
-                        .frame(height: 160)
-                        .overlay(
-                            HStack {
-                                Image(systemName: "plus")
-                                Text("식단 선택")
-                            }
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(Color(.placeholderText))
-                        )
+                    if let diet = store.selectedDiet {
+                        CommunityDietSelectView(diet: diet)
+                    } else {
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(Color("App CardColor"))
+                            .frame(height: 160)
+                            .overlay(
+                                HStack {
+                                    Image(systemName: "plus")
+                                    Text("식단 선택")
+                                }
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .stroke(Color(.placeholderText))
+                            )
+                    }
                 }
                 .buttonStyle(PlainButtonStyle())
                 .contentShape(Rectangle())
