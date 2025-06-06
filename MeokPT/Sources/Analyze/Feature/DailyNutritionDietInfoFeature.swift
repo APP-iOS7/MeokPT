@@ -36,6 +36,8 @@ struct DailyNutritionDietInfoFeature {
         case dietDataDidChangeNotification
         
         case dietItemMealTypeChanged(id: DietItem.ID, mealType: MealType)
+        
+        case clearAllDietItems
 
         case _internalLoadInfoCompleted([NutritionItem], [DietItem])
         case _internalLoadInfoFailed(DataFetchError)
@@ -160,7 +162,26 @@ struct DailyNutritionDietInfoFeature {
                         }
                     }
                 }
-
+            case .clearAllDietItems:
+                state.isLoading = true
+                return .run { send in
+                    await MainActor.run {
+                        let context = modelContainer.mainContext
+                        let descriptor = FetchDescriptor<DietItem>()
+                        do {
+                            let items = try context.fetch(descriptor)
+                            for item in items {
+                                context.delete(item)
+                            }
+                            
+                            try context.save()
+                            print("모든 DietItem 삭제 성공")
+                            send(.loadInfo)
+                        } catch {
+                            print("DietItems 삭제 실패")
+                        }
+                    }
+                }
             case .nutritionDataDidChangeNotification:
                 print("DailyNutritionDietInfoFeature: received notification")
                 state.lastDataChangeTimestamp = Date()

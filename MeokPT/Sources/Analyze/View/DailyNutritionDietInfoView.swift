@@ -50,6 +50,7 @@ struct DailyNutritionDietInfoView: View {
                     }
                     ToolbarItem(placement: .cancellationAction) {
                         Button {
+                            store.send(.clearAllDietItems)
                         } label: {
                             Text("비우기")
                                 .foregroundStyle(Color("TextButton"))
