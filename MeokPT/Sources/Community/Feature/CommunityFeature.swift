@@ -29,12 +29,24 @@ struct CommunityFeature {
             lhs.searchText == rhs.searchText &&
             lhs.path == rhs.path
         }
-        
+        var columns = [
+            GridItem(.flexible()),
+            GridItem(.flexible())
+
+        ]
         var currentUser: User?
         var userProfile: UserProfile?
         
-        var columns: [GridItem] = Array(repeating: .init(.flexible(), spacing: 16), count: 2)
+        var postItems: [CommunityPost] = []
         var searchText: String = ""
+        var filteredPosts: [CommunityPost] {
+            if searchText.isEmpty {
+                return postItems
+            } else {
+                return postItems.filter { $0.title.localizedCaseInsensitiveContains(searchText) ||
+                    $0.dietName.localizedCaseInsensitiveContains(searchText) }
+            }
+        }
         
         var showAlert = false
         var showAlertToast = false
@@ -47,7 +59,10 @@ struct CommunityFeature {
     enum Action: BindableAction{
         case delegate(DelegateAction)
         case binding(BindingAction<State>)
+       
         case onAppear
+        case fetchCommunityPosts
+        case communityPostsLoaded(Result<[CommunityPost], Error>)
         
         case path(StackAction<CommunityPath.State, CommunityPath.Action>) // 스택 변경 및 요소 액션 처리
         case navigateToAddButtonTapped
@@ -68,6 +83,86 @@ struct CommunityFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                return .send(.fetchCommunityPosts)
+
+            case .fetchCommunityPosts:
+                return .run { send in
+                    do {
+                        let db = Firestore.firestore()
+                        
+                        // createdAt 기준으로 내림차순 정렬하여 최신 글부터 가져오기
+                        let querySnapshot = try await db.collection("community")
+                            .order(by: "createdAt", descending: true)
+                            .getDocuments()
+                        
+                        let posts: [CommunityPost] = querySnapshot.documents.compactMap { document in
+                            let data = document.data()
+                            
+                            // 필수 필드들 확인
+                            guard let title = data["title"] as? String,
+                                  let detail = data["detail"] as? String,
+                                  let dietName = data["dietName"] as? String,
+                                  let photoURL = data["photoURL"] as? String,
+                                  let userID = data["userID"] as? String,
+                                  let userNickname = data["userNickname"] as? String,
+                                  let userProfileImageURL = data["userProfileImageURL"] as? String,
+                                  let sharedCount = data["sharedCount"] as? Int,
+                                  let createdAtTimestamp = data["createdAt"] as? Timestamp,
+                                  let foodListData = data["foodList"] as? [[String: Any]]
+                            else {
+                                print("필수 필드가 누락된 문서: \(document.documentID)")
+                                return nil
+                            }
+                            
+                            // foodList 변환
+                            let foodList: [CommunityFoodList] = foodListData.compactMap { foodData in
+                                guard let foodName = foodData["foodName"] as? String,
+                                      let amount = foodData["amount"] as? Double,
+                                      let kcal = foodData["kcal"] as? Double
+                                else {
+                                    return nil
+                                }
+                                
+                                return CommunityFoodList(
+                                    foodName: foodName,
+                                    amount: amount,
+                                    kcal: kcal,
+                                    carbohydrate: foodData["carbohydrate"] as? Double,
+                                    protein: foodData["protein"] as? Double,
+                                    fat: foodData["fat"] as? Double,
+                                    dietaryFiber: foodData["dietaryFiber"] as? Double,
+                                    sodium: foodData["sodium"] as? Double,
+                                    sugar: foodData["sugar"] as? Double
+                                )
+                            }
+                            
+                            return CommunityPost(
+                                sharedCount: sharedCount,
+                                createdAt: createdAtTimestamp.dateValue(),
+                                title: title,
+                                content: detail,
+                                dietName: dietName,
+                                photoURL: photoURL,
+                                userID: userID,
+                                userNickname: userNickname,
+                                userProfileImageURL: userProfileImageURL,
+                                foodList: foodList
+                            )
+                        }
+                        
+                        await send(.communityPostsLoaded(.success(posts)))
+                        
+                    } catch {
+                        await send(.communityPostsLoaded(.failure(error)))
+                    }
+                }
+                
+            case .communityPostsLoaded(.success(let posts)):
+                state.postItems = posts
+                return .none
+
+            case .communityPostsLoaded(.failure(let error)):
+                print("커뮤니티 포스트 로딩 실패: \(error)")
                 return .none
                 
             case .navigateToAddButtonTapped:
@@ -143,10 +238,13 @@ struct CommunityFeature {
                 state.isSuccess = true
                 state.toastMessage = "작성 글을 게시하였습니다."
                 state.showAlertToast = true
-                return .run { send in
-                    try await Task.sleep(for: .seconds(3))
-                    await send(.hideToast)
-                }
+                return .merge(
+                    .run { send in
+                        try await Task.sleep(for: .seconds(3))
+                        await send(.hideToast)
+                    },
+                    .send(.fetchCommunityPosts)
+                )
                 
             case .postSaveError(let error):
                 state.path.removeAll()

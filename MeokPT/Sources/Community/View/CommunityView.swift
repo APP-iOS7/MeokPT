@@ -1,6 +1,7 @@
 import SwiftUI
 import ComposableArchitecture
 import AlertToast
+import Kingfisher
 
 struct CommunityView: View {
     @Bindable var store: StoreOf<CommunityFeature>
@@ -8,7 +9,24 @@ struct CommunityView: View {
     var body: some View {
         NavigationStack (path: $store.scope(state: \.path, action: \.path)){
             VStack {
+                if store.postItems.isEmpty {
+                    VStack {
+                        ProgressView()
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                    }
+                } else {
+                    ScrollView {
+                        LazyVGrid(columns: store.columns, spacing: 8) {
+                            ForEach(store.filteredPosts) { post in
+                                CommunityPostCard(post: post)
+                            }
+                        }
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 8)
+                    }
+                }
             }
+            .onAppear { store.send(.onAppear) }
             .navigationTitle("커뮤니티")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -46,6 +64,69 @@ struct CommunityView: View {
             )
         }
         .tint(Color("TextButton"))
+    }
+}
+
+struct CommunityPostCard: View {
+    let post: CommunityPost
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            imageDisplayView
+                .frame(height: 150)
+                .frame(maxWidth: .infinity, alignment: .center)
+
+            Text(post.title)
+                .font(.headline)
+                .fontWeight(.medium)
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+                .frame(minHeight: UIFont.preferredFont(forTextStyle: .headline).lineHeight * 2)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Text(post.dietName)
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .lineLimit(1)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(16)
+        .background(Color("App CardColor"))
+        .cornerRadius(20)
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(Color(uiColor: UIColor.separator), lineWidth: 1)
+        )
+    }
+    
+    private var imageDisplayView: some View {
+        Group {
+            if !post.photoURL.isEmpty {
+                KFImage(URL(string: post.photoURL))
+                    .placeholder {
+                        Image(systemName: "photo")
+                            .foregroundStyle(Color.primary.opacity(0.7))
+                    }
+                    .resizable()
+                    .scaledToFit()
+                    .clipped()
+                    .cornerRadius(10)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color(.placeholderText))
+                    )
+            } else {
+                Image("CommunityEmptyImage")
+                    .resizable()
+                    .scaledToFit()
+                    .clipped()
+                    .cornerRadius(10)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color(.placeholderText))
+                    )
+            }
+        }
     }
 }
 
