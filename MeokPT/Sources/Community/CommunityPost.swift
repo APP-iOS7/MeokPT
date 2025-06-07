@@ -35,3 +35,54 @@ struct CommunityFoodList: Equatable {
     var sodium: Double?
     var sugar: Double?
 }
+
+// 더미 CommunityFoodList 배열
+let dummyFoodList: [CommunityFoodList] = [
+    CommunityFoodList(
+        foodName: "닭가슴살",
+        amount: 150.0,
+        kcal: 165.0,
+        carbohydrate: 0.0,
+        protein: 31.0,
+        fat: 3.6,
+        dietaryFiber: nil,
+        sodium: 74.0,
+        sugar: 0.0
+    ),
+    CommunityFoodList(
+        foodName: "현미밥",
+        amount: 200.0,
+        kcal: 220.0,
+        carbohydrate: 45.0,
+        protein: 4.0,
+        fat: 1.5,
+        dietaryFiber: 3.5,
+        sodium: 5.0,
+        sugar: 0.5
+    ),
+    CommunityFoodList(
+        foodName: "샐러드",
+        amount: 100.0,
+        kcal: 50.0,
+        carbohydrate: 10.0,
+        protein: 2.0,
+        fat: 0.5,
+        dietaryFiber: 4.0,
+        sodium: 10.0,
+        sugar: 2.0
+    )
+]
+
+// 더미 CommunityPost
+let dummyCommunityPost = CommunityPost(
+    sharedCount: 5,
+    createdAt: Date(),
+    title: "오늘의 건강 식단",
+    content: "닭가슴살과 현미밥, 샐러드로 건강한 다이어트 식단을 만들어봤어요!",
+    dietName: "다이어트 식단",
+    photoURL: "https://example.com/photo.jpg",
+    userID: "user123",
+    userNickname: "헬스짱",
+    userProfileImageURL: "https://example.com/profile.jpg",
+    foodList: dummyFoodList
+)

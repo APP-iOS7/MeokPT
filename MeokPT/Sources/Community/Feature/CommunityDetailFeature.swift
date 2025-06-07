@@ -2,12 +2,10 @@ import ComposableArchitecture
 import SwiftUI
 
 @Reducer
-struct CommunityDetaillFeature {
+struct CommunityDetailFeature {
     @ObservableState
     struct State: Equatable{
-        var postTitle: String
-        var postBody: String
-        var imageColor: Color
+        var communityPost: CommunityPost
     }
     
     enum Action: BindableAction {
@@ -22,8 +20,6 @@ struct CommunityDetaillFeature {
 
         Reduce { state, action in
             switch action {
-            case .binding(\.postTitle):
-                return .none
             case .onAppear:
                 return .none
             case .binding(_):

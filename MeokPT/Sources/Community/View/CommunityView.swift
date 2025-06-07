@@ -18,7 +18,10 @@ struct CommunityView: View {
                     ScrollView {
                         LazyVGrid(columns: store.columns, spacing: 8) {
                             ForEach(store.filteredPosts) { post in
-                                CommunityPostCard(post: post)
+                                Button(action: { store.send(.navigateToPostItemTapped(id: post.id)) }) {
+                                    CommunityPostCard(post: post)
+                                }
+                                .buttonStyle(.plain)
                             }
                         }
                         .padding(.horizontal, 24)
@@ -46,11 +49,12 @@ struct CommunityView: View {
             .background(Color("AppBackgroundColor"))
             .searchable(text: $store.searchText, prompt: "검색")
         } destination: { storeForElement in
-            switch storeForElement.state {
-            case .addPost:
-                if let AddStore = storeForElement.scope(state: \.addPost, action: \.addPost) {
-                    CommunityWriteView(store: AddStore)
-                }
+            switch storeForElement.case {
+            case .addPost(let writeStore):
+                CommunityWriteView(store: writeStore)
+                
+            case .detailPost(let detailStore):
+                CommunityDetailView(store: detailStore)
             }
         }
         .toast(isPresenting: Binding(

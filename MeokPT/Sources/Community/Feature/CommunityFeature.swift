@@ -4,30 +4,18 @@ import FirebaseFirestore
 import FirebaseAuth
 
 @Reducer
-struct CommunityPath {
-    @ObservableState
-    enum State: Equatable {
-        case addPost(CommunityWriteFeature.State)
-    }
-
-    enum Action {
-        case addPost(CommunityWriteFeature.Action)
-    }
-
-    var body: some Reducer<State, Action> {
-        Scope(state: \.addPost, action: \.addPost) {
-            CommunityWriteFeature()
-        }
-    }
-}
-
-@Reducer
 struct CommunityFeature {
+    
+    @Reducer
+    enum Path {
+        case addPost(CommunityWriteFeature)
+        case detailPost(CommunityDetailFeature)
+    }
+    
     @ObservableState
     struct State: Equatable{
         static func == (lhs: CommunityFeature.State, rhs: CommunityFeature.State) -> Bool {
-            lhs.searchText == rhs.searchText &&
-            lhs.path == rhs.path
+            lhs.searchText == rhs.searchText
         }
         var columns = [
             GridItem(.flexible()),
@@ -37,15 +25,12 @@ struct CommunityFeature {
         var currentUser: User?
         var userProfile: UserProfile?
         
-        var postItems: [CommunityPost] = []
+        var postItems: IdentifiedArrayOf<CommunityPost> = []
         var searchText: String = ""
+
         var filteredPosts: [CommunityPost] {
-            if searchText.isEmpty {
-                return postItems
-            } else {
-                return postItems.filter { $0.title.localizedCaseInsensitiveContains(searchText) ||
-                    $0.dietName.localizedCaseInsensitiveContains(searchText) }
-            }
+            searchText.isEmpty ? postItems.elements : postItems.filter { $0.title.localizedCaseInsensitiveContains(searchText) ||
+                $0.dietName.localizedCaseInsensitiveContains(searchText) }
         }
         
         var showAlert = false
@@ -53,7 +38,7 @@ struct CommunityFeature {
         var toastMessage = ""
         var isSuccess = false
         
-        var path = StackState<CommunityPath.State>()
+        var path = StackState<Path.State>()
     }
     
     enum Action: BindableAction{
@@ -64,8 +49,9 @@ struct CommunityFeature {
         case fetchCommunityPosts
         case communityPostsLoaded(Result<[CommunityPost], Error>)
         
-        case path(StackAction<CommunityPath.State, CommunityPath.Action>) // 스택 변경 및 요소 액션 처리
+        case path(StackActionOf<Path>)
         case navigateToAddButtonTapped
+        case navigateToPostItemTapped(id: UUID)
         case presentLogin
         
         case postSavedSuccessfully
@@ -158,7 +144,7 @@ struct CommunityFeature {
                 }
                 
             case .communityPostsLoaded(.success(let posts)):
-                state.postItems = posts
+                state.postItems = IdentifiedArrayOf(uniqueElements: posts)
                 return .none
 
             case .communityPostsLoaded(.failure(let error)):
@@ -175,6 +161,15 @@ struct CommunityFeature {
                 
             case .presentLogin:
                 return .send(.delegate(.presentLogin))
+                
+            case .navigateToPostItemTapped(let id):
+                if let post = state.postItems[id: id] {
+                    let detailState = CommunityDetailFeature.State(
+                        communityPost: post,
+                    )
+                    state.path.append(.detailPost(detailState))
+                }
+                return .none
                 
             case .path(.element(id: _, action: .addPost(.delegate(.createPost(let title, let content, let photoURL, let diet))))):
                 guard let currentUser = Auth.auth().currentUser else {
@@ -267,9 +262,7 @@ struct CommunityFeature {
                 return .none
             }
         }
-        .forEach(\.path, action: \.path) {
-            CommunityPath()
-        }
+        .forEach(\.path, action: \.path)
     }
 }
 
