@@ -17,6 +17,12 @@ struct CommunityView: View {
                         Image(systemName: "plus")
                             .foregroundStyle(Color("AppSecondaryColor"))
                     }
+                    .alert("글을 작성하려면 로그인이 필요합니다.", isPresented: $store.showAlert) {
+                        Button("취소", role: .cancel) {}
+                        Button("로그인") {
+                            store.send(.presentLogin)
+                        }
+                    }
                 }
             }
             .background(Color("AppBackgroundColor"))

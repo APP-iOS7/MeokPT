@@ -71,6 +71,9 @@ struct AppFeature {
         
         Reduce { state, action in
             switch action {
+            case .communityAction(.delegate(.presentLogin)):
+                return .send(.presentLoginFullScreenCover)
+
             case .myPageAction(.delegate(let myPageDelegateAction)):
                 switch myPageDelegateAction {
                 case .loginSignUpButtonTapped:
@@ -136,6 +139,8 @@ struct AppFeature {
                     }
                     state.myPageState.currentUser = user
                     state.myPageState.userProfile = state.userProfile
+                    state.communityState.currentUser = user
+                    state.communityState.userProfile = state.userProfile
                 } else {
                     if state.currentUser != nil {
                         clearUserData(&state)
@@ -144,6 +149,8 @@ struct AppFeature {
                     } else {
                         state.myPageState.currentUser = nil
                         state.myPageState.userProfile = nil
+                        state.communityState.currentUser = nil
+                        state.communityState.userProfile = nil
                     }
                 }
                 return .merge(effects)
@@ -157,6 +164,8 @@ struct AppFeature {
                 // MyPageFeature 상태 업데이트
                 state.myPageState.currentUser = user
                 state.myPageState.userProfile = nil
+                state.communityState.currentUser = user
+                state.communityState.userProfile = nil
                 
                 return .send(.fetchUserProfile(user.uid))
                             
@@ -165,6 +174,7 @@ struct AppFeature {
                 state.userProfile = profile
                 // MyPageFeature 상태 업데이트
                 state.myPageState.userProfile = profile
+                state.communityState.userProfile = profile
                 
                 if state.currentUser != nil && (profile.nickname == nil || profile.nickname?.isEmpty == true) {
                     return .run { send in
@@ -180,6 +190,7 @@ struct AppFeature {
                 state.userProfile = nil
                 // MyPageFeature 상태 업데이트
                 state.myPageState.userProfile = nil
+                state.communityState.userProfile = nil
                 
                 if state.currentUser != nil {
                      return .run { send in
@@ -294,4 +305,6 @@ private func clearUserData(_ state: inout AppFeature.State) {
     
     state.myPageState.currentUser = nil
     state.myPageState.userProfile = nil
+    state.communityState.currentUser = nil
+    state.communityState.userProfile = nil
 }

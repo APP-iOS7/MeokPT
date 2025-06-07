@@ -30,9 +30,13 @@ struct CommunityFeature {
             lhs.path == rhs.path
         }
         
+        var currentUser: User?
+        var userProfile: UserProfile?
+        
         var columns: [GridItem] = Array(repeating: .init(.flexible(), spacing: 16), count: 2)
         var searchText: String = ""
         
+        var showAlert = false
         var showAlertToast = false
         var toastMessage = ""
         var isSuccess = false
@@ -41,16 +45,22 @@ struct CommunityFeature {
     }
     
     enum Action: BindableAction{
+        case delegate(DelegateAction)
         case binding(BindingAction<State>)
         case onAppear
         
         case path(StackAction<CommunityPath.State, CommunityPath.Action>) // 스택 변경 및 요소 액션 처리
         case navigateToAddButtonTapped
+        case presentLogin
         
         case postSavedSuccessfully
         case postSaveError(Error)
         
         case hideToast
+    }
+    
+    enum DelegateAction: Equatable {
+        case presentLogin
     }
     
     var body: some ReducerOf<Self> {
@@ -61,14 +71,23 @@ struct CommunityFeature {
                 return .none
                 
             case .navigateToAddButtonTapped:
-                state.path.append(.addPost(CommunityWriteFeature.State()))
+                if state.currentUser == nil {
+                    state.showAlert = true
+                } else {
+                    state.path.append(.addPost(CommunityWriteFeature.State()))
+                }
                 return .none
+                
+            case .presentLogin:
+                return .send(.delegate(.presentLogin))
                 
             case .path(.element(id: _, action: .addPost(.delegate(.createPost(let title, let content, let photoURL, let diet))))):
                 guard let currentUser = Auth.auth().currentUser else {
                     return .send(.postSaveError(NSError(domain: "AuthError", code: 0, userInfo: [NSLocalizedDescriptionKey: "사용자가 로그인되어 있지 않습니다."])))
                 }
                 
+                let userNickname = state.userProfile?.nickname ?? ""
+                let userProfileImageURL = state.userProfile?.profileImageUrl ?? ""
                 let userID = currentUser.uid
                 let dietTitle = diet.title
                 let foodList = diet.foods.map { food in
@@ -91,6 +110,8 @@ struct CommunityFeature {
                         
                         // Firestore에 저장할 데이터 구성
                         let postData: [String: Any] = [
+                            "userNickname": userNickname,
+                            "userProfileImageURL": userProfileImageURL,
                             "sharedCount": 0,
                             "createdAt": Timestamp(date: Date()),
                             "userID": userID,
@@ -143,6 +164,8 @@ struct CommunityFeature {
             case .binding(_):
                 return .none
             case .path(_):
+                return .none
+            case .delegate(_):
                 return .none
             }
         }
