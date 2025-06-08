@@ -1,5 +1,7 @@
 import ComposableArchitecture
 import SwiftUI
+import SwiftData
+import FirebaseFirestore
 
 @Reducer
 struct CommunityDetailFeature {
@@ -52,12 +54,13 @@ struct CommunityDetailFeature {
     enum Action: BindableAction {
         case binding(BindingAction<State>)
         case getShareButtonTapped
-        
+        case dietCreated(CommunityPost)
+        case incrementShareCount(String)
         case hideToast
     }
     
-    enum CancelID { case timer }
-    
+    @Dependency(\.modelContainer) var modelContainer
+
     var body: some ReducerOf<Self> {
         BindingReducer()
 
@@ -67,9 +70,54 @@ struct CommunityDetailFeature {
                 // TODO: 식단 정보를 내 식단 리스트에 저장하는 로직, 로컬에 이 식단을 저장한 기록을 저장하고, 중복 방지
                 
                 state.showAlertToast = true
+                return .merge(
+                    .send(.dietCreated(state.communityPost)),
+                    .send(.incrementShareCount(state.communityPost.documentID)),
+                    .run { send in
+                        try await Task.sleep(for: .seconds(3))
+                        await send(.hideToast)
+                    }
+                )
+                
+            case .dietCreated(let communityPost):
                 return .run { send in
-                    try await Task.sleep(for: .seconds(3))
-                    await send(.hideToast)
+                    await MainActor.run {
+                        let foods: [Food] = communityPost.foodList.map { communityFood in
+                            Food(
+                                name: communityFood.foodName,
+                                amount: communityFood.amount,
+                                kcal: communityFood.kcal,
+                                carbohydrate: communityFood.carbohydrate,
+                                protein: communityFood.protein,
+                                fat: communityFood.fat,
+                                dietaryFiber: communityFood.dietaryFiber,
+                                sodium: communityFood.sodium,
+                                sugar: communityFood.sugar
+                            )
+                        }
+                        let context = modelContainer.mainContext
+                        let newDiet = Diet(title: communityPost.dietName, isFavorite: false, foods: foods)
+                        context.insert(newDiet)
+                        
+                        do {
+                            try context.save()
+                        } catch {
+                            print("SwiftData 저장 실패: \(error)")
+                        }
+                    }
+                }
+                
+            case .incrementShareCount(let id):
+                return .run { send in
+                    do {
+                        let db = Firestore.firestore()
+                        let userRef = db.collection("community").document(id)
+                        try await userRef.updateData([
+                            "sharedCount": FieldValue.increment(Int64(1))
+                        ])
+                    } catch {
+                        print("Firestore 업데이트 실패: \(error)")
+                    }
                 }
                 
             case .hideToast:

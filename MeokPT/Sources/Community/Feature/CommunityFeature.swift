@@ -94,7 +94,8 @@ struct CommunityFeature {
                                   let userProfileImageURL = data["userProfileImageURL"] as? String,
                                   let sharedCount = data["sharedCount"] as? Int,
                                   let createdAtTimestamp = data["createdAt"] as? Timestamp,
-                                  let foodListData = data["foodList"] as? [[String: Any]]
+                                  let foodListData = data["foodList"] as? [[String: Any]],
+                                  let documentID = data["documentID"] as? String
                             else {
                                 print("필수 필드가 누락된 문서: \(document.documentID)")
                                 return nil
@@ -124,6 +125,7 @@ struct CommunityFeature {
                             
                             return CommunityPost(
                                 sharedCount: sharedCount,
+                                documentID: documentID,
                                 createdAt: createdAtTimestamp.dateValue(),
                                 title: title,
                                 content: detail,
@@ -198,8 +200,12 @@ struct CommunityFeature {
                     do {
                         let db = Firestore.firestore()
                         
+                        let documentRef = db.collection("community").document()
+                        let documentID = documentRef.documentID
+                        
                         // Firestore에 저장할 데이터 구성
                         let postData: [String: Any] = [
+                            "documentID": documentID,
                             "userNickname": userNickname,
                             "userProfileImageURL": userProfileImageURL,
                             "sharedCount": 0,
@@ -213,12 +219,12 @@ struct CommunityFeature {
                         ]
                         
                         // 커뮤니티 포스트 저장
-                        let documentRef = try await db.collection("community").addDocument(data: postData)
+                        try await documentRef.setData(postData)
                         
                         // users 컬렉션의 postItems 업데이트
                         let userRef = db.collection("users").document(userID)
                         try await userRef.updateData([
-                            "postItems": FieldValue.arrayUnion([documentRef.documentID])
+                            "postItems": FieldValue.arrayUnion([documentID])
                         ])
                         
                         await send(.postSavedSuccessfully)
