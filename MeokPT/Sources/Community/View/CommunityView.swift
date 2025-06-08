@@ -76,9 +76,14 @@ struct CommunityPostCard: View {
     
     var body: some View {
         VStack(spacing: 8) {
-            imageDisplayView
+            Color.clear
                 .frame(height: 150)
-                .frame(maxWidth: .infinity, alignment: .center)
+                .overlay(imageDisplayView)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color(.placeholderText), lineWidth: 1)
+                )
 
             Text(post.title)
                 .font(.headline)
@@ -103,33 +108,20 @@ struct CommunityPostCard: View {
         )
     }
     
+    @ViewBuilder
     private var imageDisplayView: some View {
-        Group {
-            if !post.photoURL.isEmpty {
-                KFImage(URL(string: post.photoURL))
-                    .placeholder {
-                        Image(systemName: "photo")
-                            .foregroundStyle(Color.primary.opacity(0.7))
-                    }
-                    .resizable()
-                    .scaledToFit()
-                    .clipped()
-                    .cornerRadius(10)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color(.placeholderText))
-                    )
-            } else {
-                Image("CommunityEmptyImage")
-                    .resizable()
-                    .scaledToFit()
-                    .clipped()
-                    .cornerRadius(10)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color(.placeholderText))
-                    )
-            }
+        if !post.photoURL.isEmpty {
+            KFImage(URL(string: post.photoURL))
+                .placeholder {
+                    Image(systemName: "photo")
+                        .foregroundStyle(Color.primary.opacity(0.7))
+                }
+                .resizable()
+                .scaledToFill()
+        } else {
+            Image("CommunityEmptyImage")
+                .resizable()
+                .scaledToFill()
         }
     }
 }
