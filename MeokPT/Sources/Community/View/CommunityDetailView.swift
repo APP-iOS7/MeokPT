@@ -65,6 +65,9 @@ struct CommunityDetailView: View {
             }
             .padding(24)
         }
+        .onAppear {
+            store.send(.onAppear)
+        }
         .safeAreaInset(edge: .bottom) {
             VStack {
                 Button(action: {
@@ -91,8 +94,8 @@ struct CommunityDetailView: View {
             AlertToast(
                 displayMode: .banner(.pop),
                 type: .complete(Color("AppSecondaryColor")),
-                title: "내 식단 리스트에 추가하였습니다.",
-                subTitle: "\(store.communityPost.dietName)"
+                title: store.toastMessage,
+                subTitle: store.communityPost.dietName
             )
         }
         .navigationTitle(store.communityPost.title)

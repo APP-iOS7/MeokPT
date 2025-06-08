@@ -8,6 +8,9 @@ struct CommunityDetailFeature {
     @ObservableState
     struct State: Equatable{
         var communityPost: CommunityPost
+        var hasSharedBefore: Bool = false
+        var showAlertToast: Bool = false
+        var toastMessage: String = ""
         
         var formattedDate: String {
             let now = Date()
@@ -47,15 +50,16 @@ struct CommunityDetailFeature {
         var fat: Double {
             communityPost.foodList.compactMap { $0.fat }.reduce(0.0, +)
         }
-        
-        var showAlertToast: Bool = false
     }
     
     enum Action: BindableAction {
         case binding(BindingAction<State>)
+        case onAppear
+        case checkIfSharedBefore
         case getShareButtonTapped
         case dietCreated(CommunityPost)
         case incrementShareCount(String)
+        case recordSharedPost(String)
         case hideToast
     }
     
@@ -66,18 +70,43 @@ struct CommunityDetailFeature {
 
         Reduce { state, action in
             switch action {
-            case .getShareButtonTapped:
-                // TODO: 식단 정보를 내 식단 리스트에 저장하는 로직, 로컬에 이 식단을 저장한 기록을 저장하고, 중복 방지
+            case .onAppear:
+                return .send(.checkIfSharedBefore)
                 
-                state.showAlertToast = true
-                return .merge(
-                    .send(.dietCreated(state.communityPost)),
-                    .send(.incrementShareCount(state.communityPost.documentID)),
-                    .run { send in
-                        try await Task.sleep(for: .seconds(3))
-                        await send(.hideToast)
-                    }
-                )
+            case .checkIfSharedBefore:
+                return .run { [communityPost = state.communityPost] send in
+                    let hasShared = await checkIfPostSharedBefore(documentID: communityPost.documentID)
+                        await send(.binding(.set(\.hasSharedBefore, hasShared)))
+                }
+
+            case .getShareButtonTapped:
+                if state.hasSharedBefore {
+                    // 이미 공유했으면 카운트 증가 없이 식단 저장
+                    state.toastMessage = "내 식단 리스트에 다시 추가하였습니다."
+                    state.showAlertToast = true
+                    return .merge(
+                        .send(.dietCreated(state.communityPost)),
+                        .run { send in
+                            try await Task.sleep(for: .seconds(3))
+                            await send(.hideToast)
+                        }
+                    )
+                } else {
+                    // 처음 공유하면 카운트 증가, 식단 저장, 카운트 증가
+                    state.toastMessage = "내 식단 리스트에 추가하였습니다."
+                    state.showAlertToast = true
+                    state.hasSharedBefore = true
+                    state.communityPost.sharedCount += 1    // UI 업데이트
+                    return .merge(
+                        .send(.dietCreated(state.communityPost)),
+                        .send(.incrementShareCount(state.communityPost.documentID)),
+                        .send(.recordSharedPost(state.communityPost.documentID)),
+                        .run { send in
+                            try await Task.sleep(for: .seconds(3))
+                            await send(.hideToast)
+                        }
+                    )
+                }
                 
             case .dietCreated(let communityPost):
                 return .run { send in
@@ -120,12 +149,46 @@ struct CommunityDetailFeature {
                     }
                 }
                 
+            // 이 식단을 저장한 기록을 SwiftData에 저장
+            case .recordSharedPost(let documentID):
+                return .run { send in
+                    await MainActor.run {
+                        let context = modelContainer.mainContext
+                        let sharedRecord = SharedPostRecord(communityPostID: documentID, sharedAt: Date())
+                        context.insert(sharedRecord)
+                        
+                        do {
+                            try context.save()
+                        } catch {
+                            print("공유 기록 저장 실패: \(error)")
+                        }
+                    }
+                }
+                
             case .hideToast:
                 state.showAlertToast = false
                 return .none
                 
             case .binding(_):
                 return .none
+            }
+        }
+    }
+    
+    // 이전에 공유했는지 확인하는 함수
+    private func checkIfPostSharedBefore(documentID: String) async -> Bool {
+        return await MainActor.run {
+            let context = modelContainer.mainContext
+            let descriptor = FetchDescriptor<SharedPostRecord>(
+                predicate: #Predicate { $0.communityPostID == documentID }
+            )
+            
+            do {
+                let results = try context.fetch(descriptor)
+                return !results.isEmpty
+            } catch {
+                print("공유 기록 조회 실패: \(error)")
+                return false
             }
         }
     }
