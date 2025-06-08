@@ -80,9 +80,9 @@ let dummyCommunityPost = CommunityPost(
     title: "오늘의 건강 식단",
     content: "닭가슴살과 현미밥, 샐러드로 건강한 다이어트 식단을 만들어봤어요!",
     dietName: "다이어트 식단",
-    photoURL: "https://example.com/photo.jpg",
+    photoURL: "https://firebasestorage.googleapis.com:443/v0/b/meokpt-3648f.firebasestorage.app/o/community_images%2F5403C6CC-5957-488A-8726-BA00FB8F093B.jpg?alt=media&token=2892f1de-4848-4657-a20e-67e2c250e118",
     userID: "user123",
     userNickname: "헬스짱",
-    userProfileImageURL: "https://example.com/profile.jpg",
+    userProfileImageURL: "https://firebasestorage.googleapis.com:443/v0/b/meokpt-3648f.firebasestorage.app/o/profile_images%2FF6098CF1-087E-4C46-BA83-24F53E635A7F.jpg?alt=media&token=1e51a5cd-6e51-4c0d-9c26-0fe8679b850",
     foodList: dummyFoodList
 )
