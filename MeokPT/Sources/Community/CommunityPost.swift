@@ -14,6 +14,7 @@ struct CommunityPost: Identifiable, Equatable {
     
     let documentID: String
     let createdAt: Date
+    let updatedAt: Date?
     let title: String
     let content: String
     let dietName: String
@@ -78,7 +79,7 @@ let dummyFoodList: [CommunityFoodList] = [
 let dummyCommunityPost = CommunityPost(
     sharedCount: 5,
     documentID: "",
-    createdAt: Date(),
+    createdAt: Date(), updatedAt: nil,
     title: "오늘의 건강 식단",
     content: "닭가슴살과 현미밥, 샐러드로 건강한 다이어트 식단을 만들어봤어요!",
     dietName: "다이어트 식단",

@@ -8,8 +8,9 @@ struct CommunityEditView: View {
         case title, content
     }
     @FocusState private var focusedField: Field?
-    @Bindable var store: StoreOf<CommunityWriteFeature>
-    
+    @Bindable var store: StoreOf<CommunityEditFeature>
+    @Environment(\.dismiss) private var dismiss
+
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
@@ -129,7 +130,15 @@ struct CommunityEditView: View {
                 }
             }
             .padding(24)
-            .navigationTitle("글 수정")
+        }
+        .navigationTitle("글 수정")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("취소") {
+                    dismiss()
+                }
+            }
         }
         .onTapGesture {
             focusedField = nil
@@ -175,9 +184,11 @@ struct CommunityEditView: View {
 }
 
 #Preview {
-    CommunityWriteView(
-        store: Store(initialState: CommunityWriteFeature.State()) {
-            CommunityWriteFeature()
-        }
-    )
+    NavigationStack {
+        CommunityEditView(
+            store: Store(initialState: CommunityEditFeature.State(communityPost: dummyCommunityPost)) {
+                CommunityEditFeature()
+            }
+        )
+    }
 }

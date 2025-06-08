@@ -104,6 +104,9 @@ struct CommunityFeature {
                                 return nil
                             }
                             
+                            // updatedAt은 옵셔널로 처리
+                            let updatedAt: Date? = (data["updatedAt"] as? Timestamp)?.dateValue()
+                            
                             // foodList 변환
                             let foodList: [CommunityFoodList] = foodListData.compactMap { foodData in
                                 guard let foodName = foodData["foodName"] as? String,
@@ -130,6 +133,7 @@ struct CommunityFeature {
                                 sharedCount: sharedCount,
                                 documentID: documentID,
                                 createdAt: createdAtTimestamp.dateValue(),
+                                updatedAt: updatedAt,
                                 title: title,
                                 content: detail,
                                 dietName: dietName,

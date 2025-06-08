@@ -26,28 +26,38 @@ struct CommunityDetailFeature {
         
         var formattedDate: String {
             let now = Date()
-            let timeInterval = now.timeIntervalSince(communityPost.createdAt)
+            let targetDate = communityPost.updatedAt ?? communityPost.createdAt
+            let timeInterval = now.timeIntervalSince(targetDate)
             
             let minutes = Int(timeInterval / 60)
             let hours = Int(timeInterval / 3600)
             let days = Int(timeInterval / 86400)
             
+            var dateString: String
+            
             if minutes < 1 {
-                return "방금 전"
+                dateString = "방금 전"
             } else if minutes < 60 {
-                return "\(minutes)분 전"
+                dateString = "\(minutes)분 전"
             } else if hours < 24 {
-                return "\(hours)시간 전"
+                dateString = "\(hours)시간 전"
             } else if days <= 3 {
-                return "\(days)일 전"
+                dateString = "\(days)일 전"
             } else {
                 let dateFormatter: DateFormatter = {
                     let formatter = DateFormatter()
                     formatter.dateFormat = "M월 d일"
                     return formatter
                 }()
-                return dateFormatter.string(from: communityPost.createdAt)
+                dateString = dateFormatter.string(from: targetDate)
             }
+            
+            // updatedAt 이 존재하면 수정 표시 추가
+            if communityPost.updatedAt != nil {
+                dateString += " (수정)"
+            }
+            
+            return dateString
         }
         
         var kcal: Double {
@@ -194,8 +204,55 @@ struct CommunityDetailFeature {
                 return .none
                 
             case .updateButtonTapped:
-                state.editPostFullScreenCover = CommunityEditFeature.State()
-                return .send(.delegate(.updatePost(state.communityPost.documentID)))
+                state.editPostFullScreenCover = CommunityEditFeature.State(communityPost: state.communityPost)
+                return .none
+                
+            case .editPostFullScreenCover(.presented(.delegate(.updatePost(let documentID, let title, let content, let photoURL, let diet)))):
+                let updatedFoodList = diet.foods.map { food in
+                    CommunityFoodList(
+                        foodName: food.name,
+                        amount: food.amount,
+                        kcal: food.kcal,
+                        carbohydrate: food.carbohydrate,
+                        protein: food.protein,
+                        fat: food.fat,
+                        dietaryFiber: food.dietaryFiber,
+                        sodium: food.sodium,
+                        sugar: food.sugar
+                    )
+                }
+                
+                let updatedPost = CommunityPost(
+                    sharedCount: state.communityPost.sharedCount,
+                    documentID: documentID,
+                    createdAt: state.communityPost.createdAt,
+                    updatedAt: Date(),
+                    title: title,
+                    content: content,
+                    dietName: diet.title,
+                    photoURL: photoURL,
+                    userID: state.communityPost.userID,
+                    userNickname: state.communityPost.userNickname,
+                    userProfileImageURL: state.communityPost.userProfileImageURL,
+                    foodList: updatedFoodList,
+
+                )
+                state.communityPost = updatedPost // UI 업데이트
+                state.editPostFullScreenCover = nil
+                return .none
+                                
+            case .editPostFullScreenCover(.presented(.delegate(.updatePostFailure(let errorMessage)))):
+                state.toastMessage = errorMessage
+                state.showAlertToast = true
+                state.editPostFullScreenCover = nil
+                return .run { send in
+                    try await Task.sleep(for: .seconds(3))
+                    await send(.hideToast)
+                }
+                
+            case .editPostFullScreenCover(.dismiss):
+                state.editPostFullScreenCover = nil
+                return .none
 
             case .deleteButtonTapped:
                 state.showAlert = true
