@@ -58,6 +58,9 @@ struct CommunityFeature {
         case postSaveError(Error)
         
         case hideToast
+        
+        case postDeletedSuccessfully
+        case postDeleteError(Error)
     }
     
     enum DelegateAction: Equatable {
@@ -232,6 +235,55 @@ struct CommunityFeature {
                     } catch {
                         await send(.postSaveError(error))
                     }
+                }
+                
+            case .path(.element(id: _, action: .detailPost(.delegate(.deletePost(let docID))))):
+                state.path.removeAll()
+                return .run { send in
+                    do {
+                        let db = Firestore.firestore()
+                        guard let currentUser = Auth.auth().currentUser else {
+                            await send(.postDeleteError(NSError(domain: "AuthError", code: 0, userInfo: [NSLocalizedDescriptionKey: "사용자가 로그인되어 있지 않습니다."])))
+                            return
+                        }
+                        
+                        let userID = currentUser.uid
+                        
+                        // 1. community 컬렉션에서 게시글 삭제
+                        try await db.collection("community").document(docID).delete()
+                        
+                        // 2. users 컬렉션의 postItems 배열에서 해당 documentID 제거
+                        let userRef = db.collection("users").document(userID)
+                        try await userRef.updateData([
+                            "postItems": FieldValue.arrayRemove([docID])
+                        ])
+                        
+                        await send(.postDeletedSuccessfully)
+                        
+                    } catch {
+                        await send(.postDeleteError(error))
+                    }
+                }
+
+            case .postDeletedSuccessfully:
+                state.isSuccess = true
+                state.toastMessage = "게시글이 삭제되었습니다."
+                state.showAlertToast = true
+                return .merge(
+                    .run { send in
+                        try await Task.sleep(for: .seconds(3))
+                        await send(.hideToast)
+                    },
+                    .send(.fetchCommunityPosts) // 삭제 후 게시글 목록 새로고침
+                )
+
+            case .postDeleteError(let error):
+                print("게시글 삭제 실패: \(error.localizedDescription)")
+                state.toastMessage = "게시글 삭제에 실패했습니다."
+                state.showAlertToast = true
+                return .run { send in
+                    try await Task.sleep(for: .seconds(3))
+                    await send(.hideToast)
                 }
                 
             case .postSavedSuccessfully:

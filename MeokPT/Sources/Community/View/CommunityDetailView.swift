@@ -68,6 +68,20 @@ struct CommunityDetailView: View {
         .onAppear {
             store.send(.onAppear)
         }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                if store.isMyPost {
+                    Menu {
+                        Button("수정", role: .none, action: { store.send(.updateButtonTapped) })
+                        Button("삭제", role: .destructive, action: { store.send(.deleteButtonTapped) })
+                    } label: {
+                        Image(systemName: "ellipsis")
+                            .foregroundStyle(Color("TextButton"))
+                            .frame(width: 24, height: 24)
+                    }
+                }
+            }
+        }
         .safeAreaInset(edge: .bottom) {
             VStack {
                 Button(action: {
@@ -87,6 +101,12 @@ struct CommunityDetailView: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 8)
         }
+        .alert("게시글을 삭제합니다.", isPresented: $store.showAlert) {
+            Button("취소", role: .cancel) {}
+            Button("삭제", role: .destructive) {
+                store.send(.deletePost)
+            }
+        }
         .toast(isPresenting: Binding(
             get: { store.showAlertToast },
             set: { _ in }
@@ -101,6 +121,13 @@ struct CommunityDetailView: View {
         .navigationTitle(store.communityPost.title)
         .navigationBarTitleDisplayMode(.inline)
         .background(Color("AppBackgroundColor"))
+        .fullScreenCover(
+            item: $store.scope(state: \.editPostFullScreenCover, action: \.editPostFullScreenCover)) { store in
+            NavigationStack {
+                CommunityEditView(store: store)
+                    .tint(Color("TextButton"))
+            }
+        }
     }
 }
 

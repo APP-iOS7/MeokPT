@@ -2,15 +2,27 @@ import ComposableArchitecture
 import SwiftUI
 import SwiftData
 import FirebaseFirestore
+import FirebaseAuth
 
 @Reducer
 struct CommunityDetailFeature {
     @ObservableState
     struct State: Equatable{
+        @Presents var editPostFullScreenCover: CommunityEditFeature.State?
+        
         var communityPost: CommunityPost
         var hasSharedBefore: Bool = false
+        var showAlert: Bool = false
         var showAlertToast: Bool = false
         var toastMessage: String = ""
+        
+        var isMyPost: Bool {
+            if let currentUser = Auth.auth().currentUser {
+                return currentUser.uid == communityPost.userID
+            } else {
+                return false
+            }
+        }
         
         var formattedDate: String {
             let now = Date()
@@ -61,6 +73,18 @@ struct CommunityDetailFeature {
         case incrementShareCount(String)
         case recordSharedPost(String)
         case hideToast
+        case updateButtonTapped
+        case deleteButtonTapped
+        case deletePost
+        
+        case editPostFullScreenCover(PresentationAction<CommunityEditFeature.Action>)
+        
+        case delegate(DelegateAction)
+    }
+    
+    enum DelegateAction: Equatable {
+        case updatePost(String)
+        case deletePost(String)
     }
     
     @Dependency(\.modelContainer) var modelContainer
@@ -169,10 +193,27 @@ struct CommunityDetailFeature {
                 state.showAlertToast = false
                 return .none
                 
+            case .updateButtonTapped:
+                state.editPostFullScreenCover = CommunityEditFeature.State()
+                return .send(.delegate(.updatePost(state.communityPost.documentID)))
+
+            case .deleteButtonTapped:
+                state.showAlert = true
+                return .none
+                
+            case .deletePost:
+                return .send(.delegate(.deletePost(state.communityPost.documentID)))
+                
             case .binding(_):
+                return .none
+            case .delegate(_):
+                return .none
+
+            case .editPostFullScreenCover(_):
                 return .none
             }
         }
+        .ifLet(\.$editPostFullScreenCover, action: \.editPostFullScreenCover) { CommunityEditFeature() }
     }
     
     // 이전에 공유했는지 확인하는 함수
