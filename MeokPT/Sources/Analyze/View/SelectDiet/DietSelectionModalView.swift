@@ -48,7 +48,7 @@ struct DietSelectionModalView: View {
                     } label: {
                         Text("추가")
                     }
-                    .disabled(store.selectedDiets.isEmpty)
+                    .disabled(store.selectedDiets.isEmpty || store.filteredDiets.isEmpty)
                     .foregroundStyle(Color("AppTintColor"))
                     .fontWeight(.semibold)
                 }
