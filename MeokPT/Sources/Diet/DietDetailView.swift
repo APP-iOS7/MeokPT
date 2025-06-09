@@ -187,6 +187,7 @@ private struct FoodItemRow: View {
                 }
                 
                 foodContentView
+                    .contentShape(Rectangle())
                     .onTapGesture {
                         if editMode?.wrappedValue.isEditing != true {
                             onTap()
