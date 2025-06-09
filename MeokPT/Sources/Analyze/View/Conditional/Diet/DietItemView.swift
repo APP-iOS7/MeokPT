@@ -34,13 +34,15 @@ struct DietItemView: View {
             .padding(24)
             .background(
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(Color("App CardColor"))
+                    .fill(Color("AppCellBackgroundColor"))
                     .overlay(
                         RoundedRectangle(cornerRadius: 20)
                             .stroke(Color.gray, lineWidth: 1)
                     )
             )
-            .padding(.horizontal, 24)
+            .padding([.bottom, .horizontal], 24)
+            .padding(.top, 5)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
         }
     }
 }

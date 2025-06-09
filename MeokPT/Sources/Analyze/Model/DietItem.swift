@@ -80,6 +80,20 @@ extension DietItem {
     var formattedKcalOnly: String {
         return String(format: "%.0f \(NutritionType.calorie.unit)", self.kcal)
     }
+    
+    static func fromDiet(_ diet: Diet) -> DietItem {
+        return DietItem(name: diet.title,
+                        mealTypeRawValue: MealType.none.rawValue,
+                        kcal: diet.kcal,
+                        carbohydrate: diet.carbohydrate ?? 0.0,
+                        protein: diet.protein ?? 0.0,
+                        fat: diet.fat ?? 0.0,
+                        dietaryFiber: diet.dietaryFiber ?? 0.0,
+                        sugar: diet.sugar ?? 0.0,
+                        sodium: diet.sodium ?? 0.0,
+                        isFavorite: diet.isFavorite
+        )
+    }
 }
 
 let mockDietItemsForPreview = [

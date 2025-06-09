@@ -53,6 +53,7 @@ struct DailyNutritionDietInfoView: View {
                     }
                     ToolbarItem(placement: .cancellationAction) {
                         Button {
+                            store.send(.clearAllDietItems)
                         } label: {
                             Text("비우기")
                                 .foregroundStyle(Color("TextButton"))
@@ -78,7 +79,7 @@ struct DailyNutritionDietInfoView: View {
         }
         
         .onAppear {
-            if store.nutritionItems == nil && store.dietItems == nil && !store.isLoading {
+            if store.nutritionItems == nil && !store.isLoading {
                 print("DailyNutritionDietInfoView: Initial load on appear.")
                 store.send(.loadInfo)
             }
@@ -98,7 +99,7 @@ struct DailyNutritionDietInfoView: View {
     @ViewBuilder
     private func content(for store: Store<DailyNutritionDietInfoFeature.State, DailyNutritionDietInfoFeature.Action>) -> some View {
         VStack {
-            if store.isLoading && store.nutritionItems == nil && store.dietItems == nil {
+            if store.isLoading {
                 ProgressView("로딩 중입니다…")
                     .padding()
             } else if let nutritionItems = store.nutritionItems {
@@ -111,16 +112,15 @@ struct DailyNutritionDietInfoView: View {
                 } else {
                     DailyNutritionInfoView(nutritionItems: nutritionItems)
                     
-                    if let dietItems = store.dietItems {
-                        if dietItems.isEmpty {
+                    if let dietItem = store.dietItems {
+                        if dietItem.isEmpty {
                             DietEmptyView()
                         } else {
                             DietNotEmptyView(
-                                dietItems: dietItems,
-                                onMealTypeChange: { itemId, newMealType in
-                                    store.send(.dietItemMealTypeChanged(id: itemId,mealType: newMealType))
-                                }
-                            )
+                                dietItems: dietItem,
+                                onMealTypeChange: { id, newMealType in
+                                    store.send(.dietItemMealTypeChanged(id: id, mealType: newMealType))
+                                })
                         }
                     } else {
                         DietEmptyView()
