@@ -4,9 +4,20 @@ import Foundation
 
 // ModelContainer를 의존성으로 주입
 private enum ModelContainerKey: DependencyKey {
+    static let schema = Schema([
+        BodyInfo.self,
+        NutritionItem.self,
+        DietItem.self,
+        Diet.self,
+        Food.self,
+        SharedPostRecord.self
+    ])
+    
     static var liveValue: ModelContainer {
         do {
-            return try ModelContainer(for: BodyInfo.self, NutritionItem.self, DietItem.self, Diet.self, Food.self, SharedPostRecord.self)
+            return try ModelContainer(
+                for: schema
+            )
         } catch {
             fatalError("Failed to create ModelContainer: \(error.localizedDescription)")
         }
@@ -15,7 +26,7 @@ private enum ModelContainerKey: DependencyKey {
     static var testValue: ModelContainer {
         do {
             return try ModelContainer(
-                for: BodyInfo.self, NutritionItem.self, DietItem.self, Diet.self, Food.self, SharedPostRecord.self,
+                for: schema,
                 configurations: ModelConfiguration(isStoredInMemoryOnly: true)
             )
         } catch {
