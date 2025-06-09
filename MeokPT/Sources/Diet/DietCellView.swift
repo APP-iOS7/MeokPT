@@ -51,10 +51,8 @@ struct DietCellView: View {
             HStack {
                 if (diet.foods.isEmpty) {
                     EmptyNutrientView()
-                        .padding(.horizontal)
                 } else {
                     NutrientView(carbohydrate: diet.carbohydrate, protein: diet.protein, fat: diet.fat)
-                        .padding(.horizontal)
                 }
             }
         }
