@@ -14,7 +14,10 @@ struct CommunityDetailView: View {
                     KFImage(URL(string: store.communityPost.userProfileImageURL))
                         .placeholder {
                             Image(systemName: "person.circle.fill")
-                                .foregroundStyle(Color.primary.opacity(0.7))
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .foregroundStyle(Color("AppSecondaryColor"))
+                                .frame(width: 55, height: 55)
                         }
                         .resizable()
                         .aspectRatio(contentMode: .fill)
