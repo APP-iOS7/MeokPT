@@ -5,7 +5,7 @@ import Kingfisher
 struct MyPageView: View {
     
     @State private var showAlert = false
-    let store: StoreOf<MyPageFeature>
+    @Bindable var store: StoreOf<MyPageFeature>
 
     var body: some View {
         NavigationStack {
@@ -69,7 +69,9 @@ struct MyPageView: View {
                 // MARK: - 내 활동
                 if store.currentUser != nil {
                     Section(header: Text("내 활동")) {
-                        NavigationLink(destination: MyPostsView()) {
+                        NavigationLink {
+                            MyPostsView(store: Store(initialState: MyPostsFeature.State()) { MyPostsFeature() })
+                        } label: {
                             Label("내가 쓴 글", systemImage: "pencil")
                         }
                     }

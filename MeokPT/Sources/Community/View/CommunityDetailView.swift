@@ -5,6 +5,7 @@ import AlertToast
 
 struct CommunityDetailView: View {
     @Bindable var store: StoreOf<CommunityDetailFeature>
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         ScrollView {
@@ -12,7 +13,7 @@ struct CommunityDetailView: View {
                 HStack {
                     KFImage(URL(string: store.communityPost.userProfileImageURL))
                         .placeholder {
-                            Image(systemName: "photo")
+                            Image(systemName: "person.circle.fill")
                                 .foregroundStyle(Color.primary.opacity(0.7))
                         }
                         .resizable()
@@ -104,7 +105,15 @@ struct CommunityDetailView: View {
         .alert("게시글을 삭제합니다.", isPresented: $store.showAlert) {
             Button("취소", role: .cancel) {}
             Button("삭제", role: .destructive) {
-                store.send(.deletePost)
+                switch store.navigationSource {
+                case .communityMain:
+                    store.send(.deletePost)
+                case .myPosts:
+                    dismiss()
+                    store.send(.deletePostInMyPosts(store.communityPost.documentID))
+                case .none:
+                    store.send(.deletePost)
+                }
             }
         }
         .toast(isPresenting: Binding(

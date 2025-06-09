@@ -6,10 +6,17 @@ import FirebaseAuth
 
 @Reducer
 struct CommunityDetailFeature {
+    
+    enum NavigationSource {
+        case communityMain
+        case myPosts
+    }
+    
     @ObservableState
     struct State: Equatable{
         @Presents var editPostFullScreenCover: CommunityEditFeature.State?
-        
+        @Presents var navigationSource: NavigationSource?
+
         var communityPost: CommunityPost
         var hasSharedBefore: Bool = false
         var showAlert: Bool = false
@@ -85,6 +92,7 @@ struct CommunityDetailFeature {
         case hideToast
         case updateButtonTapped
         case deleteButtonTapped
+        case deletePostInMyPosts(String)
         case deletePost
         
         case editPostFullScreenCover(PresentationAction<CommunityEditFeature.Action>)
@@ -257,6 +265,29 @@ struct CommunityDetailFeature {
             case .deleteButtonTapped:
                 state.showAlert = true
                 return .none
+                
+            case .deletePostInMyPosts(let docID):
+                return .run { send in
+                    do {
+                        let db = Firestore.firestore()
+                        guard let currentUser = Auth.auth().currentUser else {
+                            return
+                        }
+                        
+                        let userID = currentUser.uid
+                        
+                        // 1. community 컬렉션에서 게시글 삭제
+                        try await db.collection("community").document(docID).delete()
+                        
+                        // 2. users 컬렉션의 postItems 배열에서 해당 documentID 제거
+                        let userRef = db.collection("users").document(userID)
+                        try await userRef.updateData([
+                            "postItems": FieldValue.arrayRemove([docID])
+                        ])
+                    } catch {
+                        print("게시글 삭제 실패: \(error.localizedDescription)")
+                    }
+                }
                 
             case .deletePost:
                 return .send(.delegate(.deletePost(state.communityPost.documentID)))
