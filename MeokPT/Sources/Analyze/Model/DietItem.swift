@@ -100,7 +100,7 @@ extension DietItem {
     func formattedNutrientSafe(for type: NutritionType) -> String {
         let value = nutrientValue(for: type)
 
-        guard !value.isNaN else { return "--.- \(type.unit)" }
+        guard !value.isNaN else { return "--.-" }
 
         let numberFormatter = NumberFormatter()
         numberFormatter.numberStyle = .decimal
@@ -113,12 +113,12 @@ extension DietItem {
 
     var formattedKcalOnlySafe: String {
         let value = self.kcal
-        guard !value.isNaN else { return "-- kcal" }
+        guard !value.isNaN else { return "---" }
 
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.maximumFractionDigits = 0
-        return "\(formatter.string(from: NSNumber(value: value)) ?? "--") \(NutritionType.calorie.unit)"
+        return "\(formatter.string(from: NSNumber(value: value)) ?? "--")"
     }
 }
 
