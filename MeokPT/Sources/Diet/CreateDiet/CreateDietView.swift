@@ -216,10 +216,8 @@ struct FoodItemRowView: View {
             Text("\(foodInfo.calorie, specifier: "%.0f") kcal").font(.body)
                 .padding(.horizontal)
                 .padding(.top, -8)
-            Spacer().frame(height: 12)
+            Spacer().frame(height: 16)
             NutrientView(carbohydrate: foodInfo.carbohydrate, protein: foodInfo.protein, fat: foodInfo.fat)
-                .frame(height: 47)
-                .padding(.horizontal,24)
         }
         .padding(.vertical, 24)
     }

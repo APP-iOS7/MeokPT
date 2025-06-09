@@ -12,15 +12,15 @@ struct EmptyNutrientView: View {
     var body: some View {
         HStack {
             EachNutrientView(name: "탄수화물")
-            Spacer()
+                .frame(maxWidth: .infinity)
             Divider()
-            Spacer()
             EachNutrientView(name: "단백질")
-            Spacer()
+                .frame(maxWidth: .infinity)
             Divider()
-            Spacer()
             EachNutrientView(name: "지방")
+                .frame(maxWidth: .infinity)
         }
+        .frame(maxWidth: .infinity)
     }
 }
 
@@ -33,7 +33,7 @@ private struct EachNutrientView: View {
                 .font(.caption)
                 .foregroundColor(Color("AppSecondaryColor"))
             Spacer().frame(height:4)
-            Text("--.-g")
+            Text("--.-")
                 .font(.body)
         }
     }
