@@ -46,7 +46,7 @@ struct BodyNutritionContainerView: View {
                                         NutritionRowData(type: item.type, value: String(item.max))
                                     }
                                     
-                                    self.nutritionStore.send(.setSaveNutritionRows(newRows, self.modelContext))
+                                    self.nutritionStore.send(.setSaveNutritionRows(newRows))
                                     print("DailyNutritionFeature의 rows가 새롭게 계산된 값으로 업데이트 및 저장되었습니다.")
                                 } else {
                                     print("BodyInfo 저장 완료. DailyNutritionView가 수동 입력 모드이므로 현재는 재계산하지 않습니다.")
@@ -77,9 +77,9 @@ struct BodyNutritionContainerView: View {
                                     let newRows = generateNutritionItems(from: nutritionValues).map {
                                         NutritionRowData(type: $0.type, value: String($0.max))
                                     }
-                                    store.send(.setSaveNutritionRows(newRows, self.modelContext))
+                                    store.send(.setSaveNutritionRows(newRows))
                                 } else {
-                                    store.send(.saveCurrentManualEntries(self.modelContext))
+                                    store.send(.saveCurrentManualEntries)
                                 }
                             }
                         )
@@ -99,7 +99,7 @@ struct BodyNutritionContainerView: View {
                 }
                 .background(Color("AppBackgroundColor"))
                 .onAppear {
-                    bodyInfoStore.send(.loadSavedData(modelContext))
+                    bodyInfoStore.send(.loadSavedData)
                 }
                 .tint(Color("TextButton"))
     }

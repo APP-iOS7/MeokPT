@@ -18,18 +18,25 @@ struct DietSelectionModalView: View {
             ZStack {
                 Color("AppBackgroundColor")
                 VStack {
-                    Picker("옵션 선택", selection: $selectedOption) {
+                    Picker("옵션 선택", selection: $store.currentFilter.sending(\.setFilter)) {
                         ForEach(Options.allCases, id: \.self) { option in
                             Text(option.rawValue).tag(option)
-                            
                         }
                     }
                     .pickerStyle(.segmented)
                     .fixedSize()
                     .padding()
                     
-                    Spacer()
-                    DietItemListView()
+                    if store.isLoading {
+                        ProgressView()
+                        Spacer()
+                    } else if let errorMessage = store.errorMessage {
+                        Text("오류: \(errorMessage)")
+                            .foregroundStyle(.red)
+                        Spacer()
+                    } else {
+                        DietItemListView(store: store)
+                    }
                 }
             }
             .navigationTitle("식단 선택")
@@ -37,10 +44,12 @@ struct DietSelectionModalView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button {
-                        
+                        store.send(.addDietButtonTapped)
                     } label: {
                         Text("추가")
                     }
+                    .disabled(store.selectedDiets.isEmpty)
+                    .foregroundStyle(Color("AppTintColor"))
                     .fontWeight(.semibold)
                 }
                 
@@ -51,6 +60,9 @@ struct DietSelectionModalView: View {
                         Text("취소")
                     }
                 }
+            }
+            .onAppear {
+                store.send(.loadDiets)
             }
         }
     }
