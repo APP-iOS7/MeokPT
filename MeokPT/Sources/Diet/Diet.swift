@@ -105,7 +105,7 @@ final class Diet: Identifiable, Equatable, Hashable {
             formatString = "%.0f %@"
         }
         
-        guard let value else { return "--.- \(type.unit)" }
+        guard let value else { return "--.-" }
         return String(format: formatString, value, type.unit)
     }
 
