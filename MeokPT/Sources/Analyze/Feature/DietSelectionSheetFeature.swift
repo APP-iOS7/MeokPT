@@ -1,5 +1,6 @@
 import ComposableArchitecture
 import SwiftData
+import Foundation
 
 struct DietSelectionSheetFeature: Reducer {
     @ObservableState
@@ -106,6 +107,25 @@ struct DietSelectionSheetFeature: Reducer {
                         let dietItem = DietItem.fromDiet(diet)
                         context.insert(dietItem)
                         
+                        for type in NutritionType.allCases {
+                            let amountToAdd = dietItem.nutrientValue(for: type)
+                            let raw = type.rawValue
+                            
+                            let descriptor = FetchDescriptor<NutritionItem>(
+                                predicate: #Predicate { $0.typeRawValue == raw }
+                            )
+                            
+                            if let existing = try? context.fetch(descriptor).first {
+                                existing.value += Int(amountToAdd)
+                            } else {
+                                let newItem = NutritionItem(
+                                    type: type,
+                                    value: Int(amountToAdd),
+                                    max: 0
+                                )
+                                context.insert(newItem)
+                            }
+                        }
                         print("\(dietItem.name)")
                     }
                     

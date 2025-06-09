@@ -167,15 +167,21 @@ struct DailyNutritionDietInfoFeature {
                 return .run { send in
                     await MainActor.run {
                         let context = modelContainer.mainContext
-                        let descriptor = FetchDescriptor<DietItem>()
                         do {
-                            let items = try context.fetch(descriptor)
-                            for item in items {
+                            let dietDescriptor = FetchDescriptor<DietItem>()
+                            let dietItems = try context.fetch(dietDescriptor)
+                            for item in dietItems {
                                 context.delete(item)
                             }
                             
+                            let nutritionDescriptor = FetchDescriptor<NutritionItem>()
+                            let nutritionItems = try context.fetch(nutritionDescriptor)
+                            for item in nutritionItems {
+                                item.value = 0
+                            }
+                            
                             try context.save()
-                            print("모든 DietItem 삭제 성공")
+                            print("모든 DietItem 삭제 성공 및 NutritionItems 초기화")
                             send(.loadInfo)
                         } catch {
                             print("DietItems 삭제 실패")
