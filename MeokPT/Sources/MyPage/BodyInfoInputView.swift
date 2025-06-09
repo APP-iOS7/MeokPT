@@ -87,7 +87,7 @@ struct BodyInfoInputView: View {
                     )
                 }
                 .padding(.horizontal, 24)
-                .padding(.top, 30)
+                .padding(.top, 16)
             }
             .toolbar {
                 ToolbarItemGroup(placement: .keyboard) {
