@@ -83,6 +83,7 @@ struct DailyNutritionView: View {
             .buttonStyle(PlainButtonStyle())
             .contentShape(Rectangle())
             .padding(.horizontal, 24)
+            .padding(.bottom, 8)
         }
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
@@ -92,7 +93,6 @@ struct DailyNutritionView: View {
                 }
             }
         }
-        .toolbar(.hidden, for: .tabBar)
         .onAppear {
             store.send(.onAppear)
             store.send(.loadSavedData)

@@ -119,11 +119,7 @@ struct BodyInfoInputView: View {
                 .buttonStyle(PlainButtonStyle())
                 .contentShape(Rectangle())
                 .padding(.horizontal, 24)
-//                .alert("신체정보가 저장되었습니다.", isPresented: $showAlert) {
-//                    Button("확인", role: .cancel) {}
-//                } message: {
-//                    Text("하루 권장 섭취량을 업데이트 합니다.")
-//                }
+                .padding(.bottom, 8)
             }
             .toast(isPresenting: Binding(
                 get: { store.showAlertToast },
@@ -133,10 +129,11 @@ struct BodyInfoInputView: View {
                     displayMode: .banner(.pop),
                     type: .complete(Color("AppSecondaryColor")),
                     title: "신체정보가 저장되었습니다.",
-                    subTitle: "하루 권장 섭취량을 업데이트 합니다."
+                    subTitle: store.isDailyNutritionManualInputMode ?
+                        "수동 입력 모드이므로 권장 섭취량을 유지합니다." :
+                        "하루 권장 섭취량을 업데이트하였습니다."
                 )
             }
             .ignoresSafeArea(.keyboard, edges: .bottom)
-            .toolbar(.hidden, for: .tabBar)
     }
 }
