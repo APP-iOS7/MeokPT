@@ -1,8 +1,8 @@
 import SwiftUI
 import ComposableArchitecture
 
-struct AddFoodView: View {
-    @Bindable var store: StoreOf<AddFoodFeature>
+struct EditFoodView: View {
+    @Bindable var store: StoreOf<EditFoodFeature>
     
     private enum NutrientField: Hashable {
         case carbohydrate
@@ -25,7 +25,7 @@ struct AddFoodView: View {
             VStack(spacing: 24) {
                 foodInfoSection
                 
-                Text(store.info)
+                Text("음식 정보를 수정할 수 있습니다.")
                     .font(.caption)
                     .foregroundColor(Color("AppSecondaryColor"))
                     .padding(.horizontal, 24)
@@ -46,7 +46,7 @@ struct AddFoodView: View {
                     Button (action: { store.send(.cancelButtonTapped) }) { Text("취소") }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button (action: { store.send(.addButtonTapped) }) { Text("추가") }.disabled(store.checkAmount)
+                    Button (action: { store.send(.saveButtonTapped) }) { Text("저장") }
                 }
             }
             .tint(Color("TextButton"))
@@ -59,18 +59,19 @@ struct AddFoodView: View {
     
     @ViewBuilder
     private var foodInfoSection: some View {
-        Text(store.selectedFoodItem.foodName)
+        Text(store.food.name)
             .font(.title2)
             .fontWeight(.bold)
         
         VStack {
-            HStack(alignment: .firstTextBaseline, spacing: 2) {
-                TextField("양 (필수)", value: $store.amountGram, formatter: NumberFormatter())
+            HStack(alignment: .firstTextBaseline, spacing: 1) {
+                TextField("양", value: $store.amountGram, formatter: NumberFormatter())
                     .font(.body)
                     .multilineTextAlignment(.center)
+                    .frame(minWidth: 40, idealWidth: 50, maxWidth: 55)
                     .keyboardType(.numberPad)
                     .onChange(of: store.amountGram) {
-                        let amountText = String(store.amountGram ?? 0)
+                        let amountText = String(store.amountGram)
                         
                         if amountText.count > store.maxInputLength {
                             store.amountGram = Double(amountText.prefix(store.maxInputLength)) ?? 0
@@ -82,8 +83,8 @@ struct AddFoodView: View {
             Rectangle()
                 .frame(height: 1)
                 .foregroundColor(Color(uiColor: UIColor.separator))
+                .padding(.horizontal, 120)
         }
-        .padding(.horizontal, 120)
     }
     
     @ViewBuilder
@@ -126,13 +127,28 @@ struct AddFoodView: View {
         var nutrientFormatter: NumberFormatter {
             let formatter = NumberFormatter()
             formatter.numberStyle = .decimal
-            formatter.minimumFractionDigits = (focusedNutrientField == field) ? 0 : 1
+            formatter.minimumFractionDigits = 1
             formatter.maximumFractionDigits = 1
             formatter.minimum = 0.0
             formatter.usesGroupingSeparator = false
+            if focusedNutrientField == field {
+                formatter.minimumFractionDigits = 0
+            } else {
+                formatter.minimumFractionDigits = 1
+            }
             return formatter
         }
         let isFocused = focusedNutrientField == field
+        let currentForegroundColor = Color(.label)
+        
+        let editingValue = Binding<Double>(
+            get: {
+                value.wrappedValue ?? 0.0
+            },
+            set: { newValue in
+                value.wrappedValue = max(0, newValue)
+            }
+        )
         
         VStack(alignment: .center, spacing: 12) {
             Text(label)
@@ -154,23 +170,19 @@ struct AddFoodView: View {
                 HStack(alignment: .firstTextBaseline, spacing: 2) {
                     ZStack {
                         // 실제 편집용 TextField
-                        TextField("", value: value, formatter: nutrientFormatter)
+                        TextField("", value: editingValue, formatter: nutrientFormatter)
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.center)
                             .font(.body)
                             .foregroundColor(isFocused ? .black : .clear)
                             .focused($focusedNutrientField, equals: field)
                             .fixedSize(horizontal: true, vertical: false)
-                            .onChange(of: value.wrappedValue) { _, newValue in
-                                guard let unwrappedValue = newValue else { return }
-                                onChangeValue(unwrappedValue, value)
-                            }
                         
                         // 표시용 텍스트 (포커스되지 않았을 때)
                         if !isFocused {
                             Text(isAvailable ? String(format: "%.1f", value.wrappedValue ?? 0.0) : "--.-")
                                 .font(.body)
-                                .foregroundColor(.primary)
+                                .foregroundColor(isAvailable ? currentForegroundColor : Color("AppSecondaryColor"))
                                 .fixedSize(horizontal: true, vertical: false)
                                 .allowsHitTesting(false)
                         }
@@ -178,7 +190,7 @@ struct AddFoodView: View {
                     
                     Text(unit.rawValue)
                         .font(.body)
-                        .foregroundColor(Color("AppSecondaryColor"))
+                        .foregroundColor(isFocused || isAvailable ? currentForegroundColor : Color("AppSecondaryColor"))
                         .fixedSize(horizontal: true, vertical: false)
                 }
             }
@@ -190,51 +202,5 @@ struct AddFoodView: View {
 
         }
         .frame(maxWidth: .infinity)
-    }
-}
-
-func onChangeValue(_ unwrappedValue: Double, _ value: Binding<Double?>) {
-    // 입력값이 음수면 0으로 설정
-    if unwrappedValue < 0 {
-        value.wrappedValue = 0
-        return
-    }
-
-    // 입력값을 문자열로 변환
-    let numberString = String(unwrappedValue)
-    // 소수점 기준으로 나눔
-    let components = numberString.components(separatedBy: ".")
-    // 정수부만 추출
-    let integerPart = components[0]
-
-    // 정수부가 4자리보다 길면 잘라냄
-    if integerPart.count > 4 {
-        // 정수부를 4자리로 자름
-        let trimmedIntegerPart = String(integerPart.prefix(4))
-        var newStringValue = trimmedIntegerPart
-
-        // 소수부가 있으면 한 자리만 남김
-        if components.count > 1 {
-            let decimalPart = String(components[1].prefix(1))
-            newStringValue += "." + decimalPart
-        }
-
-        // Double로 변환해서 적용 (실패 시 정수부만 적용)
-        if let limitedDouble = Double(newStringValue) {
-            value.wrappedValue = limitedDouble
-        } else {
-            value.wrappedValue = Double(trimmedIntegerPart) ?? 0
-        }
-    }
-    // 정수부가 4자리 이하이고 소수부가 2자리 이상이면
-    else if components.count > 1, components[1].count > 1 {
-        // 소수부를 한 자리로 자름
-        let decimalPart = String(components[1].prefix(1))
-        let newStringValue = integerPart + "." + decimalPart
-
-        // Double로 변환해서 적용
-        if let limitedDouble = Double(newStringValue) {
-            value.wrappedValue = limitedDouble
-        }
     }
 }

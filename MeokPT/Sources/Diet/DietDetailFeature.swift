@@ -10,11 +10,13 @@ struct DietDetailFeature {
         let dietID: UUID
         
         @Presents var createDietFullScreenCover: CreateDietFeature.State?
+        @Presents var editFoodSheet: EditFoodFeature.State?
         
         static func == (lhs: DietDetailFeature.State, rhs: DietDetailFeature.State) -> Bool {
             lhs.diet.id == rhs.diet.id &&
             lhs.dietID == rhs.dietID &&
-            lhs.createDietFullScreenCover == rhs.createDietFullScreenCover
+            lhs.createDietFullScreenCover == rhs.createDietFullScreenCover &&
+            lhs.editFoodSheet == rhs.editFoodSheet
         }
     }
     
@@ -23,7 +25,9 @@ struct DietDetailFeature {
         case updateTitle(String)
         case addFoodButtonTapped
         case deleteFood(at: IndexSet)
+        case foodCellTapped(Food)
         case createDietFullScreenCover(PresentationAction<CreateDietFeature.Action>)
+        case editFoodSheet(PresentationAction<EditFoodFeature.Action>)
         case delegate(DelegateAction)
     }
 
@@ -50,6 +54,10 @@ struct DietDetailFeature {
                 state.diet.foods.remove(atOffsets: offsets)
                 return .none
                 
+            case let .foodCellTapped(food):
+                state.editFoodSheet = EditFoodFeature.State(food: food)
+                return .none
+                
             case .createDietFullScreenCover(.presented(.delegate(.dismissSheet))):
                 state.createDietFullScreenCover = nil
                 return .none
@@ -67,12 +75,23 @@ struct DietDetailFeature {
                 )))
             case .createDietFullScreenCover(_):
                 return .none
+                
+            case .editFoodSheet(.presented(.delegate(.dismissSheet))):
+                state.editFoodSheet = nil
+                return .none
+                
+            case .editFoodSheet(_):
+                return .none
+                
             case .delegate:
                 return .none
             }
         }
         .ifLet(\.$createDietFullScreenCover, action: \.createDietFullScreenCover) {
             CreateDietFeature()
+        }
+        .ifLet(\.$editFoodSheet, action: \.editFoodSheet) {
+            EditFoodFeature()
         }
     }
 }
