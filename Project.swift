@@ -39,6 +39,11 @@ let project = Project(
                     "LSApplicationQueriesSchemes": [
                         "kakaokompassauth": true
                     ],
+                    "CFBundleURLTypes": [
+                        [
+                            "CFBundleURLSchemes": ["kakaoe45aac872cc22f70369464e409b9b04b"]
+                        ]
+                    ],
                     "NSCameraUsageDescription": "바코드를 스캔하여 식품 정보를 조회하기 위해 카메라 권한이 필요합니다."
                 ]
             ),
