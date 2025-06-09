@@ -18,7 +18,9 @@ struct DailyNutritionDietInfoFeature {
         var lastDataChangeTimestamp: Date = Date()
         
         var isAIbuttonEnabled: Bool {
-            !(nutritionItems?.isEmpty ?? true)
+            guard let nutritionItems = nutritionItems,
+                  let dietItems = dietItems else { return false }
+            return !nutritionItems.isEmpty && !dietItems.isEmpty
         }
     }
     
