@@ -52,6 +52,7 @@ struct CreateDietView: View {
                     .foregroundStyle(Color("TextButton"))
                 }
             }
+            .padding(.leading, 8)
             .padding(.vertical, 8)
             .padding(.horizontal, 24)
 
@@ -92,7 +93,7 @@ struct CreateDietView: View {
                                             .frame(width:14)
                                     }
                                     .foregroundStyle(Color("AppSecondaryColor"))
-                                    .padding(.leading, -8)
+                                    .padding(.horizontal, -8)
                                     .padding(.bottom, 4)
                                 }
                                 .buttonStyle(.plain)
@@ -124,6 +125,7 @@ struct CreateDietView: View {
                 HStack {
                     Button(action: { store.send(.goToPage(store.currentPage - 1)) }) {
                         Text("이전")
+                            .opacity(store.currentPage == 1 ? 0 : 1)
                     }
                     .foregroundStyle(Color("TextButton"))
                     .disabled(store.currentPage == 1)
@@ -135,6 +137,7 @@ struct CreateDietView: View {
                     Spacer()
                     Button(action: { store.send(.goToPage(store.currentPage + 1)) }) {
                         Text("다음")
+                            .opacity(store.currentPage >= store.totalPages ? 0 : 1)
                     }
                     .foregroundStyle(Color("TextButton"))
                     .disabled(store.currentPage >= store.totalPages)
