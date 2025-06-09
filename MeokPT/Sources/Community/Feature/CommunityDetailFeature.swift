@@ -234,7 +234,7 @@ struct CommunityDetailFeature {
                     userID: state.communityPost.userID,
                     userNickname: state.communityPost.userNickname,
                     userProfileImageURL: state.communityPost.userProfileImageURL,
-                    foodList: updatedFoodList,
+                    foodList: updatedFoodList
 
                 )
                 state.communityPost = updatedPost // UI 업데이트

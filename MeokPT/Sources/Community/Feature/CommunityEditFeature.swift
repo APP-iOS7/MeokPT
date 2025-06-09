@@ -57,7 +57,7 @@ struct CommunityEditFeature {
                 id: UUID(),
                 title: communityPost.dietName,
                 isFavorite: false,
-                foods: foods,
+                foods: foods
             )
         }
     }

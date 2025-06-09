@@ -64,7 +64,7 @@ struct CommunityView: View {
             AlertToast(
                 displayMode: .banner(.pop),
                 type: store.isSuccess ? .complete(Color("AppSecondaryColor")) : .error(.red),
-                title: store.toastMessage,
+                title: store.toastMessage
             )
         }
         .tint(Color("TextButton"))
