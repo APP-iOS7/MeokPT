@@ -38,7 +38,7 @@ struct DailyNutritionDietInfoView: View {
                         .buttonStyle(PlainButtonStyle())
                         .contentShape(Rectangle())
                         .padding(.horizontal, 24)
-                        .padding(.bottom, 20)
+                        .padding(.bottom, 8)
                     } else {
                         EmptyView()
                     }
