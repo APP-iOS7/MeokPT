@@ -41,7 +41,7 @@ struct DietItemView: View {
             .padding(24)
             .background(
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(Color("AppCardColor"))
+                    .fill(Color("App CardColor"))
                     .stroke(Color.gray, lineWidth: 1)
             )
             .padding(.horizontal, 24)
