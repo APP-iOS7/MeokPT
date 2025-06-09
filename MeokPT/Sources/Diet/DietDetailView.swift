@@ -10,131 +10,9 @@ struct DietDetailView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                VStack(alignment: .leading, spacing: 24) {
-                    HStack {
-                        TextField(
-                            "제목",
-                            text: Binding(
-                                get: { store.diet.title },
-                                set: { store.send(.updateTitle($0)) }
-                            )
-                        )
-                        .focused($titleFocusedField)
-                        .submitLabel(.done)
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-
-                        Spacer()
-
-                        Toggle(
-                            "즐겨찾기",
-                            isOn: Binding(
-                                get: { store.diet.isFavorite },
-                                set: { _ in store.send(.likeButtonTapped) }
-                            )
-                        )
-                        .toggleStyle(FavoriteToggleStyle())
-                    }
-                    if(!store.diet.foods.isEmpty) {
-                        VStack {
-                            VStack {
-                                HStack {
-                                    Text("총 열량")
-                                        .foregroundStyle(Color("AppSecondaryColor"))
-                                    Spacer()
-                                    Text("\(String(format: "%.0f", store.diet.kcal)) kcal")
-                                }
-                                .font(.body)
-                                Rectangle()
-                                    .frame(height: 1)
-                                    .foregroundColor(Color(.placeholderText))
-                            }
-                            .padding(.horizontal, 8)
-                            Spacer().frame(height: 24)
-                            HStack {
-                                DetailNutrientView(
-                                    carbohydrate: store.diet.carbohydrate,
-                                    protein: store.diet.protein,
-                                    fat: store.diet.fat,
-                                    dietaryFiber: store.diet.dietaryFiber,
-                                    sugar: store.diet.sugar,
-                                    sodium: store.diet.sodium
-                                )
-                            }
-                        }
-                    } else {
-                        VStack {
-                            VStack {
-                                HStack {
-                                    Text("총 열량")
-                                        .foregroundStyle(Color("AppSecondaryColor"))
-                                    Spacer()
-                                    Text("--- kcal")
-                                }
-                                .font(.body)
-                                Rectangle()
-                                    .frame(height: 1)
-                                    .foregroundColor(Color(.placeholderText))
-                            }
-                            .padding(.horizontal, 8)
-                            Spacer().frame(height: 24)
-                            HStack {
-                                EmptyDetailNutrientView()
-                            }
-                        }
-                    }
-                }
-                
-                VStack {
-                    ForEach(Array(store.diet.foods.enumerated()), id: \.element.id) { index, food in
-                        HStack {
-                            if editMode?.wrappedValue.isEditing == true {
-                                Button(role: .destructive) {
-                                    store.send(.deleteFood(at: IndexSet(integer: index)))
-                                } label: {
-                                    Image(systemName: "minus.circle.fill")
-                                }
-                                .padding(.leading)
-                                .transition(.asymmetric(
-                                    insertion: .move(edge: .leading).combined(with: .opacity),
-                                    removal: .move(edge: .leading).combined(with: .opacity)
-                                ))
-                            }
-                            VStack(alignment: .leading) {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    Text(food.name)
-                                        .font(.headline)
-                                    Text("\(String(format: "%.0f", food.amount))g, \(String(format: "%.0f", food.kcal))kcal")
-                                }
-                                .padding(24)
-                                DetailNutrientView(
-                                    carbohydrate: food.carbohydrate,
-                                    protein: food.protein,
-                                    fat: food.fat,
-                                    dietaryFiber: food.dietaryFiber,
-                                    sugar: food.sugar,
-                                    sodium: food.sodium
-                                )
-                                .padding(.bottom, 24)
-                            }
-                        }
-                        .transition(.asymmetric(
-                            insertion: .slide.combined(with: .opacity),
-                            removal: .slide.combined(with: .opacity)
-                        ))
-                        .animation(.easeInOut(duration: 0.3), value: editMode?.wrappedValue)
-                        if food != store.diet.foods.last {
-                            Divider()
-                        }
-                    }
-                }
-                .animation(.easeInOut(duration: 0.3), value: store.diet.foods.count)
-                .background(Color("AppCellBackgroundColor"))
-                .cornerRadius(20)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color(uiColor: UIColor.separator), lineWidth: 1)
-                )
+                headerSection
+                nutritionSummarySection
+                foodListSection
             }
             .padding(24)
         }
@@ -159,7 +37,192 @@ struct DietDetailView: View {
                 CreateDietView(store: store)
             }
         }
+        .sheet(item: $store.scope(state: \.editFoodSheet, action: \.editFoodSheet)) { store in
+            EditFoodView(store: store)
+                .presentationDragIndicator(.visible)
+                .presentationDetents([.fraction(0.8)])
+        }
         .tint(Color("TextButton"))
+    }
+    
+    // MARK: - View Components
+    
+    private var headerSection: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            HStack {
+                TextField(
+                    "제목",
+                    text: Binding(
+                        get: { store.diet.title },
+                        set: { store.send(.updateTitle($0)) }
+                    )
+                )
+                .focused($titleFocusedField)
+                .submitLabel(.done)
+                .font(.largeTitle)
+                .fontWeight(.bold)
+
+                Spacer()
+
+                Toggle(
+                    "즐겨찾기",
+                    isOn: Binding(
+                        get: { store.diet.isFavorite },
+                        set: { _ in store.send(.likeButtonTapped) }
+                    )
+                )
+                .toggleStyle(FavoriteToggleStyle())
+            }
+        }
+    }
+    
+    private var nutritionSummarySection: some View {
+        Group {
+            if !store.diet.foods.isEmpty {
+                populatedNutritionView
+            } else {
+                emptyNutritionView
+            }
+        }
+    }
+    
+    private var populatedNutritionView: some View {
+        VStack {
+            VStack {
+                HStack {
+                    Text("총 열량")
+                        .foregroundStyle(Color("AppSecondaryColor"))
+                    Spacer()
+                    Text("\(String(format: "%.0f", store.diet.kcal)) kcal")
+                }
+                .font(.body)
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(Color(.placeholderText))
+            }
+            .padding(.horizontal, 8)
+            Spacer().frame(height: 24)
+            HStack {
+                DetailNutrientView(
+                    carbohydrate: store.diet.carbohydrate,
+                    protein: store.diet.protein,
+                    fat: store.diet.fat,
+                    dietaryFiber: store.diet.dietaryFiber,
+                    sugar: store.diet.sugar,
+                    sodium: store.diet.sodium
+                )
+            }
+        }
+    }
+    
+    private var emptyNutritionView: some View {
+        VStack {
+            VStack {
+                HStack {
+                    Text("총 열량")
+                        .foregroundStyle(Color("AppSecondaryColor"))
+                    Spacer()
+                    Text("--- kcal")
+                }
+                .font(.body)
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(Color(.placeholderText))
+            }
+            .padding(.horizontal, 8)
+            Spacer().frame(height: 24)
+            HStack {
+                EmptyDetailNutrientView()
+            }
+        }
+    }
+    
+    private var foodListSection: some View {
+        VStack {
+            ForEach(Array(store.diet.foods.enumerated()), id: \.element.id) { index, food in
+                FoodItemRow(
+                    food: food,
+                    index: index,
+                    editMode: editMode,
+                    isLast: food == store.diet.foods.last,
+                    onDelete: { store.send(.deleteFood(at: IndexSet(integer: index))) },
+                    onTap: { store.send(.foodCellTapped(food)) }
+                )
+            }
+        }
+        .animation(.easeInOut(duration: 0.3), value: store.diet.foods.count)
+        .background(Color("AppCellBackgroundColor"))
+        .cornerRadius(20)
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(Color(uiColor: UIColor.separator), lineWidth: 1)
+        )
+    }
+}
+
+// MARK: - Food Item Row
+
+private struct FoodItemRow: View {
+    let food: Food
+    let index: Int
+    let editMode: Binding<EditMode>?
+    let isLast: Bool
+    let onDelete: () -> Void
+    let onTap: () -> Void
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                if editMode?.wrappedValue.isEditing == true {
+                    Button(role: .destructive) {
+                        onDelete()
+                    } label: {
+                        Image(systemName: "minus.circle.fill")
+                    }
+                    .padding(.leading)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .leading).combined(with: .opacity),
+                        removal: .move(edge: .leading).combined(with: .opacity)
+                    ))
+                }
+                
+                foodContentView
+                    .onTapGesture {
+                        if editMode?.wrappedValue.isEditing != true {
+                            onTap()
+                        }
+                    }
+            }
+            .transition(.asymmetric(
+                insertion: .slide.combined(with: .opacity),
+                removal: .slide.combined(with: .opacity)
+            ))
+            .animation(.easeInOut(duration: 0.3), value: editMode?.wrappedValue)
+            
+            if !isLast {
+                Divider()
+            }
+        }
+    }
+    
+    private var foodContentView: some View {
+        VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(food.name)
+                    .font(.headline)
+                Text("\(String(format: "%.0f", food.amount))g, \(String(format: "%.0f", food.kcal))kcal")
+            }
+            .padding(24)
+            DetailNutrientView(
+                carbohydrate: food.carbohydrate,
+                protein: food.protein,
+                fat: food.fat,
+                dietaryFiber: food.dietaryFiber,
+                sugar: food.sugar,
+                sodium: food.sodium
+            )
+            .padding(.bottom, 24)
+        }
     }
 }
 
