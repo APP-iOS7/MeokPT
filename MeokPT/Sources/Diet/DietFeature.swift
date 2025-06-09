@@ -61,7 +61,6 @@ struct DietFeature {
     }
     
     @Dependency(\.modelContainer) var modelContainer
-    @Dependency(\.modelContainer.mainContext) var modelContext
     
     var body: some ReducerOf<Self> {
         BindingReducer()
@@ -141,10 +140,24 @@ struct DietFeature {
                 return .none
 
             case let .deleteButtonTapped(id):
-                guard let dietToDelete = state.dietList[id: id] else { return .none }
-                modelContext.delete(dietToDelete)
+                guard state.dietList[id: id] != nil else { return .none }
                 state.dietList.remove(id: id)
-                return .none
+                return .run { _ in
+                    await MainActor.run {
+                        let context = modelContainer.mainContext
+                        let descriptor = FetchDescriptor<Diet>(predicate: #Predicate<Diet> { diet in
+                            diet.id == id
+                        })
+                        do {
+                            let dietsToDelete = try context.fetch(descriptor)
+                            for diet in dietsToDelete {
+                                context.delete(diet)
+                            }
+                        } catch {
+                            print("Failed to delete diet: \(error)")
+                        }
+                    }
+                }
 
             case let .renameButtonTapped(id):
                 guard let dietToRename = state.dietList[id: id] else { return .none }
