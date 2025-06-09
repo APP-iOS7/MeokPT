@@ -17,7 +17,11 @@ struct DietItemCellView: View {
         return formatter
     }
     
-    private func formatValue(_ value: Double?) -> String {
+    private func formatKcal(_ value: Double) -> String {
+        return numberFormatter.string(from: NSNumber(value: Int(value.rounded()))) ?? "---"
+    }
+    
+    private func formatNutrient(_ value: Double?) -> String {
         guard let value = value else { return "--.-" }
         return numberFormatter.string(from: NSNumber(value: value)) ?? "--.-"
     }
@@ -29,7 +33,7 @@ struct DietItemCellView: View {
                     Text(diet.title)
                         .font(.title3.bold())
                         .lineLimit(1)
-                    Text(diet.foods.isEmpty ? "--- kcal" : "\(formatValue(diet.kcal)) kcal")
+                    Text("\(formatKcal(diet.kcal))kcal")
                         .font(.body)
                 }
                 Spacer()
