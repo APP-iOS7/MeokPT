@@ -24,7 +24,7 @@ struct ActivityLevelItemView: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(isSelected ? Color.clear : Color.gray.opacity(0.5), lineWidth: 1)
+                .stroke(Color(UIColor.separator), lineWidth: 1)
         )
         .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
     }
