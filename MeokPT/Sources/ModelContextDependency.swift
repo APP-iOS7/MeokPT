@@ -6,7 +6,7 @@ import Foundation
 private enum ModelContainerKey: DependencyKey {
     static var liveValue: ModelContainer {
         do {
-            return try ModelContainer(for: BodyInfo.self, NutritionItem.self, DietItem.self, Diet.self, Food.self)
+            return try ModelContainer(for: BodyInfo.self, NutritionItem.self, DietItem.self, Diet.self, Food.self, SharedPostRecord.self)
         } catch {
             fatalError("Failed to create ModelContainer: \(error.localizedDescription)")
         }
@@ -15,7 +15,7 @@ private enum ModelContainerKey: DependencyKey {
     static var testValue: ModelContainer {
         do {
             return try ModelContainer(
-                for: BodyInfo.self, NutritionItem.self, DietItem.self, Diet.self, Food.self,
+                for: BodyInfo.self, NutritionItem.self, DietItem.self, Diet.self, Food.self, SharedPostRecord.self,
                 configurations: ModelConfiguration(isStoredInMemoryOnly: true)
             )
         } catch {

@@ -28,7 +28,7 @@ struct MeokPTApp: App {
     var body: some Scene {
         WindowGroup {
             AppView(store: MeokPTApp.store)
-                .modelContainer(for: [BodyInfo.self, NutritionItem.self, DietItem.self, Diet.self, Food.self])
+                .modelContainer(for: [BodyInfo.self, NutritionItem.self, DietItem.self, Diet.self, Food.self, SharedPostRecord.self])
                 .onOpenURL { url in
                     if (AuthApi.isKakaoTalkLoginUrl(url)) {
                         _ = AuthController.handleOpenUrl(url: url)

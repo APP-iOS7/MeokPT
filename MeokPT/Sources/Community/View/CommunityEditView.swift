@@ -3,13 +3,14 @@ import ComposableArchitecture
 import _PhotosUI_SwiftUI
 import Kingfisher
 
-struct CommunityWriteView: View {
+struct CommunityEditView: View {
     enum Field: Hashable {
         case title, content
     }
     @FocusState private var focusedField: Field?
-    @Bindable var store: StoreOf<CommunityWriteFeature>
-    
+    @Bindable var store: StoreOf<CommunityEditFeature>
+    @Environment(\.dismiss) private var dismiss
+
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
@@ -105,7 +106,7 @@ struct CommunityWriteView: View {
                     store.showAlert = true
                 }) {
                     HStack {
-                        Text(store.isUploading ? "사진 업로드 중" : "글 게시")
+                        Text(store.isUploading ? "사진 업로드 중" : "글 수정")
                         if store.isUploading {
                             ProgressView()
                                 .tint(.primary)
@@ -121,15 +122,23 @@ struct CommunityWriteView: View {
                 .buttonStyle(PlainButtonStyle())
                 .contentShape(Rectangle())
                 .disabled(store.postInvalid || store.isUploading)
-                .alert("커뮤니티에 글을 게시합니다.", isPresented: $store.showAlert) {
+                .alert("글을 수정합니다.", isPresented: $store.showAlert) {
                     Button("취소", role: .cancel) {}
-                    Button("게시") {
+                    Button("수정") {
                         store.send(.submitButtonTapped)
                     }
                 }
             }
             .padding(24)
-            .navigationTitle("글 작성")
+        }
+        .navigationTitle("글 수정")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("취소") {
+                    dismiss()
+                }
+            }
         }
         .onTapGesture {
             focusedField = nil
@@ -175,9 +184,11 @@ struct CommunityWriteView: View {
 }
 
 #Preview {
-    CommunityWriteView(
-        store: Store(initialState: CommunityWriteFeature.State()) {
-            CommunityWriteFeature()
-        }
-    )
+    NavigationStack {
+        CommunityEditView(
+            store: Store(initialState: CommunityEditFeature.State(communityPost: dummyCommunityPost)) {
+                CommunityEditFeature()
+            }
+        )
+    }
 }
