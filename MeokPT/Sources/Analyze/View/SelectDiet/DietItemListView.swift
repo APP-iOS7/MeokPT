@@ -9,7 +9,7 @@ struct DietItemListView: View {
             if store.filteredDiets.isEmpty {
                 DietEmptyView()
             } else {
-                LazyVStack(spacing: 20) {
+                LazyVStack(spacing: 25) {
                     ForEach(store.filteredDiets) { diet in
                         DietItemCellView(
                             diet: diet,
@@ -20,6 +20,7 @@ struct DietItemListView: View {
                         )
                     }
                 }
+                .padding(.top, 5)
             }
         }
     }

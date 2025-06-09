@@ -96,6 +96,33 @@ extension DietItem {
     }
 }
 
+extension DietItem {
+    func formattedNutrientSafe(for type: NutritionType) -> String {
+        let value = nutrientValue(for: type)
+
+        guard !value.isNaN else { return "--.- \(type.unit)" }
+
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = .decimal
+        numberFormatter.minimumFractionDigits = 0
+        numberFormatter.maximumFractionDigits = type == .calorie || type == .sodium ? 0 : 1
+
+        let formatted = numberFormatter.string(from: NSNumber(value: value)) ?? "--.-"
+        return "\(formatted) \(type.unit)"
+    }
+
+    var formattedKcalOnlySafe: String {
+        let value = self.kcal
+        guard !value.isNaN else { return "-- kcal" }
+
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 0
+        return "\(formatter.string(from: NSNumber(value: value)) ?? "--") \(NutritionType.calorie.unit)"
+    }
+}
+
+
 let mockDietItemsForPreview = [
         DietItem(
             timestamp: Calendar.current.date(byAdding: .day, value: -2, to: Date())!,

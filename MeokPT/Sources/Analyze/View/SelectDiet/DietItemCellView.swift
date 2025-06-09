@@ -4,6 +4,9 @@ struct DietItemCellView: View {
     let diet: Diet
     var isSelected: Bool
     let toggleSelection: () -> Void
+    
+    private let displayedNutrients: [NutritionType] = [.carbohydrate, .protein, .fat]
+
 
     
     private var numberFormatter: NumberFormatter {
@@ -15,8 +18,8 @@ struct DietItemCellView: View {
     }
     
     private func formatValue(_ value: Double?) -> String {
-        guard let value = value else { return "-" }
-        return numberFormatter.string(from: NSNumber(value: value)) ?? "-"
+        guard let value = value else { return "--.-" }
+        return numberFormatter.string(from: NSNumber(value: value)) ?? "--.-"
     }
     
     var body: some View {
@@ -24,9 +27,10 @@ struct DietItemCellView: View {
             HStack (alignment: .top){
                 VStack(alignment: .leading, spacing: 8) {
                     Text(diet.title)
-                        .font(.headline)
-                    Text("\(formatValue(diet.kcal)) kcal")
-                        .font(.subheadline)
+                        .font(.title3.bold())
+                        .lineLimit(1)
+                    Text(diet.foods.isEmpty ? "--- kcal" : "\(formatValue(diet.kcal)) kcal")
+                        .font(.body)
                 }
                 Spacer()
                 Button {
@@ -39,11 +43,19 @@ struct DietItemCellView: View {
             }
             
             HStack(spacing: 20) {
-                DietNutritionInfoCellView(name: "탄수화물", value: "\(formatValue(diet.carbohydrate))g")
-                Spacer()
-                DietNutritionInfoCellView(name: "단백질", value: "\(formatValue(diet.protein))g")
-                Spacer()
-                DietNutritionInfoCellView(name: "지방", value: "\(formatValue(diet.fat))g")
+                ForEach(Array(displayedNutrients.enumerated()), id: \.element) { index, nutrientType in
+                        DietNutritionInfoCellView(
+                            name: nutrientType.rawValue.capitalized,
+                            value: diet.formattedNutrient(for: nutrientType)
+                        )
+                        .frame(maxWidth: .infinity)
+
+                        if index < displayedNutrients.count - 1 {
+                            Divider()
+                                .frame(height: 40)
+                                .padding(.horizontal, 8)
+                        }
+                    }
             }
             .frame(maxWidth: .infinity)
         }

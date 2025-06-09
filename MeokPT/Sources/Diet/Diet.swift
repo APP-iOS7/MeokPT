@@ -76,4 +76,37 @@ final class Diet: Identifiable, Equatable, Hashable {
         let validValues = foods.compactMap { $0.sugar }
         return validValues.isEmpty ? nil : validValues.reduce(0) {$0 + $1}
     }
+    
+    func formattedNutrient(for type: NutritionType) -> String {
+        let value: Double?
+        let formatString: String
+        
+        switch type {
+        case .carbohydrate:
+            value = carbohydrate
+            formatString = "%.1f %@"
+        case .protein:
+            value = protein
+            formatString = "%.1f %@"
+        case .fat:
+            value = fat
+            formatString = "%.1f %@"
+        case .dietaryFiber:
+            value = dietaryFiber
+            formatString = "%.1f %@"
+        case .sodium:
+            value = sodium
+            formatString = "%.0f %@"
+        case .sugar:
+            value = sugar
+            formatString = "%.1f %@"
+        case .calorie:
+            value = kcal
+            formatString = "%.0f %@"
+        }
+        
+        guard let value else { return "--.- \(type.unit)" }
+        return String(format: formatString, value, type.unit)
+    }
+
 }

@@ -9,7 +9,9 @@ struct DietNutritionInfoCellView: View {
             Text(name)
                 .font(.caption)
                 .foregroundStyle(Color("AppSecondaryColor"))
+            Spacer().frame(height: 4)
             Text(value)
+                .font(.body)
         }
     }
 }
