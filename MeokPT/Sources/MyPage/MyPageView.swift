@@ -3,8 +3,6 @@ import ComposableArchitecture
 import Kingfisher
 
 struct MyPageView: View {
-    
-    @State private var showAlert = false
     @Bindable var store: StoreOf<MyPageFeature>
 
     var body: some View {
@@ -79,12 +77,12 @@ struct MyPageView: View {
                     // MARK: - 계정 설정
                     Section(header: Text("계정")) {
                         Button {
-                            showAlert = true
+                            store.showLogoutAlert = true
                         } label: {
                             Label("로그아웃", systemImage: "lock.open")
                                 .foregroundStyle(.primary)
                         }
-                        .alert("로그아웃", isPresented: $showAlert) {
+                        .alert("로그아웃", isPresented: $store.showLogoutAlert) {
                             Button("취소", role: .cancel) {}
                             Button("로그아웃", role: .destructive) {
                                 store.send(.logoutButtonTapped)
@@ -92,10 +90,18 @@ struct MyPageView: View {
                         }
 
                         Button {
-                            store.send(.withDrawalButtonTapped)
+                            store.showWithDrawalAlert = true
                         } label: {
                             Label("회원탈퇴", systemImage: "xmark.circle")
                                 .foregroundStyle(.red)
+                        }
+                        .alert("회원탈퇴", isPresented: $store.showWithDrawalAlert) {
+                            Button("취소", role: .cancel) {}
+                            Button("회원탈퇴", role: .destructive) {
+                                store.send(.withDrawalButtonTapped)
+                            }
+                        } message: {
+                            Text("게시한 글이 모두 삭제됩니다. 탈퇴 후에는 계정을 복구할 수 없습니다.")
                         }
                     }
                 }

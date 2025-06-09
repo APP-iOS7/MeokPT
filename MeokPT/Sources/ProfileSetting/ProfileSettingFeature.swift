@@ -131,7 +131,7 @@ struct ProfileSettingFeature {
                         guard let imageData = imageToUpload.jpegData(compressionQuality: 0.8) else {
                             throw NSError(domain: "ImageUploadError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Data conversion failed"])
                         }
-                        let storageRef = Storage.storage().reference().child("profile_images/\(UUID().uuidString).jpg")
+                        let storageRef = Storage.storage().reference().child("profile_images/\(Auth.auth().currentUser!.uid)/\(UUID().uuidString).jpg")
                         _ = try await storageRef.putDataAsync(imageData)
                         return try await storageRef.downloadURL()
                     }
