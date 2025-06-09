@@ -31,7 +31,7 @@ struct DietView: View {
                     }
                 }
                 .padding(.horizontal, 24)
-                .padding(.top, 8)
+                .padding(.vertical, 8)
             }
             .background(Color("AppBackgroundColor"))
             .toolbar {

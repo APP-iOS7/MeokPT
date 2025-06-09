@@ -9,6 +9,13 @@ import ComposableArchitecture
 
 struct DietCellView: View {    
     var diet: Diet
+    var kcalString: String {
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = .decimal
+        numberFormatter.minimumFractionDigits = 0
+        numberFormatter.maximumFractionDigits = 0
+        return numberFormatter.string(from: NSNumber(value: diet.kcal)) ?? "\(diet.kcal)"
+    }
     @Binding var isFavorite: Bool
     var onRename: () -> Void
     var onDelete: () -> Void
@@ -36,7 +43,7 @@ struct DietCellView: View {
                 if (diet.foods.isEmpty) {
                     Text("--- kcal")
                 } else {
-                    Text(String(format: "%.0f kcal", diet.kcal))
+                    Text("\(kcalString) kcal")
                         .font(.body)
                 }
             }
@@ -67,8 +74,15 @@ struct FavoriteToggleStyle: ToggleStyle {
             configuration.isOn.toggle()
         }) {
             Image(systemName: configuration.isOn ? "heart.fill" : "heart")
+                .background(
+                    Rectangle()
+                        .fill(Color.clear)
+                        .contentShape(Rectangle())
+                        .frame(width: 24, height: 24)
+                )
         }
         .foregroundColor(Color("AppSecondaryColor"))
+        .buttonStyle(.plain)
     }
 }
 
