@@ -8,13 +8,13 @@ final class DietItem: Identifiable, Equatable {
     var name: String
     var mealTypeRawValue: String
     
-    var kcal: Double
-    var carbohydrate: Double
-    var protein: Double
-    var fat: Double
-    var dietaryFiber: Double
-    var sugar: Double
-    var sodium: Double
+    var kcal: Double?
+    var carbohydrate: Double?
+    var protein: Double?
+    var fat: Double?
+    var dietaryFiber: Double?
+    var sugar: Double?
+    var sodium: Double?
     var isFavorite: Bool
     
     init(
@@ -22,13 +22,13 @@ final class DietItem: Identifiable, Equatable {
         timestamp: Date = Date(),
         name: String,
         mealTypeRawValue: String,
-        kcal: Double,
-        carbohydrate: Double,
-        protein: Double,
-        fat: Double,
-        dietaryFiber: Double,
-        sugar: Double,
-        sodium: Double,
+        kcal: Double?,
+        carbohydrate: Double?,
+        protein: Double?,
+        fat: Double?,
+        dietaryFiber: Double?,
+        sugar: Double?,
+        sodium: Double?,
         isFavorite: Bool
     ) {
         self.id = id
@@ -52,7 +52,7 @@ final class DietItem: Identifiable, Equatable {
 }
 
 extension DietItem {
-    func nutrientValue(for type: NutritionType) -> Double {
+    func nutrientValue(for type: NutritionType) -> Double? {
         switch type {
         case .calorie: return self.kcal
         case .carbohydrate: return self.carbohydrate
@@ -64,33 +64,16 @@ extension DietItem {
         }
     }
     
-    func formattedNutrient(for type: NutritionType) -> String {
-        let value = nutrientValue(for: type)
-        let formatString: String
-        
-        switch type {
-        case .calorie, .sodium:
-            formatString = "%.0f %@"
-        default:
-            formatString = "%.1f %@"
-        }
-        return String(format: formatString, value, type.unit)
-    }
-    
-    var formattedKcalOnly: String {
-        return String(format: "%.0f \(NutritionType.calorie.unit)", self.kcal)
-    }
-    
     static func fromDiet(_ diet: Diet) -> DietItem {
         return DietItem(name: diet.title,
                         mealTypeRawValue: MealType.none.rawValue,
                         kcal: diet.kcal,
-                        carbohydrate: diet.carbohydrate ?? 0.0,
-                        protein: diet.protein ?? 0.0,
-                        fat: diet.fat ?? 0.0,
-                        dietaryFiber: diet.dietaryFiber ?? 0.0,
-                        sugar: diet.sugar ?? 0.0,
-                        sodium: diet.sodium ?? 0.0,
+                        carbohydrate: diet.carbohydrate ?? nil,
+                        protein: diet.protein ?? nil,
+                        fat: diet.fat ?? nil,
+                        dietaryFiber: diet.dietaryFiber ?? nil,
+                        sugar: diet.sugar ?? nil,
+                        sodium: diet.sodium ?? nil,
                         isFavorite: diet.isFavorite
         )
     }
@@ -98,27 +81,26 @@ extension DietItem {
 
 extension DietItem {
     func formattedNutrientSafe(for type: NutritionType) -> String {
-        let value = nutrientValue(for: type)
+        guard let value = nutrientValue(for: type), !value.isNaN else {
+                   return type == .calorie ? "---" : "--.-"
+               }
 
-        guard !value.isNaN else { return "--.-" }
+               let formatter = NumberFormatter()
+               formatter.numberStyle = .decimal
+               formatter.minimumFractionDigits = 0
+               formatter.maximumFractionDigits = (type == .calorie || type == .sodium) ? 0 : 1
 
-        let numberFormatter = NumberFormatter()
-        numberFormatter.numberStyle = .decimal
-        numberFormatter.minimumFractionDigits = 0
-        numberFormatter.maximumFractionDigits = type == .calorie || type == .sodium ? 0 : 1
-
-        let formatted = numberFormatter.string(from: NSNumber(value: value)) ?? "--.-"
-        return "\(formatted) \(type.unit)"
+               let formatted = formatter.string(from: NSNumber(value: value)) ?? (type == .calorie ? "---" : "--.-")
+               return "\(formatted) \(type.unit)"
     }
 
     var formattedKcalOnlySafe: String {
-        let value = self.kcal
-        guard !value.isNaN else { return "---" }
+            guard let value = self.kcal, !value.isNaN else { return "---" }
 
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.maximumFractionDigits = 0
-        return "\(formatter.string(from: NSNumber(value: value)) ?? "--")"
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .decimal
+            formatter.maximumFractionDigits = 0
+            return "\(formatter.string(from: NSNumber(value: value)) ?? "---") \(NutritionType.calorie.unit)"
     }
 }
 
