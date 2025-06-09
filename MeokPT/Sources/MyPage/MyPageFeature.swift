@@ -21,7 +21,9 @@ struct MyPageFeature {
         var path = StackState<Path.State>()
     }
     
-    enum Action {
+    enum Action: BindableAction{
+        case binding(BindingAction<State>)
+
         case onAppear
         case loginSignUpButtonTapped
         case profileEditButtonTapped
@@ -44,6 +46,7 @@ struct MyPageFeature {
     enum CancelID { case timer }
     
     var body: some ReducerOf<Self> {
+        BindingReducer()
         Reduce { state, action in
             switch action {
             case .onAppear:
@@ -64,6 +67,8 @@ struct MyPageFeature {
                 return .none
             
             case .profileSettingModal:
+                return .none
+            case .binding(_):
                 return .none
             }
         }

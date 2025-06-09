@@ -174,6 +174,7 @@ struct CommunityFeature {
             case .navigateToPostItemTapped(let id):
                 if let post = state.postItems[id: id] {
                     let detailState = CommunityDetailFeature.State(
+                        navigationSource: .communityMain,
                         communityPost: post
                     )
                     state.path.append(.detailPost(detailState))

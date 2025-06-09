@@ -6,50 +6,66 @@
 //
 
 import SwiftUI
+import ComposableArchitecture
 
 struct MyPostsView: View {
-    let dummyPosts: [String] = []
+    @Bindable var store: StoreOf<MyPostsFeature>
     
     var body: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Text("내가 쓴 글")
-                    .font(.system(size: 34, weight: .bold))
-                    .padding(.leading)
-                Spacer()
-                Button(action: {
-                    print("글쓰기 버튼")
-                }) {
-                    Text("글쓰기")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(Color("AppTintColor"))
+        VStack {
+            if store.isLoading {
+                VStack {
+                    ProgressView()
                 }
-                .padding(.trailing)
-            }
-            .padding(.top, 32)
-            .padding(.bottom, 16)
-            
-            if dummyPosts.isEmpty {
-                Spacer()
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+            } else if let error = store.error {
+                VStack {
+                    Text("게시글을 불러올 수 없습니다")
+                        .font(.headline)
+                    Text(error)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                    Button("다시 시도") {
+                        store.send(.fetchCommunityPosts)
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+            } else if store.postItems.isEmpty {
                 Text("작성한 글이 없습니다.")
-                    .foregroundColor(.gray)
-                    .font(.system(size: 16))
-                    .frame(maxWidth: .infinity, alignment: .center)
-                Spacer()
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             } else {
-                List(dummyPosts, id: \.self) { post in
-                    Text(post)
-                        .padding(.vertical, 8)
+                ScrollView {
+                    LazyVGrid(columns: store.columns, spacing: 8) {
+                        ForEach(store.filteredPosts, id: \.id) { post in
+                            NavigationLink {
+                                CommunityDetailView(
+                                    store: Store(
+                                        initialState: CommunityDetailFeature.State(
+                                            navigationSource: .myPosts,
+                                            communityPost: post
+                                        )
+                                    ) {
+                                        CommunityDetailFeature()
+                                    }
+                                )
+                            } label: {
+                                CommunityPostCard(post: post)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 8)
                 }
-                .listStyle(.plain)
             }
         }
-        .background(Color("AppBackgroundColor").ignoresSafeArea())
-    }
-}
-
-#Preview {
-    NavigationStack {
-        MyPostsView()
+        .onAppear {
+            store.send(.onAppear)
+        }
+        .navigationTitle("내가 쓴 글")
+        .navigationBarTitleDisplayMode(.large)
+        .background(Color("AppBackgroundColor"))
     }
 }
