@@ -13,6 +13,11 @@ struct DietDetailView: View {
                 headerSection
                 nutritionSummarySection
                 foodListSection
+                if store.diet.foods.isEmpty {
+                    Text("음식을 추가해 주세요")
+                        .foregroundStyle(Color.secondary)
+                        .padding(.top, 48)
+                }
             }
             .padding(24)
         }

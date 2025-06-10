@@ -33,6 +33,12 @@ struct DietView: View {
                 .padding(.horizontal, 24)
                 .padding(.vertical, 8)
             }
+            .overlay {
+                if store.dietList.isEmpty {
+                    Text("새로운 식단을 추가해 주세요")
+                        .foregroundStyle(Color.secondary)
+                }
+            }
             .background(Color("AppBackgroundColor"))
             .toolbar {
                 ToolbarItemGroup(placement: .principal) {
