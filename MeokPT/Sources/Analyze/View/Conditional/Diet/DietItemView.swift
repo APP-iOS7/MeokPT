@@ -4,7 +4,7 @@ struct DietItemView: View {
     @Bindable var item: DietItem
     let onMealTypeChange: (DietItem.ID, MealType) -> Void
     
-    private let displayedNutrients: [NutritionType] = [.carbohydrate, .protein, .fat]
+    private let displayedNutrients: [NutritionType] = [.carbohydrate, .protein, .fat, .dietaryFiber, .sugar , .sodium]
 
     var body: some View {
         VStack {
@@ -21,18 +21,23 @@ struct DietItemView: View {
                         .font(.body)
                 }
 
-                HStack(spacing: 20) {
-                    ForEach(Array(displayedNutrients.enumerated()), id: \.element) { index, nutrientType in
-                        DietNutritionInfoCellView(
-                            name: nutrientType.rawValue.capitalized,
-                            value: item.formattedNutrientSafe(for: nutrientType)
-                        )
-                        .frame(maxWidth: .infinity)
+                VStack(spacing: 16) {
+                    ForEach(0..<2, id: \.self) { row in
+                        let rowItems = Array(displayedNutrients[row * 3..<min((row + 1) * 3, displayedNutrients.count)])
+                        HStack(spacing: 20) {
+                            ForEach(Array(rowItems.enumerated()), id: \.element) { index, nutrientType in
+                                DietNutritionInfoCellView(
+                                    name: nutrientType.rawValue.capitalized,
+                                    value: item.formattedNutrientSafe(for: nutrientType)
+                                )
+                                .frame(maxWidth: .infinity)
 
-                        if index < displayedNutrients.count - 1 {
-                            Divider()
-                                .frame(height: 40)
-                                .padding(.horizontal, 8)
+                                if index < rowItems.count - 1 {
+                                    Divider()
+                                        .frame(height: 40)
+                                        .padding(.horizontal, 8)
+                                }
+                            }
                         }
                     }
                 }
