@@ -106,40 +106,48 @@ struct DietSelectionSheetFeature: Reducer {
                     for diet in selected {
                         let dietItem = DietItem.fromDiet(diet)
                         context.insert(dietItem)
+                    }
+                    
+                    do {
+                        try context.save()
+                    } catch {
+                        print("DietItem 저장 실패: \(error.localizedDescription)")
+                        return
+                    }
+                    
+                    do {
+                        let allDietItems = try context.fetch(FetchDescriptor<DietItem>())
                         
                         for type in NutritionType.allCases {
-                            let amountToAdd = dietItem.nutrientValue(for: type)
+                            let totalValue: Double = allDietItems
+                                .compactMap { $0.nutrientValue(for: type) }
+                                .reduce(0, +)
+                            
+                            let roundedValue = Int(totalValue.rounded())
                             let raw = type.rawValue
                             
                             let descriptor = FetchDescriptor<NutritionItem>(
                                 predicate: #Predicate { $0.typeRawValue == raw }
                             )
                             
-                            if let existing = try? context.fetch(descriptor).first {
-                                existing.value += Int(amountToAdd ?? 0.0)
+                            if let existing = try context.fetch(descriptor).first {
+                                existing.value = roundedValue
                             } else {
                                 let newItem = NutritionItem(
                                     type: type,
-                                    value: Int(amountToAdd ?? 0.0),
+                                    value: roundedValue,
                                     max: 0
                                 )
                                 context.insert(newItem)
                             }
                         }
-                        print("\(dietItem.name)")
-                    }
-                    
-                    do {
                         try context.save()
                         send(.delegate(.dietSelected(Array(selected))))
-                        
                     } catch {
-                        print("DietItem 저장 실패: \(error.localizedDescription)")
+                        print("NuritionItem 업데이트 실패")
                     }
                 }
             }
-            
-
         case .delegate:
             return .none
         
