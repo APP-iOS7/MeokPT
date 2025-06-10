@@ -165,7 +165,6 @@ struct CommunityDietCell: View {
             }
             Spacer().frame(height: 8)
             NutrientView(carbohydrate: carbohydrate, protein: protein, fat: fat)
-                .padding(.horizontal)
         }
         .padding(24)
         .background(Color("App CardColor"))
