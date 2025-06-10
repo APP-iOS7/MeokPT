@@ -24,6 +24,7 @@ struct DailyNutritionDietInfoFeature {
         }
         
         var showAlertToast = false
+        var toastTitle = ""
     }
     
     enum Action: Equatable {
@@ -170,6 +171,7 @@ struct DailyNutritionDietInfoFeature {
             case .clearAllDietItems:
                 state.isLoading = true
                 state.showAlertToast = true
+                state.toastTitle = "식단 비우기를 완료했습니다."
                 return .run { send in
                     await MainActor.run {
                         let context = modelContainer.mainContext
@@ -232,6 +234,14 @@ struct DailyNutritionDietInfoFeature {
                 print("Diets selected in sheet")
                 state.dietSelectionSheet = nil
                 return .send(.loadInfo)
+                
+            case .aiSheetAction(.dismiss):
+                state.showAlertToast = true
+                state.toastTitle = "분석 내용을 저장하였습니다."
+                return .run { send in
+                    try await Task.sleep(for: .seconds(3))
+                    await send(.hideToast)
+                }
                 
             case .dietSelectionSheetAction, .aiSheetAction:
                 return .none

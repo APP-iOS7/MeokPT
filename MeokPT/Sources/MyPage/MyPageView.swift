@@ -63,6 +63,14 @@ struct MyPageView: View {
                         Label("하루 섭취량 입력", systemImage: "fork.knife")
                     }
                 }
+                
+                Section(header: Text("저장한 분석")) {
+                    NavigationLink {
+                        AIHistoryView(store: Store(initialState: AIHistoryFeature.State()) { AIHistoryFeature() })
+                    } label: {
+                        Label("저장한 분석 리스트 보기", systemImage: "list.bullet.clipboard.fill")
+                    }
+                }
 
                 // MARK: - 내 활동
                 if store.currentUser != nil {
@@ -70,7 +78,7 @@ struct MyPageView: View {
                         NavigationLink {
                             MyPostsView(store: Store(initialState: MyPostsFeature.State()) { MyPostsFeature() })
                         } label: {
-                            Label("내가 쓴 글", systemImage: "pencil")
+                            Label("내가 쓴 글 보기", systemImage: "pencil")
                         }
                     }
 

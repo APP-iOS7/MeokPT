@@ -86,7 +86,7 @@ struct DailyNutritionDietInfoView: View {
             AlertToast(
                 displayMode: .banner(.pop),
                 type: .complete(Color("AppSecondaryColor")),
-                title: "식단 비우기를 완료했습니다."
+                title: store.toastTitle
             )
         }
         .onAppear {
