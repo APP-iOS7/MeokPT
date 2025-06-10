@@ -40,9 +40,28 @@ struct AIModalView: View {
                     let cleanedResponse = stripMarkdownCodeBlockWrapper(from: store.generatedResponse)
                     
                     if !cleanedResponse.isEmpty {
-                        Markdown(cleanedResponse)
-                            .padding(.horizontal, 8)
-                            .padding(.bottom, 24)
+                        VStack(spacing: 24) {
+                            Markdown(cleanedResponse)
+                            
+                            Button(action: {
+                                store.send(.aiAnalyzeSave(cleanedResponse))
+                                dismiss()
+                            }) {
+                                HStack {
+                                    Text("분석 저장 후 닫기")
+                                }
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 60)
+                                .background(Color("AppTintColor"))
+                                .cornerRadius(30)
+                            }
+                            .font(.headline.bold())
+                            .foregroundStyle(.black)
+                            .buttonStyle(PlainButtonStyle())
+                            .contentShape(Rectangle())
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.bottom, 24)
                     } else if !store.generatedResponse.isEmpty && cleanedResponse.isEmpty {
                         Text("분석 결과가 비어있습니다.")
                             .font(.caption)

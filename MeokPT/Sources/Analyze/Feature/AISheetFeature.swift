@@ -9,6 +9,7 @@ struct AISheetFeature: Reducer {
         var generatedResponse: String = "AI 분석 결과를 기다리는 중입니다..."
         var isLoading: Bool = false
         var errorMessage: String? = nil
+        var encodedData: String = ""
     }
 
     enum Action: Equatable {
@@ -32,6 +33,8 @@ struct AISheetFeature: Reducer {
         
         case onAppear
         case aiResponse(Result<String, Error>)
+        case getEncodeData(String)
+        case aiAnalyzeSave(String)
     }
     
     @Dependency(\.firebaseAIService) var firebaseAIService
@@ -181,6 +184,7 @@ struct AISheetFeature: Reducer {
                         
                         let text = try await firebaseAIService.generate(prompt)
                         await send(.aiResponse(.success(text)))
+                        await send(.getEncodeData(encodedData))
                 }
             }
         case .aiResponse(.success(let text)):
@@ -193,6 +197,33 @@ struct AISheetFeature: Reducer {
             state.generatedResponse = "AI 분석 중 오류가 발생했습니다.: \(error.localizedDescription)"
             print("AI Error: \(error.localizedDescription)")
             return .none
+            
+        case .getEncodeData(let encodedData):
+            state.encodedData = encodedData
+            return .none
+            
+        case .aiAnalyzeSave(let cleanedResponse):
+            return .run { [encodedData = state.encodedData] send in
+                await MainActor.run {
+                    do {
+                        let context = modelContainer.mainContext
+                        
+                        let analyzeHistory = AnalyzeHistory(
+                            encodedData: encodedData,
+                            cleanedResponse: cleanedResponse
+                        )
+                        
+                        context.insert(analyzeHistory)
+                        
+                        try context.save()
+                        
+                        print("AI 분석 결과가 성공적으로 저장되었습니다.")
+                        
+                    } catch {
+                        print("AI 분석 결과 저장 실패: \(error.localizedDescription)")
+                    }
+                }
+            }
         }
     }
 }

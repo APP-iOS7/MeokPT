@@ -20,6 +20,7 @@ struct UserProfileForJSON: Codable {
 }
 
 struct MealForJSON: Codable {
+    let dietTitle: String
     let mealType: String
     let calories: Int
     let carbohydrates: Int
@@ -65,6 +66,7 @@ func createNutritionInputForJSON(userRecommendedIntakeItems: [NutritionItem], co
     
     let mealsForJSON: [MealForJSON] = consumedDiets.map { diet in
         MealForJSON(
+            dietTitle: diet.name,
             mealType: diet.mealType?.rawValue ?? MealType.breakfast.displayName,
             calories: Int(diet.kcal?.rounded() ?? 0),
             carbohydrates: Int(diet.carbohydrate?.rounded() ?? 0),
