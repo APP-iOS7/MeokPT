@@ -2,6 +2,7 @@ import ComposableArchitecture
 import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
+import FirebaseStorage
 
 @Reducer
 struct AppFeature {
@@ -83,8 +84,8 @@ struct AppFeature {
                 case .requestLogout:
                     return .send(.performLogout)
                 case .requestWithdrawal:
-                    print("회원탈퇴 요청 받음 - 확인 절차 및 실제 탈퇴 로직 구현 필요")
-                    return .none
+                    print("회원탈퇴 요청 받음")
+                    return .send(.performWithdrawal)
                 }
                 
             // MARK: - 모달에 표시되는 뷰의 Action
@@ -235,13 +236,18 @@ struct AppFeature {
                         print("Error signing out: %@", signOutError)
                     }
                 }
-                .cancellable(id: CancelID.logoutRequest)
-
             case .performWithdrawal:
-                print("회원탈퇴 로직 수행 - 구현 필요")
-                return .none
-                .cancellable(id: CancelID.withdrawalRequest)
+                guard let currentUser = state.currentUser else {
+                    print("회원탈퇴 실패: 현재 로그인된 사용자가 없습니다")
+                    return .none
+                }
                 
+                state.isLoadingUserProfile = true
+                return .run { send in
+                    await performCompleteWithdrawal(userId: currentUser.uid)
+                }
+                .cancellable(id: CancelID.withdrawalRequest)
+
             case .onAppear:
                 // 앱 시작 시 한 번만 인증 상태 리스너 등록
                 guard !state.isInitialAuthCheckDone else { return .none }
@@ -307,4 +313,132 @@ private func clearUserData(_ state: inout AppFeature.State) {
     state.myPageState.userProfile = nil
     state.communityState.currentUser = nil
     state.communityState.userProfile = nil
+}
+
+private func performCompleteWithdrawal(userId: String) async {
+    print("회원탈퇴 시작 - 사용자 ID: \(userId)")
+    
+    do {
+        // 1. Storage에서 프로필 이미지 폴더 삭제
+        await deleteUserProfileImages(userId: userId)
+        
+        // 2. Firestore에서 사용자가 작성한 커뮤니티 게시물 삭제
+        await deleteUserCommunityPosts(userId: userId)
+        
+        // 3. Firestore에서 사용자 프로필 문서 삭제
+        await deleteUserProfileDocument(userId: userId)
+        
+        // 4. Firebase Authentication에서 계정 삭제
+        try await deleteUserAccount()
+        
+        print("회원탈퇴 완료")
+        
+    } catch {
+        print("회원탈퇴 중 오류 발생: \(error.localizedDescription)")
+    }
+}
+
+// MARK: - 1. Storage 프로필 이미지 삭제
+private func deleteUserProfileImages(userId: String) async {
+    print("1단계: Storage 프로필 이미지 폴더 삭제 시작")
+    
+    let storage = Storage.storage()
+    let profileImagesRef = storage.reference().child("profile_images/\(userId)")
+    
+    do {
+        // 폴더 내 모든 파일 목록 가져오기
+        let listResult = try await profileImagesRef.listAll()
+        
+        // 각 파일 삭제
+        for item in listResult.items {
+            do {
+                try await item.delete()
+                print("삭제 완료: \(item.fullPath)")
+            } catch {
+                print("파일 삭제 실패: \(item.fullPath), 오류: \(error.localizedDescription)")
+            }
+        }
+        
+        print("프로필 이미지 폴더 삭제 완료")
+        
+    } catch {
+        print("프로필 이미지 삭제 중 오류: \(error.localizedDescription)")
+    }
+}
+
+// MARK: - 2. 커뮤니티 게시물 삭제
+private func deleteUserCommunityPosts(userId: String) async {
+    print("2단계: 커뮤니티 게시물 삭제 시작")
+    
+    let db = Firestore.firestore()
+    
+    do {
+        // userId 필드로 사용자가 작성한 모든 게시물 찾기
+        let querySnapshot = try await db.collection("community")
+            .whereField("userID", isEqualTo: userId)
+            .getDocuments()
+        
+        // 각 게시물 삭제
+        for document in querySnapshot.documents {
+            do {
+                try await document.reference.delete()
+                print("커뮤니티 게시물 삭제 완료: \(document.documentID)")
+            } catch {
+                print("커뮤니티 게시물 삭제 실패: \(document.documentID), 오류: \(error.localizedDescription)")
+            }
+        }
+        
+        print("커뮤니티 게시물 삭제 완료 - 총 \(querySnapshot.documents.count)개 삭제")
+        
+    } catch {
+        print("커뮤니티 게시물 삭제 중 오류: \(error.localizedDescription)")
+    }
+}
+
+// MARK: - 3. 사용자 프로필 문서 삭제
+private func deleteUserProfileDocument(userId: String) async {
+    print("3단계: 사용자 프로필 문서 삭제 시작")
+    
+    let db = Firestore.firestore()
+    
+    do {
+        try await db.collection("users").document(userId).delete()
+        print("사용자 프로필 문서 삭제 완료")
+        
+    } catch {
+        print("사용자 프로필 문서 삭제 실패: \(error.localizedDescription)")
+    }
+}
+
+// MARK: - 4. Firebase Authentication 계정 삭제
+private func deleteUserAccount() async throws {
+    print("4단계: Firebase Authentication 계정 삭제 시작")
+    
+    guard let user = Auth.auth().currentUser else {
+        throw WithdrawalError.userNotFound
+    }
+    
+    try await user.delete()
+    print("Firebase Authentication 계정 삭제 완료")
+}
+
+// MARK: - 에러 타입 정의
+enum WithdrawalError: Error, LocalizedError {
+    case userNotFound
+    case storageDeleteFailed
+    case firestoreDeleteFailed
+    case authDeleteFailed
+    
+    var errorDescription: String? {
+        switch self {
+        case .userNotFound:
+            return "로그인된 사용자를 찾을 수 없습니다"
+        case .storageDeleteFailed:
+            return "프로필 이미지 삭제에 실패했습니다"
+        case .firestoreDeleteFailed:
+            return "사용자 데이터 삭제에 실패했습니다"
+        case .authDeleteFailed:
+            return "계정 삭제에 실패했습니다"
+        }
+    }
 }

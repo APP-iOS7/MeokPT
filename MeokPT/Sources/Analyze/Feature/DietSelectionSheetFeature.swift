@@ -98,43 +98,53 @@ struct DietSelectionSheetFeature: Reducer {
             
             return .none
         case .addDietButtonTapped:
-            let selected = state.diets.filter { state.selectedDiets.contains($0.id) }
+            let selectedDietIds = Array(state.selectedDiets)
+            
             return .run { send in
                 await MainActor.run {
                     let context = modelContainer.mainContext
-
-                    for diet in selected {
-                        let dietItem = DietItem.fromDiet(diet)
-                        context.insert(dietItem)
-                        
-                        for type in NutritionType.allCases {
-                            let amountToAdd = dietItem.nutrientValue(for: type)
-                            let raw = type.rawValue
-                            
-                            let descriptor = FetchDescriptor<NutritionItem>(
-                                predicate: #Predicate { $0.typeRawValue == raw }
-                            )
-                            
-                            if let existing = try? context.fetch(descriptor).first {
-                                existing.value += Int(amountToAdd ?? 0.0)
-                            } else {
-                                let newItem = NutritionItem(
-                                    type: type,
-                                    value: Int(amountToAdd ?? 0.0),
-                                    max: 0
-                                )
-                                context.insert(newItem)
-                            }
+                    
+                    // 선택된 Diet들을 다시 조회
+                    let descriptor = FetchDescriptor<Diet>(
+                        predicate: #Predicate { diet in
+                            selectedDietIds.contains(diet.id)
                         }
-                        print("\(dietItem.name)")
-                    }
+                    )
                     
                     do {
+                        let selectedDiets = try context.fetch(descriptor)
+                        
+                        for diet in selectedDiets {
+                            let dietItem = DietItem.fromDiet(diet)
+                            context.insert(dietItem)
+                            
+                            for type in NutritionType.allCases {
+                                let amountToAdd = dietItem.nutrientValue(for: type)
+                                let raw = type.rawValue
+                                
+                                let nutritionDescriptor = FetchDescriptor<NutritionItem>(
+                                    predicate: #Predicate { $0.typeRawValue == raw }
+                                )
+                                
+                                if let existing = try? context.fetch(nutritionDescriptor).first {
+                                    existing.value += Int(amountToAdd ?? 0.0)
+                                } else {
+                                    let newItem = NutritionItem(
+                                        type: type,
+                                        value: Int(amountToAdd ?? 0.0),
+                                        max: 0
+                                    )
+                                    context.insert(newItem)
+                                }
+                            }
+                            print("\(dietItem.name)")
+                        }
+                        
                         try context.save()
-                        send(.delegate(.dietSelected(Array(selected))))
+                        send(.delegate(.dietSelected(selectedDiets)))
                         
                     } catch {
-                        print("DietItem 저장 실패: \(error.localizedDescription)")
+                        print("Diet 조회 또는 저장 실패: \(error.localizedDescription)")
                     }
                 }
             }

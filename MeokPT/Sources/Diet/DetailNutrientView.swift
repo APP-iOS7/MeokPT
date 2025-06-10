@@ -49,18 +49,18 @@ private struct EachNutrientView: View {
             
             if let value = value {
                 if name == "나트륨" {
-                    Text(String(format: "%.1fmg", value))
+                    Text(String(format: "%.1f mg", value))
                         .font(.body)
                 } else {
-                    Text(String(format: "%.1fg", value))
+                    Text(String(format: "%.1f g", value))
                         .font(.body)
                 }
             } else {
                 if name == "나트륨" {
-                    Text("--.- mg")
+                    Text("--.-")
                         .font(.body)
                 } else {
-                    Text("--.- g")
+                    Text("--.-")
                         .font(.body)
                 }
             }

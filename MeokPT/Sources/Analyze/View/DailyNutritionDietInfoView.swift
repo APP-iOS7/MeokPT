@@ -1,6 +1,7 @@
 import SwiftUI
 import ComposableArchitecture
 import SwiftData
+import AlertToast
 
 struct DailyNutritionDietInfoView: View {
     @Bindable var store: StoreOf<DailyNutritionDietInfoFeature>
@@ -37,7 +38,7 @@ struct DailyNutritionDietInfoView: View {
                         .buttonStyle(PlainButtonStyle())
                         .contentShape(Rectangle())
                         .padding(.horizontal, 24)
-                        .padding(.bottom, 20)
+                        .padding(.bottom, 8)
                     } else {
                         EmptyView()
                     }
@@ -62,6 +63,7 @@ struct DailyNutritionDietInfoView: View {
                 }
             }
         }
+        .tint(Color("TextButton"))
         .sheet(
             item: $store.scope(state: \.dietSelectionSheet, action: \.dietSelectionSheetAction)
         ) { modalStore in
@@ -77,7 +79,16 @@ struct DailyNutritionDietInfoView: View {
             }
             .presentationDragIndicator(.visible)
         }
-        
+        .toast(isPresenting: Binding(
+            get: { store.showAlertToast },
+            set: { _ in }
+        )) {
+            AlertToast(
+                displayMode: .banner(.pop),
+                type: .complete(Color("AppSecondaryColor")),
+                title: "식단 비우기를 완료했습니다."
+            )
+        }
         .onAppear {
             if store.nutritionItems == nil && !store.isLoading {
                 print("DailyNutritionDietInfoView: Initial load on appear.")
