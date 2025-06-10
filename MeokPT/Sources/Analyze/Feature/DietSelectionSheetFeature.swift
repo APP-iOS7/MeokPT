@@ -8,23 +8,28 @@ struct DietSelectionSheetFeature: Reducer {
         var diets: IdentifiedArrayOf<Diet> = []
         
         var filteredDiets: IdentifiedArrayOf<Diet> {
-            switch currentFilter {
-            case .all:
-                return diets
-            case .favorite:
-                return diets.filter { $0.isFavorite }
+            let searchedDiets = searchText.isEmpty ? diets.elements : diets.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
+            let favoriteFilteredDiets = isFavoriteFilterActive ? searchedDiets.filter { $0.isFavorite } : searchedDiets
+            
+            switch selectedFilter {
+            case .dateDescending:
+                return IdentifiedArrayOf(uniqueElements: favoriteFilteredDiets.sorted { $0.creationDate > $1.creationDate })
+            case .nameAscending:
+                return IdentifiedArrayOf(uniqueElements: favoriteFilteredDiets.sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending })
             }
         }
 
         var selectedDiets: Set<Diet.ID> = []
-        var currentFilter: Options = .all
+        var selectedFilter: DietFilter = .dateDescending 
+        var isFavoriteFilterActive: Bool = false
+        var searchText: String = ""
 
         var isLoading: Bool = false
         var errorMessage: String?
     }
     
     @CasePathable
-    enum Action: Equatable {
+    enum Action: Equatable, BindableAction {
         case loadDiets
         
         case _internalDietsLoadComplted([Diet])
@@ -33,8 +38,9 @@ struct DietSelectionSheetFeature: Reducer {
         case addDietButtonTapped
         case delegate(Delegate)
         
-        case setFilter(Options)
+        case favoriteFilterButtonTapped
         case toggleDietSelection(Diet.ID)
+        case binding(BindingAction<State>)
         
         enum Delegate: Equatable {
             case dietSelected([Diet])
@@ -65,107 +71,103 @@ struct DietSelectionSheetFeature: Reducer {
 
     @Dependency(\.modelContainer) var modelContainer
 
-    func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-        case .loadDiets:
-            state.isLoading = true
-            state.errorMessage = nil
-            
-            return .run { send in
-                await MainActor.run {
-                    do {
-                        let context = modelContainer.mainContext
-                        let descriptor = FetchDescriptor<Diet>()
-                        let items = try context.fetch(descriptor)
-                        
-                        send(._internalDietsLoadComplted(items))
-                    } catch {
-                        send(._internalDietsLoadFailed(.fetchFailed))
+    var body: some ReducerOf<Self> {
+        BindingReducer()
+        Reduce { state, action in
+            switch action {
+            case .loadDiets:
+                state.isLoading = true
+                state.errorMessage = nil
+                
+                return .run { send in
+                    await MainActor.run {
+                        do {
+                            let context = modelContainer.mainContext
+                            let descriptor = FetchDescriptor<Diet>()
+                            let items = try context.fetch(descriptor)
+                            
+                            send(._internalDietsLoadComplted(items))
+                        } catch {
+                            send(._internalDietsLoadFailed(.fetchFailed))
+                        }
                     }
                 }
-            }
-        case let ._internalDietsLoadComplted(items):
-            state.isLoading = false
-            state.diets = IdentifiedArrayOf(uniqueElements: items)
-            print("Diets 로딩 성공")
-            
-            return .none
-            
-        case let ._internalDietsLoadFailed(error):
-            state.isLoading = false
-            state.errorMessage = "Diets 정보 불러오기 실패"
-            print("에러: \(error.localizedDescription)")
-            
-            return .none
-        case .addDietButtonTapped:
-            let selectedDietIds = Array(state.selectedDiets)
-
-            return .run { send in
-                await MainActor.run {
-                    let context = modelContainer.mainContext
-                    
-                    do {
-                        let descriptor = FetchDescriptor<Diet>(
-                            predicate: #Predicate<Diet> { diet in
-                                selectedDietIds.contains(diet.id)
-                            }
-                        )
-                        let selectedDiets = try context.fetch(descriptor)
-
-                        for diet in selectedDiets {
-                            let dietItem = DietItem.fromDiet(diet)
-                            context.insert(dietItem)
-                        }
-                        
-                        try context.save()
-                        
-                        let allDietItems = try context.fetch(FetchDescriptor<DietItem>())
-                        
-                        for type in NutritionType.allCases {
-                            let totalValue: Double = allDietItems
-                                .compactMap { $0.nutrientValue(for: type) }
-                                .reduce(0, +)
-                            
-                            let roundedValue = Int(totalValue.rounded())
-                            let raw = type.rawValue
-                            
-                            let nutritionDescriptor = FetchDescriptor<NutritionItem>(
-                                predicate: #Predicate { $0.typeRawValue == raw }
+            case let ._internalDietsLoadComplted(items):
+                state.isLoading = false
+                state.diets = IdentifiedArrayOf(uniqueElements: items)
+                print("Diets 로딩 성공")
+                
+                return .none
+                
+            case let ._internalDietsLoadFailed(error):
+                state.isLoading = false
+                state.errorMessage = "Diets 정보 불러오기 실패"
+                print("에러: \(error.localizedDescription)")
+                
+                return .none
+                
+            case .addDietButtonTapped:
+                let selectedIDs = state.selectedDiets
+                
+                return .run { send in
+                    await Task { @MainActor in
+                        do {
+                            let context = modelContainer.mainContext
+                            let descriptor = FetchDescriptor<Diet>(
+                                predicate: #Predicate { selectedIDs.contains($0.id) }
                             )
-                            
-                            if let existing = try context.fetch(nutritionDescriptor).first {
-                                existing.value = roundedValue
-                            } else {
-                                let newItem = NutritionItem(
-                                    type: type,
-                                    value: roundedValue,
-                                    max: 0
-                                )
-                                context.insert(newItem)
-                            }
-                        }
-                        try context.save()
-                        send(.delegate(.dietSelected(selectedDiets)))
-                    } catch {
-                        print("NuritionItem 업데이트 실패")
-                    }
-                }
-            }
-        case .delegate:
-            return .none
-        
-        case let .setFilter(option):
-            state.currentFilter = option
-            return .none
-            
-        case let .toggleDietSelection(id):
-            if state.selectedDiets.contains(id) {
-                state.selectedDiets.remove(id)
-            } else {
-                state.selectedDiets.insert(id)
-            }
-            return .none
 
+                            let selectedDiets = try context.fetch(descriptor)
+
+                            for diet in selectedDiets {
+                                let dietItem = DietItem.fromDiet(diet)
+                                context.insert(dietItem)
+                                
+                                for type in NutritionType.allCases {
+                                    let amountToAdd = dietItem.nutrientValue(for: type)
+                                    let raw = type.rawValue
+                                    
+                                    let nutritionDescriptor = FetchDescriptor<NutritionItem>(
+                                        predicate: #Predicate { $0.typeRawValue == raw }
+                                    )
+                                    
+                                    if let existing = try context.fetch(nutritionDescriptor).first {
+                                        existing.value += Int(amountToAdd ?? 0)
+                                    } else {
+                                        let newItem = NutritionItem(type: type, value: Int(amountToAdd ?? 0), max: 0)
+                                        context.insert(newItem)
+                                    }
+                                }
+                            }
+
+                            try context.save()
+                            
+                            send(.delegate(.dietSelected(selectedDiets)))
+                            
+                        } catch {
+                            print("DietItem 저장 또는 조회 실패: \(error.localizedDescription)")
+                        }
+                    }.value
+                }
+                
+            case .delegate:
+                return .none
+            
+            case .favoriteFilterButtonTapped:
+                state.isFavoriteFilterActive.toggle()
+                return .none
+            
+            case let .toggleDietSelection(id):
+                if state.selectedDiets.contains(id) {
+                    state.selectedDiets.remove(id)
+                } else {
+                    state.selectedDiets.insert(id)
+                }
+                return .none
+
+            case .binding:
+                return .none
+            }
         }
     }
 }

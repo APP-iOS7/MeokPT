@@ -5,11 +5,10 @@ struct DietItemListView: View {
     @Bindable var store: StoreOf<DietSelectionSheetFeature>
 
     var body: some View {
-        ScrollView {
             if store.filteredDiets.isEmpty {
                 DietEmptyView()
             } else {
-                LazyVStack(spacing: 25) {
+                LazyVStack(spacing: 12) {
                     ForEach(store.filteredDiets) { diet in
                         DietItemCellView(
                             diet: diet,
@@ -22,7 +21,6 @@ struct DietItemListView: View {
                 }
                 .padding(.top, 5)
             }
-        }
     }
 }
 

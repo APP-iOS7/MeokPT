@@ -16,6 +16,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 @main
 struct MeokPTApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+    @Dependency(\.modelContainer) var modelContainer
     
     static let store = Store(initialState: AppFeature.State()) {
         AppFeature()
@@ -28,7 +29,7 @@ struct MeokPTApp: App {
     var body: some Scene {
         WindowGroup {
             AppView(store: MeokPTApp.store)
-                .modelContainer(for: [BodyInfo.self, NutritionItem.self, DietItem.self, Diet.self, Food.self, SharedPostRecord.self, AnalyzeHistory.self])
+                .modelContainer(modelContainer)
                 .onOpenURL { url in
                     if (AuthApi.isKakaoTalkLoginUrl(url)) {
                         _ = AuthController.handleOpenUrl(url: url)
