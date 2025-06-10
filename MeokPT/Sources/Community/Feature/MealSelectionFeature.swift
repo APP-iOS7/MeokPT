@@ -17,10 +17,17 @@ struct MealSelectionFeature {
         var title: String = ""
         var content: String = ""
         var isFavoriteTab: Bool = false
-        
+
+        var selectedFilter: DietFilter = .all
+
         var dietList: IdentifiedArrayOf<Diet> = []
         var currentDietList: [Diet] {
-            dietList.elements
+            switch selectedFilter {
+            case .all:
+                return dietList.elements
+            case .favorites:
+                return dietList.elements.filter { $0.isFavorite }
+            }
         }
     }
     

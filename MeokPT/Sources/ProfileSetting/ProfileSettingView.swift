@@ -131,7 +131,6 @@ struct ProfileSettingView: View {
                 nickNameFocused = false
             }
         }
-        .scrollDisabled(true)
         .background(Color("AppBackgroundColor"))
         .onAppear {
             store.send(.onAppear)

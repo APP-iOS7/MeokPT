@@ -41,6 +41,8 @@ struct AIModalView: View {
                     
                     if !cleanedResponse.isEmpty {
                         Markdown(cleanedResponse)
+                            .padding(.horizontal, 8)
+                            .padding(.bottom, 24)
                     } else if !store.generatedResponse.isEmpty && cleanedResponse.isEmpty {
                         Text("분석 결과가 비어있습니다.")
                             .font(.caption)
@@ -58,7 +60,8 @@ struct AIModalView: View {
             }
             Spacer()
         }
-        .padding(.top, 10)
+        .padding(.top, 16)
+        .padding(.horizontal, 16)
         .onAppear {
             store.send(.onAppear)
         }

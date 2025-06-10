@@ -16,6 +16,9 @@ struct MyPageFeature {
     struct State {
         var currentUser: User?
         var userProfile: UserProfile?
+        var showLogoutAlert = false
+        var showWithDrawalAlert = false
+
         
         @Presents var profileSettingModal: ProfileSettingFeature.State?
         var path = StackState<Path.State>()

@@ -99,6 +99,7 @@ struct DietSelectionSheetFeature: Reducer {
             return .none
         case .addDietButtonTapped:
             let selected = state.diets.filter { state.selectedDiets.contains($0.id) }
+
             return .run { send in
                 await MainActor.run {
                     let context = modelContainer.mainContext

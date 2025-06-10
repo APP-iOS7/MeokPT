@@ -24,7 +24,7 @@ struct DailyNutritionView: View {
                             .tint(Color("AppTintColor"))
                     }
                     .padding(.horizontal, 24)
-                    .padding(.top)
+                    .padding(.bottom, 8)
                     ScrollView {
                         VStack(spacing: 10) {
                             ForEach(store.rows) { rowData in
@@ -51,7 +51,7 @@ struct DailyNutritionView: View {
                         .cornerRadius(16)
                         .overlay(
                             RoundedRectangle(cornerRadius: 16)
-                                .stroke(Color.gray.opacity(0.4), lineWidth: 1)
+                                .stroke(Color(uiColor: UIColor.separator), lineWidth: 1)
                         )
                         
                     }
@@ -83,6 +83,7 @@ struct DailyNutritionView: View {
             .buttonStyle(PlainButtonStyle())
             .contentShape(Rectangle())
             .padding(.horizontal, 24)
+            .padding(.bottom, 8)
         }
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
@@ -92,7 +93,6 @@ struct DailyNutritionView: View {
                 }
             }
         }
-        .toolbar(.hidden, for: .tabBar)
         .onAppear {
             store.send(.onAppear)
             store.send(.loadSavedData)
