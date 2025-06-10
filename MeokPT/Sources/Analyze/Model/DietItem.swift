@@ -87,7 +87,7 @@ extension DietItem {
 
                let formatter = NumberFormatter()
                formatter.numberStyle = .decimal
-               formatter.minimumFractionDigits = 0
+               formatter.minimumFractionDigits = 1
                formatter.maximumFractionDigits = (type == .calorie || type == .sodium) ? 0 : 1
 
                let formatted = formatter.string(from: NSNumber(value: value)) ?? (type == .calorie ? "---" : "--.-")
