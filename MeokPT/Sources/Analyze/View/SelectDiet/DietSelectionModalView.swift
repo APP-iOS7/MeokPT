@@ -17,24 +17,29 @@ struct DietSelectionModalView: View {
                     Spacer()
                 } else {
                     ScrollView {
-                        HStack {
-                            Spacer()
-                            Picker("정렬", selection: $store.selectedFilter) {
-                                ForEach(DietFilter.allCases) { filter in
-                                    Text(filter.rawValue).tag(filter)
+                        ZStack {
+                            HStack {
+                                Spacer()
+                                Picker("정렬", selection: $store.selectedFilter) {
+                                    ForEach(DietFilter.allCases) { filter in
+                                        Text(filter.rawValue).tag(filter)
+                                    }
+                                }
+                                .pickerStyle(.segmented)
+                                .fixedSize()
+                                Spacer()
+                            }
+                            HStack{
+                                Spacer()
+                                Button {
+                                    store.send(.favoriteFilterButtonTapped)
+                                } label: {
+                                    Image(systemName: store.isFavoriteFilterActive ? "heart.fill" : "heart")
+                                        .foregroundStyle(Color("AppSecondaryColor"))
                                 }
                             }
-                            .pickerStyle(.segmented)
-                            .fixedSize()
-                            Spacer()
-                            Button {
-                                store.send(.favoriteFilterButtonTapped)
-                            } label: {
-                                Image(systemName: store.isFavoriteFilterActive ? "heart.fill" : "heart")
-                                    .foregroundStyle(Color("AppSecondaryColor"))
-                            }
                         }
-                        .padding(.trailing, 24)
+                        .padding(.horizontal, 36)
                         DietItemListView(store: store)
                     }
                 }
