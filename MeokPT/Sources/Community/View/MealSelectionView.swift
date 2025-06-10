@@ -6,13 +6,6 @@ struct MealSelectionView: View {
     
     var body: some View {
         ScrollView {
-            Picker("필터", selection: $store.selectedFilter) {
-                ForEach(DietFilter.allCases) { filter in
-                    Text(filter.rawValue).tag(filter)
-                }
-            }
-            .pickerStyle(.segmented)
-            .fixedSize()
             LazyVStack(spacing: 12) {
                 ForEach(store.currentDietList) { diet in
                     CommunityDietSelectView(diet: diet)
@@ -31,11 +24,32 @@ struct MealSelectionView: View {
         .navigationTitle("식단 선택")
         .navigationBarTitleDisplayMode(.inline)
         .background(Color("AppBackgroundColor"))
-        .toolbar(content: {
-            ToolbarItem(placement: .topBarLeading,
-                        content: { Button(action: {
-                store.send(.dismissButtonTapped)
-            }) { Text("취소").foregroundStyle(Color("TextButton")) }})
-        })
+        .searchable(text: $store.searchText, prompt: "검색")
+        .toolbar {
+            ToolbarItemGroup(placement: .topBarLeading) {
+                Button {
+                    store.send(.dismissButtonTapped)
+                } label: {
+                    Text("취소").foregroundStyle(Color("TextButton"))
+                }
+            }
+            ToolbarItemGroup(placement: .principal) {
+                Picker("정렬", selection: $store.selectedFilter) {
+                    ForEach(DietFilter.allCases) { filter in
+                        Text(filter.rawValue).tag(filter)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .fixedSize()
+            }
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                Button {
+                    store.send(.favoriteFilterButtonTapped)
+                } label: {
+                    Image(systemName: store.isFavoriteFilterActive ? "heart.fill" : "heart")
+                        .foregroundStyle(Color("TextButton"))
+                }
+            }
+        }
     }
 }

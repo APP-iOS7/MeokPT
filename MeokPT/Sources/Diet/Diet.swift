@@ -6,6 +6,7 @@ import SwiftData
 final class Food: Identifiable, Equatable, Hashable {
     @Attribute(.unique) var id: UUID
     var name: String
+    var creationDate: Date = Date()
     var amount: Double
     var kcal: Double
     var carbohydrate: Double?
@@ -33,6 +34,7 @@ final class Food: Identifiable, Equatable, Hashable {
 final class Diet: Identifiable, Equatable, Hashable {
     @Attribute(.unique) var id: UUID
     var title: String
+    var creationDate: Date = Date()
     var isFavorite: Bool
     var foods: [Food]
     

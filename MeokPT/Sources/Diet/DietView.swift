@@ -35,8 +35,8 @@ struct DietView: View {
             }
             .background(Color("AppBackgroundColor"))
             .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Picker("필터", selection: $store.selectedFilter) {
+                ToolbarItemGroup(placement: .principal) {
+                    Picker("정렬", selection: $store.selectedFilter) {
                         ForEach(DietFilter.allCases) { filter in
                             Text(filter.rawValue).tag(filter)
                         }
@@ -44,7 +44,13 @@ struct DietView: View {
                     .pickerStyle(.segmented)
                     .fixedSize()
                 }
-                ToolbarItem(placement: .primaryAction) {
+                ToolbarItemGroup(placement: .primaryAction) {
+                    Button {
+                        store.send(.favoriteFilterButtonTapped)
+                    } label: {
+                        Image(systemName: store.isFavoriteFilterActive ? "heart.fill" : "heart")
+                            .foregroundStyle(Color("AppSecondaryColor"))
+                    }
                     Button {
                         store.send(.addButtonTapped)
                     } label: {

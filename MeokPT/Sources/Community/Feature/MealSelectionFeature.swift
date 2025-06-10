@@ -16,17 +16,21 @@ struct MealSelectionFeature {
     struct State: Equatable, Hashable {
         var title: String = ""
         var content: String = ""
-        var isFavoriteTab: Bool = false
-
-        var selectedFilter: DietFilter = .all
-
+        
         var dietList: IdentifiedArrayOf<Diet> = []
+        var selectedFilter: DietFilter = .dateDescending
+        var isFavoriteFilterActive: Bool = false
+        var searchText: String = ""
+        
         var currentDietList: [Diet] {
+            let searchedDiets = searchText.isEmpty ? dietList.elements : dietList.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
+            let favoriteFilteredDiets = isFavoriteFilterActive ? searchedDiets.filter { $0.isFavorite } : searchedDiets
+            
             switch selectedFilter {
-            case .all:
-                return dietList.elements
-            case .favorites:
-                return dietList.elements.filter { $0.isFavorite }
+            case .dateDescending:
+                return favoriteFilteredDiets.sorted { $0.creationDate > $1.creationDate }
+            case .nameAscending:
+                return favoriteFilteredDiets.sorted { $0.title.compare($1.title) == .orderedAscending }
             }
         }
     }
@@ -38,6 +42,7 @@ struct MealSelectionFeature {
         case dietsLoaded([Diet])
         case dietCellTapped(id: UUID)
         case dismissButtonTapped
+        case favoriteFilterButtonTapped
     }
     
     enum DelegateAction: Equatable {
@@ -81,6 +86,10 @@ struct MealSelectionFeature {
                 
             case .dismissButtonTapped:
                 return .send(.delegate(.dismissSheet))
+                
+            case .favoriteFilterButtonTapped:
+                state.isFavoriteFilterActive.toggle()
+                return .none
                 
             case .binding(_):
                 return .none

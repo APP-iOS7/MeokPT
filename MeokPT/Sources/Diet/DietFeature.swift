@@ -3,8 +3,8 @@ import Foundation
 import SwiftData
 
 enum DietFilter: String, CaseIterable, Identifiable {
-    case all = "전체"
-    case favorites = "즐겨찾기"
+    case dateDescending = "최신순"
+    case nameAscending = "이름순"
     var id: String { self.rawValue }
 }
 
@@ -20,7 +20,8 @@ struct DietFeature {
         
         var dietList: IdentifiedArrayOf<Diet> = []
         var searchText = ""
-        var selectedFilter: DietFilter = .all
+        var selectedFilter: DietFilter = .dateDescending
+        var isFavoriteFilterActive: Bool = false
         
         var path = StackState<Path.State>()
         
@@ -31,11 +32,14 @@ struct DietFeature {
         
         var filteredDiets: [Diet] {
             let searchedDiets = searchText.isEmpty ? dietList.elements : dietList.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
+            
+            let favoriteFilteredDiets = isFavoriteFilterActive ? searchedDiets.filter { $0.isFavorite } : searchedDiets
+            
             switch selectedFilter {
-            case .all:
-                return searchedDiets
-            case .favorites:
-                return searchedDiets.filter { $0.isFavorite }
+            case .dateDescending:
+                return favoriteFilteredDiets.sorted { $0.creationDate > $1.creationDate }
+            case .nameAscending:
+                return favoriteFilteredDiets.sorted { $0.title.compare($1.title) == .orderedAscending }
             }
         }
     }
@@ -50,6 +54,7 @@ struct DietFeature {
         case updateDietTitle(id: UUID, newTitle: String)
         case dietCreated(Diet)
         case navigateToNewDiet(UUID)
+        case favoriteFilterButtonTapped
         
         // MARK: Context Menu Actions
         case deleteButtonTapped(id: UUID)
@@ -140,7 +145,11 @@ struct DietFeature {
                 return .none
 
             case let .deleteButtonTapped(id):
-                guard state.dietList[id: id] != nil else { return .none }
+                guard let dietToDelete = state.dietList[id: id] else { return .none }
+                Task { @MainActor in
+                    let modelContext = modelContainer.mainContext
+                    modelContext.delete(dietToDelete)
+                }
                 state.dietList.remove(id: id)
                 return .run { _ in
                     await MainActor.run {
@@ -176,6 +185,10 @@ struct DietFeature {
                 state.isRenameAlertPresented = false
                 state.dietIDForRename = nil
                 state.renameInputText = "" // 입력 필드 초기화
+                return .none
+                
+            case .favoriteFilterButtonTapped:
+                state.isFavoriteFilterActive.toggle()
                 return .none
                 
             case let .path(.element(id: pathID, action: .detail(.delegate(.updateTitle(newTitle))))):
