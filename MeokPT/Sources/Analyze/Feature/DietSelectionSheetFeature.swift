@@ -98,25 +98,27 @@ struct DietSelectionSheetFeature: Reducer {
             
             return .none
         case .addDietButtonTapped:
-            let selected = state.diets.filter { state.selectedDiets.contains($0.id) }
+            let selectedDietIds = Array(state.selectedDiets)
 
             return .run { send in
                 await MainActor.run {
                     let context = modelContainer.mainContext
+                    
+                    do {
+                        let descriptor = FetchDescriptor<Diet>(
+                            predicate: #Predicate<Diet> { diet in
+                                selectedDietIds.contains(diet.id)
+                            }
+                        )
+                        let selectedDiets = try context.fetch(descriptor)
 
-                    for diet in selected {
-                        let dietItem = DietItem.fromDiet(diet)
-                        context.insert(dietItem)
-                    }
-                    
-                    do {
+                        for diet in selectedDiets {
+                            let dietItem = DietItem.fromDiet(diet)
+                            context.insert(dietItem)
+                        }
+                        
                         try context.save()
-                    } catch {
-                        print("DietItem 저장 실패: \(error.localizedDescription)")
-                        return
-                    }
-                    
-                    do {
+                        
                         let allDietItems = try context.fetch(FetchDescriptor<DietItem>())
                         
                         for type in NutritionType.allCases {
@@ -127,11 +129,11 @@ struct DietSelectionSheetFeature: Reducer {
                             let roundedValue = Int(totalValue.rounded())
                             let raw = type.rawValue
                             
-                            let descriptor = FetchDescriptor<NutritionItem>(
+                            let nutritionDescriptor = FetchDescriptor<NutritionItem>(
                                 predicate: #Predicate { $0.typeRawValue == raw }
                             )
                             
-                            if let existing = try context.fetch(descriptor).first {
+                            if let existing = try context.fetch(nutritionDescriptor).first {
                                 existing.value = roundedValue
                             } else {
                                 let newItem = NutritionItem(
@@ -143,7 +145,7 @@ struct DietSelectionSheetFeature: Reducer {
                             }
                         }
                         try context.save()
-                        send(.delegate(.dietSelected(Array(selected))))
+                        send(.delegate(.dietSelected(selectedDiets)))
                     } catch {
                         print("NuritionItem 업데이트 실패")
                     }
