@@ -46,7 +46,7 @@ private struct EachNutrientView: View {
                 .font(.caption)
                 .foregroundColor(Color("AppSecondaryColor"))
             Spacer().frame(height:4)
-            name == "나트륨" ? Text("--.- mg") : Text("--.- g")
+            name == "나트륨" ? Text("--.-") : Text("--.-")
                 .font(.body)
         }
     }

@@ -48,8 +48,10 @@ struct BodyNutritionContainerView: View {
                                     
                                     self.nutritionStore.send(.setSaveNutritionRows(newRows))
                                     print("DailyNutritionFeature의 rows가 새롭게 계산된 값으로 업데이트 및 저장되었습니다.")
+                                    bodyInfoStore.send(.setIsDailyNutritionManualInputMode(false))
                                 } else {
                                     print("BodyInfo 저장 완료. DailyNutritionView가 수동 입력 모드이므로 현재는 재계산하지 않습니다.")
+                                    bodyInfoStore.send(.setIsDailyNutritionManualInputMode(true))
                                 }
                             }, store: bodyInfoStore
                         )
@@ -100,6 +102,7 @@ struct BodyNutritionContainerView: View {
                 .background(Color("AppBackgroundColor"))
                 .onAppear {
                     bodyInfoStore.send(.loadSavedData)
+                    bodyInfoStore.send(.setIsDailyNutritionManualInputMode(nutritionStore.isEditable))
                 }
                 .tint(Color("TextButton"))
     }

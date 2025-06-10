@@ -13,6 +13,7 @@ struct BodyInfoInputFeature {
         var selectedActivityLevel: ActivityLevel = .veryLow
         var error: String?
         var showAlertToast = false
+        var isDailyNutritionManualInputMode: Bool = false
     }
     
     enum Action: Equatable, BindableAction {
@@ -28,9 +29,10 @@ struct BodyInfoInputFeature {
         case loadSavedData
         case hideToast
         
-        case _handleLoadedBodyInfoData(BodyInfo?)
+        case _handleLoadedBodyInfoData(BodyInfoData?)
         case _handleSaveSuccess
         case _handleSaveError(String)
+        case setIsDailyNutritionManualInputMode(Bool)
     }
     
     @Dependency(\.modelContainer) var modelContainer
@@ -65,19 +67,12 @@ struct BodyInfoInputFeature {
                 print("\n데이터 로드 요청 (Reducer)")
                 
                 return .run { [modelContainer] send in
-                    let loadedData: BodyInfo? = await MainActor.run {
+                    let loadedData: BodyInfoData? = await MainActor.run {
                         let context = modelContainer.mainContext
                         print("데이터 로드 시작 (Effect on MainActor)")
                         if let model = try? context.fetch(FetchDescriptor<BodyInfo>()).first {
                             print("BodyInfo 모델 로드 성공 (Effect)")
-                            return BodyInfo(
-                                height: model.height,
-                                age: model.age,
-                                weight: model.weight,
-                                genderRawValue: model.genderRawValue,
-                                goalRawValue: model.goalRawValue,
-                                activityLevelRawValue: model.activityLevelRawValue
-                            )
+                            return BodyInfoData(from: model) // 변환해서 반환
                         } else {
                             print("저장된 BodyInfo 모델 없음 (Effect)")
                             return nil
@@ -185,6 +180,10 @@ struct BodyInfoInputFeature {
 
             case .hideToast:
                 state.showAlertToast = false
+                return .none
+                
+            case let .setIsDailyNutritionManualInputMode(isManual):
+                state.isDailyNutritionManualInputMode = isManual
                 return .none
             }
         }

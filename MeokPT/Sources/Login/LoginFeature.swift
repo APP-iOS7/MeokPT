@@ -15,6 +15,7 @@ import AuthenticationServices
 import KakaoSDKCommon
 import KakaoSDKAuth
 import KakaoSDKUser
+import CryptoKit
 
 @Reducer
 struct Path {
@@ -226,14 +227,23 @@ struct LoginFeature {
             case .kakaoLoginButtonTapped:
                 state.isLoading = true
                 state.loginErrorMessage = ""
-                state.currentNonce = randomNonceString()
-                print("Kakao 로그인 버튼 선택됨. Nonce 생성: \(state.currentNonce ?? "알 수 없음")")
+                
+                // Raw nonce 생성
+                let rawNonce = randomNonceString()
+                state.currentNonce = rawNonce
+                
+                // 카카오용 hashed nonce 생성
+                let hashedNonce = sha256(rawNonce)
+                
+                print("Raw Nonce: \(rawNonce)")
+                print("Hashed Nonce: \(hashedNonce)")
 
-                return .run { [capturedNonce = state.currentNonce!] send in
+                return .run { [capturedRawNonce = rawNonce] send in
                     let kakaoLoginResult: Result<OAuthToken, Error> = await Task { @MainActor in
                         await withCheckedContinuation { continuation in
                             if UserApi.isKakaoTalkLoginAvailable() {
-                                UserApi.shared.loginWithKakaoTalk(nonce: capturedNonce) { (oauthToken, error) in
+                                // 카카오에는 hashed nonce 전달
+                                UserApi.shared.loginWithKakaoTalk(nonce: hashedNonce) { (oauthToken, error) in
                                     if let error = error {
                                         continuation.resume(returning: .failure(error))
                                     } else if let oauthToken = oauthToken {
@@ -244,7 +254,8 @@ struct LoginFeature {
                                     }
                                 }
                             } else {
-                                UserApi.shared.loginWithKakaoAccount(nonce: capturedNonce) { (oauthToken, error) in
+                                // 카카오에는 hashed nonce 전달
+                                UserApi.shared.loginWithKakaoAccount(nonce: hashedNonce) { (oauthToken, error) in
                                     if let error = error {
                                         continuation.resume(returning: .failure(error))
                                     } else if let oauthToken = oauthToken {
@@ -273,7 +284,7 @@ struct LoginFeature {
                         let credential = OAuthProvider.credential(
                             providerID: .custom(providerID),
                             idToken: idTokenString,
-                            rawNonce: capturedNonce,
+                            rawNonce: capturedRawNonce, // Firebase에는 raw nonce 전달
                             accessToken: oauthToken.accessToken
                         )
                         
@@ -288,7 +299,6 @@ struct LoginFeature {
                     }
                 }
                 .cancellable(id: CancelID.kakaoSignInRequest, cancelInFlight: true)
-
             case .closeButtonTapped:
                 return .send(.delegate(.dismissLoginSheet))
                 
@@ -464,4 +474,13 @@ private func randomNonceString(length: Int = 32) -> String {
         }
     }
     return result
+}
+
+private func sha256(_ input: String) -> String {
+    let inputData = Data(input.utf8)
+    let hashedData = SHA256.hash(data: inputData)
+    let hashString = hashedData.compactMap {
+        String(format: "%02x", $0)
+    }.joined()
+    return hashString
 }
