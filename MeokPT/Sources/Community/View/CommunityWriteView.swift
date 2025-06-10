@@ -26,11 +26,11 @@ struct CommunityWriteView: View {
                 // 내용 입력
                 ZStack(alignment: .topLeading) {
                     RoundedRectangle(cornerRadius: 20)
-                        .fill(Color("App CardColor"))
+                        .fill(Color(UIColor.secondarySystemGroupedBackground))
                         .frame(height: 160)
                         .overlay(
                             RoundedRectangle(cornerRadius: 20)
-                                .stroke(Color(.placeholderText))
+                                .stroke(Color(uiColor: UIColor.separator), lineWidth: 1)
                         )
                     TextEditor(text: $store.content)
                         .scrollContentBackground(.hidden)
@@ -53,7 +53,7 @@ struct CommunityWriteView: View {
                         CommunityDietSelectView(diet: diet)
                     } else {
                         RoundedRectangle(cornerRadius: 20)
-                            .fill(Color("App CardColor"))
+                            .fill(Color(UIColor.secondarySystemGroupedBackground))
                             .frame(height: 160)
                             .overlay(
                                 HStack {
@@ -63,7 +63,7 @@ struct CommunityWriteView: View {
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 20)
-                                    .stroke(Color(.placeholderText))
+                                    .stroke(Color(uiColor: UIColor.separator), lineWidth: 1)
                             )
                     }
                 }
@@ -83,11 +83,11 @@ struct CommunityWriteView: View {
                     ) {
                         imageDisplayView
                             .frame(height: 210)
-                            .background(Color("App CardColor"))
+                            .background(Color(UIColor.secondarySystemGroupedBackground))
                             .cornerRadius(20)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 20)
-                                    .stroke(Color(.placeholderText))
+                                    .stroke(Color(uiColor: UIColor.separator), lineWidth: 1)
                             )
                     }
                     .buttonStyle(PlainButtonStyle())

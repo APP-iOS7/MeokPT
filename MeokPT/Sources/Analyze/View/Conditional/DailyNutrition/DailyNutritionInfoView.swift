@@ -23,11 +23,11 @@ struct DailyNutritionInfoView: View {
         .cornerRadius(16)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color("CardBackgroundColor"))
+                .fill(Color(UIColor.secondarySystemGroupedBackground))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.gray, lineWidth: 1)
+                .stroke(Color(uiColor: UIColor.separator), lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .padding(24)

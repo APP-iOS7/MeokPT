@@ -151,7 +151,7 @@ struct DietDetailView: View {
             }
         }
         .animation(.easeInOut(duration: 0.3), value: store.diet.foods.count)
-        .background(Color("AppCellBackgroundColor"))
+        .background(Color(UIColor.secondarySystemGroupedBackground))
         .cornerRadius(20)
         .overlay(
             RoundedRectangle(cornerRadius: 20)

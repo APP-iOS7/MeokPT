@@ -38,7 +38,7 @@ struct CommunityDietSelectView: View {
             }
         }
         .padding(24)
-        .background(Color("AppCellBackgroundColor"))
+        .background(Color(UIColor.secondarySystemGroupedBackground))
         .cornerRadius(20)
         .overlay(
             RoundedRectangle(cornerRadius: 20)

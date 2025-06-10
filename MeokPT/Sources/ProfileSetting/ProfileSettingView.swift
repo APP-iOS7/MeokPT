@@ -33,7 +33,7 @@ struct ProfileSettingView: View {
                 }
                 .frame(width: 104, height: 104)
                 .clipShape(Circle())
-                .overlay(Circle().stroke(Color.gray.opacity(0.5), lineWidth: 1))
+                .overlay(Circle().stroke(Color(UIColor.separator), lineWidth: 1))
                 
                 Spacer().frame(height: 20)
 

@@ -102,7 +102,6 @@ struct CreateDietView: View {
                     }
                     .listStyle(.insetGrouped)
                     .scrollContentBackground(.hidden)
-                    .background(Color("AppBackgroundColor"))
                     .padding(.horizontal, 4)
                 } else if store.lastSearchType != nil { // 검색결과가 없는 경우
                     VStack(spacing: 24) {
