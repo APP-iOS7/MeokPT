@@ -13,6 +13,7 @@ struct BodyInfoInputFeature {
         var selectedActivityLevel: ActivityLevel = .veryLow
         var error: String?
         var showAlertToast = false
+        var isDailyNutritionManualInputMode: Bool = false
     }
     
     enum Action: Equatable, BindableAction {
@@ -31,6 +32,7 @@ struct BodyInfoInputFeature {
         case _handleLoadedBodyInfoData(BodyInfoData?)
         case _handleSaveSuccess
         case _handleSaveError(String)
+        case setIsDailyNutritionManualInputMode(Bool)
     }
     
     @Dependency(\.modelContainer) var modelContainer
@@ -178,6 +180,10 @@ struct BodyInfoInputFeature {
 
             case .hideToast:
                 state.showAlertToast = false
+                return .none
+                
+            case let .setIsDailyNutritionManualInputMode(isManual):
+                state.isDailyNutritionManualInputMode = isManual
                 return .none
             }
         }

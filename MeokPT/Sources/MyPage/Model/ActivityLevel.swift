@@ -22,11 +22,11 @@ enum ActivityLevel: Double, CaseIterable, Identifiable, Equatable, Codable, Hash
         case .veryLow:
             return "운동을 거의 안 함\n좌식 생활 위주"
         case .low:
-            return "가벼운 활동\n주 1-2회 운동\n또는 규칙적인 산책"
+            return "가벼운 활동\n주 1-2회 운동"
         case .medium:
-            return "보통의 활동\n주 3-5회 운동\n또는 활동적인 취미"
+            return "보통의 활동\n주 3-5회 운동"
         case .activity:
-            return "적극적인 활동\n주 6-7회 운동\n또는 육체 노동"
+            return "적극적인 활동\n주 6-7회 운동"
         case .veryActivity:
             return "운동 중심의 일상\n또는 힘든 육체 노동"
         }

@@ -127,28 +127,13 @@ struct EditFoodView: View {
         var nutrientFormatter: NumberFormatter {
             let formatter = NumberFormatter()
             formatter.numberStyle = .decimal
-            formatter.minimumFractionDigits = 1
+            formatter.minimumFractionDigits = (focusedNutrientField == field) ? 0 : 1
             formatter.maximumFractionDigits = 1
             formatter.minimum = 0.0
             formatter.usesGroupingSeparator = false
-            if focusedNutrientField == field {
-                formatter.minimumFractionDigits = 0
-            } else {
-                formatter.minimumFractionDigits = 1
-            }
             return formatter
         }
         let isFocused = focusedNutrientField == field
-        let currentForegroundColor = Color(.label)
-        
-        let editingValue = Binding<Double>(
-            get: {
-                value.wrappedValue ?? 0.0
-            },
-            set: { newValue in
-                value.wrappedValue = max(0, newValue)
-            }
-        )
         
         VStack(alignment: .center, spacing: 12) {
             Text(label)
@@ -170,19 +155,23 @@ struct EditFoodView: View {
                 HStack(alignment: .firstTextBaseline, spacing: 2) {
                     ZStack {
                         // 실제 편집용 TextField
-                        TextField("", value: editingValue, formatter: nutrientFormatter)
+                        TextField("", value: value, formatter: nutrientFormatter)
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.center)
                             .font(.body)
                             .foregroundColor(isFocused ? .black : .clear)
                             .focused($focusedNutrientField, equals: field)
                             .fixedSize(horizontal: true, vertical: false)
+                            .onChange(of: value.wrappedValue) { _, newValue in
+                                guard let unwrappedValue = newValue else { return }
+                                onChangeValue(unwrappedValue, value)
+                            }
                         
                         // 표시용 텍스트 (포커스되지 않았을 때)
                         if !isFocused {
                             Text(isAvailable ? String(format: "%.1f", value.wrappedValue ?? 0.0) : "--.-")
                                 .font(.body)
-                                .foregroundColor(isAvailable ? currentForegroundColor : Color("AppSecondaryColor"))
+                                .foregroundColor(.primary)
                                 .fixedSize(horizontal: true, vertical: false)
                                 .allowsHitTesting(false)
                         }
@@ -190,7 +179,7 @@ struct EditFoodView: View {
                     
                     Text(unit.rawValue)
                         .font(.body)
-                        .foregroundColor(isFocused || isAvailable ? currentForegroundColor : Color("AppSecondaryColor"))
+                        .foregroundColor(Color("AppSecondaryColor"))
                         .fixedSize(horizontal: true, vertical: false)
                 }
             }

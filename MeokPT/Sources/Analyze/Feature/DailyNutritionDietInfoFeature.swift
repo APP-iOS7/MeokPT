@@ -20,6 +20,8 @@ struct DailyNutritionDietInfoFeature {
         var isAIbuttonEnabled: Bool {
             !(nutritionItems?.isEmpty ?? true)
         }
+        
+        var showAlertToast = false
     }
     
     enum Action: Equatable {
@@ -38,6 +40,7 @@ struct DailyNutritionDietInfoFeature {
         case dietItemMealTypeChanged(id: DietItem.ID, mealType: MealType)
         
         case clearAllDietItems
+        case hideToast
 
         case _internalLoadInfoCompleted([NutritionItem], [DietItem])
         case _internalLoadInfoFailed(DataFetchError)
@@ -164,6 +167,7 @@ struct DailyNutritionDietInfoFeature {
                 }
             case .clearAllDietItems:
                 state.isLoading = true
+                state.showAlertToast = true
                 return .run { send in
                     await MainActor.run {
                         let context = modelContainer.mainContext
@@ -202,6 +206,13 @@ struct DailyNutritionDietInfoFeature {
                 state.nutritionItems = nutritionItems
                 state.dietItems = dietItems
                 print("Nutrition 최대값 로딩 성공 (after async processing)")
+                return .run { send in
+                    try await Task.sleep(for: .seconds(3))
+                    await send(.hideToast)
+                }
+                
+            case .hideToast:
+                state.showAlertToast = false
                 return .none
                 
             case let ._internalLoadInfoFailed(error):

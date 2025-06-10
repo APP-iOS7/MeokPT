@@ -19,12 +19,12 @@ struct MyPageView: View {
                                     Image(systemName: "person.circle.fill")
                                         .resizable()
                                         .scaledToFit()
-                                        .frame(width: 60, height: 60)
-                                        .foregroundStyle(.gray.opacity(0.5))
+                                        .frame(width: 55, height: 55)
+                                        .foregroundStyle(Color("AppSecondaryColor"))
                                 }
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
-                                .frame(width: 60, height: 60)
+                                .frame(width: 55, height: 55)
                                 .clipShape(Circle())
 
                             VStack(alignment: .leading) {

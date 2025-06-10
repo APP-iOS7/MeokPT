@@ -6,6 +6,13 @@ struct MealSelectionView: View {
     
     var body: some View {
         ScrollView {
+            Picker("필터", selection: $store.selectedFilter) {
+                ForEach(DietFilter.allCases) { filter in
+                    Text(filter.rawValue).tag(filter)
+                }
+            }
+            .pickerStyle(.segmented)
+            .fixedSize()
             LazyVStack(spacing: 12) {
                 ForEach(store.currentDietList) { diet in
                     Button {
