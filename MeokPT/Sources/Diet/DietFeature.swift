@@ -61,7 +61,6 @@ struct DietFeature {
     }
     
     @Dependency(\.modelContainer) var modelContainer
-    @Dependency(\.modelContainer.mainContext) var modelContext
     
     var body: some ReducerOf<Self> {
         BindingReducer()
@@ -142,7 +141,10 @@ struct DietFeature {
 
             case let .deleteButtonTapped(id):
                 guard let dietToDelete = state.dietList[id: id] else { return .none }
-                modelContext.delete(dietToDelete)
+                Task { @MainActor in
+                    let modelContext = modelContainer.mainContext
+                    modelContext.delete(dietToDelete)
+                }
                 state.dietList.remove(id: id)
                 return .none
 
