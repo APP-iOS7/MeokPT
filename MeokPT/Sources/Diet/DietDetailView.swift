@@ -13,6 +13,10 @@ struct DietDetailView: View {
                 headerSection
                 nutritionSummarySection
                 foodListSection
+                if store.diet.foods.isEmpty {
+                    Text("음식을 추가해주세요")
+                        .foregroundStyle(Color.secondary)
+                }
             }
             .padding(24)
         }
@@ -153,10 +157,10 @@ struct DietDetailView: View {
         .animation(.easeInOut(duration: 0.3), value: store.diet.foods.count)
         .background(Color("AppCellBackgroundColor"))
         .cornerRadius(20)
-        .overlay(
+        .overlay {
             RoundedRectangle(cornerRadius: 20)
                 .stroke(Color(uiColor: UIColor.separator), lineWidth: 1)
-        )
+        }
     }
 }
 
