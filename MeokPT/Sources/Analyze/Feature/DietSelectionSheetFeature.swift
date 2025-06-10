@@ -127,11 +127,11 @@ struct DietSelectionSheetFeature: Reducer {
                                 )
                                 
                                 if let existing = try? context.fetch(nutritionDescriptor).first {
-                                    existing.value += Int(amountToAdd)
+                                    existing.value += Int(amountToAdd ?? 0.0)
                                 } else {
                                     let newItem = NutritionItem(
                                         type: type,
-                                        value: Int(amountToAdd),
+                                        value: Int(amountToAdd ?? 0.0),
                                         max: 0
                                     )
                                     context.insert(newItem)

@@ -15,18 +15,25 @@ struct DietItemView: View {
             VStack(alignment: .leading, spacing: 16) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(item.name)
-                        .font(.headline)
-                    Text(item.formattedKcalOnly)
-                        .font(.subheadline)
+                        .font(.title3.bold())
+                        .lineLimit(1)
+                    Text(item.formattedKcalOnlySafe)
+                        .font(.body)
                 }
 
                 HStack(spacing: 20) {
-                    ForEach(displayedNutrients, id: \.self) { nutrientType in
+                    ForEach(Array(displayedNutrients.enumerated()), id: \.element) { index, nutrientType in
                         DietNutritionInfoCellView(
                             name: nutrientType.rawValue.capitalized,
-                            value: item.formattedNutrient(for: nutrientType)
+                            value: item.formattedNutrientSafe(for: nutrientType)
                         )
                         .frame(maxWidth: .infinity)
+
+                        if index < displayedNutrients.count - 1 {
+                            Divider()
+                                .frame(height: 40)
+                                .padding(.horizontal, 8)
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -34,19 +41,12 @@ struct DietItemView: View {
             .padding(24)
             .background(
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(Color("AppCellBackgroundColor"))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.gray, lineWidth: 1)
-                    )
+                    .fill(Color("App CardColor"))
+                    .stroke(Color.gray, lineWidth: 1)
             )
-            .padding([.bottom, .horizontal], 24)
+            .padding(.horizontal, 24)
             .padding(.top, 5)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .padding(.bottom, 24)
         }
     }
-}
-
-#Preview {
-    DietItemView(item: mockDietItemsForPreview.first!, onMealTypeChange:  { _, _ in })
 }
