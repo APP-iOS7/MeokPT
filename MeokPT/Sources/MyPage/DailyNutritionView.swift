@@ -47,7 +47,7 @@ struct DailyNutritionView: View {
                             }
                         }
                         .padding(.vertical, 10)
-                        .background(Color("App CardColor"))
+                        .background(Color(UIColor.secondarySystemGroupedBackground))
                         .cornerRadius(16)
                         .overlay(
                             RoundedRectangle(cornerRadius: 16)

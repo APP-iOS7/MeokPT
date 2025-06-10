@@ -15,12 +15,11 @@ struct MealSelectionView: View {
             .fixedSize()
             LazyVStack(spacing: 12) {
                 ForEach(store.currentDietList) { diet in
-                    Button {
-                        store.send(.dietCellTapped(id: diet.id))
-                    } label: {
-                        CommunityDietSelectView(diet: diet)
-                    }
-                    .buttonStyle(PlainButtonStyle())
+                    CommunityDietSelectView(diet: diet)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            store.send(.dietCellTapped(id: diet.id))
+                        }
                 }
             }
             .padding(.horizontal, 24)

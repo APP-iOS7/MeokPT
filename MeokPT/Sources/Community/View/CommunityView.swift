@@ -82,7 +82,7 @@ struct CommunityPostCard: View {
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color(.placeholderText), lineWidth: 1)
+                        .stroke(Color(uiColor: UIColor.separator), lineWidth: 1)
                 )
 
             Text(post.title)
@@ -100,7 +100,7 @@ struct CommunityPostCard: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(16)
-        .background(Color("App CardColor"))
+        .background(Color(UIColor.secondarySystemGroupedBackground))
         .cornerRadius(20)
         .overlay(
             RoundedRectangle(cornerRadius: 20)

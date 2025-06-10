@@ -167,7 +167,7 @@ struct CommunityDietCell: View {
             NutrientView(carbohydrate: carbohydrate, protein: protein, fat: fat)
         }
         .padding(24)
-        .background(Color("App CardColor"))
+        .background(Color(UIColor.secondarySystemGroupedBackground))
         .cornerRadius(20)
         .overlay(
             RoundedRectangle(cornerRadius: 20)

@@ -66,8 +66,8 @@ struct DietItemCellView: View {
             RoundedRectangle(cornerRadius: 20)
                 .fill(isSelected
                       ? Color("AppTertiaryColor").opacity(0.2)
-                      : Color("App CardColor"))
-                .stroke(Color.gray, lineWidth: 1)
+                      : Color(UIColor.secondarySystemGroupedBackground))
+                .stroke(Color(uiColor: UIColor.separator), lineWidth: 1)
         )
         .padding(.horizontal, 24)
         .onTapGesture {
