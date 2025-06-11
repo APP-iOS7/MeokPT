@@ -93,13 +93,13 @@ struct FoodNutritionItem: Decodable, Equatable, Identifiable {
         return value
     }
     var dietaryFiber: Double? {
-        guard let str = AMT_NUM7?.replacingOccurrences(of: "g", with: ""), !str.isEmpty, let value = Double(str) else {
+        guard let str = AMT_NUM8?.replacingOccurrences(of: "g", with: ""), !str.isEmpty, let value = Double(str) else {
             return nil
         }
         return value
     }
     var sugar: Double? {
-        guard let str = AMT_NUM8?.replacingOccurrences(of: "g", with: ""), !str.isEmpty, let value = Double(str) else {
+        guard let str = AMT_NUM7?.replacingOccurrences(of: "g", with: ""), !str.isEmpty, let value = Double(str) else {
             return nil
         }
         return value
