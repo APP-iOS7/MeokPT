@@ -20,11 +20,17 @@ struct CategorizedFoodSection: Identifiable, Equatable {
 struct CreateDietFeature {
     @ObservableState
     struct State: Equatable {
-        var foodNameInput: String = "고구마"
+        var foodNameInput: String = ""
         var lastSearchType: FoodNutritionClient.SearchType? = nil
+        
+        var selectedFilter: String = "모두 검색"
+        var dbClassName: String {
+            selectedFilter == "품목대표만 검색" ? "품목대표" : ""
+        }
+        let filters = ["모두 검색", "품목대표만 검색"]
 
         var currentPage: Int = 1
-        var numOfRows: Int = 50
+        var numOfRows: Int = 100
         var totalItemsCount: Int = 0
         
         var fetchedFoodItems: [FoodNutritionItem] = []
@@ -71,6 +77,8 @@ struct CreateDietFeature {
         case searchButtonTapped
         case foodNutritionResponse(Result<FoodNutritionAPIResponse, Error>)
         case goToPage(Int)
+        
+        case filterChanged(String)
         
         case scanBarcodeButtonTapped
         case barcodeScanned(String)
@@ -122,9 +130,9 @@ struct CreateDietFeature {
                 
                 state.lastSearchType = searchMethod
 
-                return .run { [searchType = searchMethod, pageNo = state.currentPage, numOfRows = state.numOfRows] send in
+                return .run { [searchType = searchMethod, pageNo = state.currentPage, numOfRows = state.numOfRows, dbClassName = state.dbClassName] send in
                     let result: Result<FoodNutritionAPIResponse, Error> = await Result {
-                        try await apiClient.fetch(searchType, pageNo, numOfRows, APIConstants.serviceKey)
+                        try await apiClient.fetch(searchType, pageNo, numOfRows, APIConstants.serviceKey, dbClassName)
                     }
                     await send(.foodNutritionResponse(result))
                 }
@@ -136,16 +144,34 @@ struct CreateDietFeature {
                     
                     if let items = response.body?.items, !items.isEmpty {
                         var uniqueItems = [FoodNutritionItem]()
-                        var seenReportNumbers = Set<String>()
-
-                        for item in items {
-                            if let reportNo = item.ITEM_REPORT_NO, !reportNo.isEmpty {
-                                if !seenReportNumbers.contains(reportNo) {
+                        
+                        // dbClassName이 "품목대표"일 때는 음식이름으로 중복 제거
+                        if state.dbClassName == "품목대표" {
+                            var seenFoodNames = Set<String>()
+                            
+                            for item in items {
+                                if let foodName = item.FOOD_NM_KR, !foodName.isEmpty {
+                                    if !seenFoodNames.contains(foodName) {
+                                        uniqueItems.append(item)
+                                        seenFoodNames.insert(foodName)
+                                    }
+                                } else {
                                     uniqueItems.append(item)
-                                    seenReportNumbers.insert(reportNo)
                                 }
-                            } else {
-                                uniqueItems.append(item)
+                            }
+                        } else {
+                            // ITEM_REPORT_NO로 중복 제거
+                            var seenReportNumbers = Set<String>()
+
+                            for item in items {
+                                if let reportNo = item.ITEM_REPORT_NO, !reportNo.isEmpty {
+                                    if !seenReportNumbers.contains(reportNo) {
+                                        uniqueItems.append(item)
+                                        seenReportNumbers.insert(reportNo)
+                                    }
+                                } else {
+                                    uniqueItems.append(item)
+                                }
                             }
                         }
                         state.fetchedFoodItems = uniqueItems
@@ -175,12 +201,16 @@ struct CreateDietFeature {
                 state.fetchedFoodItems = []
                 state.currentPage = targetPage
                 
-                return .run { [searchType = lastSearchType, pageNo = state.currentPage, numOfRows = state.numOfRows] send in
+                return .run { [searchType = lastSearchType, pageNo = state.currentPage, numOfRows = state.numOfRows, dbClassName = state.dbClassName] send in
                     let result: Result<FoodNutritionAPIResponse, Error> = await Result {
-                        try await apiClient.fetch(searchType, pageNo, numOfRows, APIConstants.serviceKey)
+                        try await apiClient.fetch(searchType, pageNo, numOfRows, APIConstants.serviceKey, dbClassName)
                     }
                     await send(.foodNutritionResponse(result))
                 }
+                
+            case .filterChanged(let filter):
+                state.selectedFilter = filter
+                return .none
                 
             case .scanBarcodeButtonTapped:
                 state.scanner = State.ScannerPresentationMarker()
@@ -220,9 +250,9 @@ struct CreateDietFeature {
                 state.lastSearchType = searchType
                 if !state.isLoading { state.isLoading = true }
 
-                return .run { [pageNo = state.currentPage, numOfRows = state.numOfRows] send in
+                return .run { [pageNo = state.currentPage, numOfRows = state.numOfRows, dbClassName = state.dbClassName] send in
                     let result: Result<FoodNutritionAPIResponse, Error> = await Result {
-                        try await apiClient.fetch(searchType, pageNo, numOfRows, APIConstants.serviceKey)
+                        try await apiClient.fetch(searchType, pageNo, numOfRows, APIConstants.serviceKey, dbClassName)
                     }
                     await send(.foodNutritionResponse(result))
                 }

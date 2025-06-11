@@ -19,7 +19,7 @@ struct FoodNutritionClient {
         case byFoodName(String)
         case byItemReportNo(String)
     }
-    var fetch: (_ searchType: SearchType, _ pageNo: Int, _ numOfRows: Int, _ serviceKey: String) async throws -> FoodNutritionAPIResponse
+    var fetch: (_ searchType: SearchType, _ pageNo: Int, _ numOfRows: Int, _ serviceKey: String, _ searchFilter: String) async throws -> FoodNutritionAPIResponse
 }
 
 struct FoodNutritionAPIResponse: Decodable, Equatable {
@@ -41,13 +41,14 @@ struct FoodNutritionAPIResponse: Decodable, Equatable {
 
 extension FoodNutritionClient: DependencyKey {
     static let liveValue = Self(
-        fetch: { searchType, pageNo, numOfRows, serviceKey in
+        fetch: { searchType, pageNo, numOfRows, serviceKey, dbClassName in
             var components = URLComponents(string: APIConstants.baseURL)
             var queryItems: [URLQueryItem] = [
                 URLQueryItem(name: "serviceKey", value: serviceKey),
                 URLQueryItem(name: "pageNo", value: String(pageNo)),
                 URLQueryItem(name: "numOfRows", value: String(numOfRows)),
-                URLQueryItem(name: "type", value: "json")
+                URLQueryItem(name: "type", value: "json"),
+                URLQueryItem(name: "DB_CLASS_NM", value: dbClassName)
             ]
             
             switch searchType {
