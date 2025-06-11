@@ -185,7 +185,7 @@ struct CreateDietView: View {
             ToolbarItemGroup(placement: .topBarTrailing) {
                 Button(action: {
                     store.send(.closeButtonTapped)
-                }) { Text("완료").foregroundStyle(Color("TextButton")) }
+                }) { Text(store.toolbarText).foregroundStyle(Color("TextButton")) }
             }
         }
     }

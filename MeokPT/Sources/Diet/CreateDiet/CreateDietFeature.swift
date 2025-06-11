@@ -23,15 +23,20 @@ struct CreateDietFeature {
         var foodNameInput: String = ""
         var lastSearchType: FoodNutritionClient.SearchType? = nil
         
-        var selectedFilter: String = "모두"
+        var selectedFilter: String = "전체"
         var dbClassName: String {
-            selectedFilter == "모두" ? "" : selectedFilter
+            selectedFilter == "전체" ? "" : selectedFilter
         }
-        let filters = ["모두", "품목대표", "상용제품"]
+        let filters = ["전체", "품목대표", "상용제품"]
 
         var currentPage: Int = 1
         var numOfRows: Int = 100
         var totalItemsCount: Int = 0
+        
+        var foodAddCount: Int = 0
+        var toolbarText: String {
+            foodAddCount == 0 ? "닫기" : "완료 (\(foodAddCount))"
+        }
         
         var fetchedFoodItems: [FoodNutritionItem] = []
         var isLoading: Bool = false
@@ -296,6 +301,7 @@ struct CreateDietFeature {
                     state.addFoodSheet = nil
                     return .none
                 case .addFoodToDiet(let foodName, let amount, let calories, let carbohydrates, let protein, let fat, let dietFiber, let sugar, let sodium):
+                    state.foodAddCount += 1
                     // 상위로 델리게이트
                     return .send(.delegate(.addFoodToDiet(
                         foodName: foodName,
@@ -326,6 +332,7 @@ struct CreateDietFeature {
                     state.addCustomFoodSheet = nil
                     return .none
                 case .addFoodToDiet(let foodName, let amount, let calories, let carbohydrates, let protein, let fat, let dietFiber, let sugar, let sodium):
+                    state.foodAddCount += 1
                     // 상위로 델리게이트
                     return .send(.delegate(.addFoodToDiet(
                         foodName: foodName,
