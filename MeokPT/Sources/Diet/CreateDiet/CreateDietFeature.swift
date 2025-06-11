@@ -210,7 +210,12 @@ struct CreateDietFeature {
                 
             case .filterChanged(let filter):
                 state.selectedFilter = filter
-                return .none
+                
+                if state.fetchedFoodItems.isEmpty {
+                    return .none
+                } else {
+                    return .send(.searchButtonTapped)
+                }
                 
             case .scanBarcodeButtonTapped:
                 state.scanner = State.ScannerPresentationMarker()
