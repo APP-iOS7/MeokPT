@@ -22,7 +22,7 @@ struct CreateDietView: View {
                         TextField(
                             "",
                             text: $store.foodNameInput.sending(\.foodNameInputChanged),
-                            prompt: Text("식품 이름 (예: 고구마, 휠렛 버거)")
+                            prompt: Text("식품명으로 검색하세요. (예: 닭가슴살 샐러드)").font(.callout)
                         )
                         .focused($focusedField)
                         .autocapitalization(.none)
@@ -144,8 +144,6 @@ struct CreateDietView: View {
                 .padding(.horizontal, 24)
             }
         }
-        .navigationTitle("식단 생성")
-        .navigationBarTitleDisplayMode(.inline)
         .contentShape(Rectangle())
         .background(Color("AppBackgroundColor"))
         .sheet(item: $store.scope(state: \.scanner, action: \.scannerSheet)) { _ in
@@ -172,12 +170,23 @@ struct CreateDietView: View {
                 subTitle: store.toastMessage
             )
         }
-        .toolbar(content: {
-            ToolbarItem(placement: .topBarTrailing,
-                        content: { Button(action: {
-                store.send(.closeButtonTapped)
-            }) { Text("완료").foregroundStyle(Color("TextButton")) }})
-        })
+        .toolbar {
+            ToolbarItemGroup(placement: .topBarLeading) {
+                Picker("검색필터", selection: $store.selectedFilter.sending(\.filterChanged)) {
+                    ForEach(store.filters, id: \.self) { filter in
+                        Text(filter).tag(filter)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .fixedSize()
+                .padding(.leading, 8)
+            }
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                Button(action: {
+                    store.send(.closeButtonTapped)
+                }) { Text("완료").foregroundStyle(Color("TextButton")) }
+            }
+        }
     }
     
     private var scannerSheetContent: some View {
