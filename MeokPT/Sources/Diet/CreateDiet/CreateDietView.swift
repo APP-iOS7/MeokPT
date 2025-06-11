@@ -17,6 +17,12 @@ struct CreateDietView: View {
     var body: some View {
         VStack {
             VStack(alignment: .leading) {
+                Picker("검색필터", selection: $store.selectedFilter.sending(\.filterChanged)) {
+                    ForEach(store.filters, id: \.self) { filter in
+                        Text(filter).tag(filter)
+                    }
+                }
+                .pickerStyle(.segmented)
                 HStack {
                     VStack {
                         TextField(
@@ -33,26 +39,18 @@ struct CreateDietView: View {
                     }
                     Spacer()
                     Button(action: {
-                        if(focusedField == false) {
-                            store.send(.scanBarcodeButtonTapped)
-                        } else {
-                            store.send(.searchButtonTapped)
-                            focusedField = false
-                        }
+                        store.send(.searchButtonTapped)
+                        focusedField = false
                     }) {
-                        if(focusedField == false) {
-                            Image(systemName: "barcode.viewfinder")
-                                .font(.title)
-                        } else {
-                            Text("검색")
-                        }
+                        Text("검색")
                     }
                     .frame(minWidth: 44)
                     .disabled(store.isLoading)
                     .foregroundStyle(Color("TextButton"))
                 }
+                .padding(.top, 8)
+                .padding(.leading, 8)
             }
-            .padding(.leading, 8)
             .padding(.vertical, 8)
             .padding(.horizontal, 24)
 
@@ -144,6 +142,8 @@ struct CreateDietView: View {
                 .padding(.horizontal, 24)
             }
         }
+        .navigationTitle("음식 추가")
+        .navigationBarTitleDisplayMode(.inline)
         .contentShape(Rectangle())
         .background(Color("AppBackgroundColor"))
         .sheet(item: $store.scope(state: \.scanner, action: \.scannerSheet)) { _ in
@@ -172,14 +172,15 @@ struct CreateDietView: View {
         }
         .toolbar {
             ToolbarItemGroup(placement: .topBarLeading) {
-                Picker("검색필터", selection: $store.selectedFilter.sending(\.filterChanged)) {
-                    ForEach(store.filters, id: \.self) { filter in
-                        Text(filter).tag(filter)
-                    }
+                Button(action: {
+                    store.send(.scanBarcodeButtonTapped)
+                    focusedField = false
+                }) {
+                    Image(systemName: "barcode.viewfinder")
+                        .font(.title3)
                 }
-                .pickerStyle(.segmented)
-                .fixedSize()
-                .padding(.leading, 8)
+                .disabled(store.isLoading)
+                .foregroundStyle(Color("TextButton"))
             }
             ToolbarItemGroup(placement: .topBarTrailing) {
                 Button(action: {
