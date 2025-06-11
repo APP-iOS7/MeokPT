@@ -23,11 +23,11 @@ struct CreateDietFeature {
         var foodNameInput: String = ""
         var lastSearchType: FoodNutritionClient.SearchType? = nil
         
-        var selectedFilter: String = "모두 검색"
+        var selectedFilter: String = "모두"
         var dbClassName: String {
-            selectedFilter == "품목대표만 검색" ? "품목대표" : ""
+            selectedFilter == "모두" ? "" : selectedFilter
         }
-        let filters = ["모두 검색", "품목대표만 검색"]
+        let filters = ["모두", "품목대표", "상용제품"]
 
         var currentPage: Int = 1
         var numOfRows: Int = 100
