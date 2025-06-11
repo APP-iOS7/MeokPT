@@ -35,7 +35,7 @@ struct DietItemView: View {
                                 if index < rowItems.count - 1 {
                                     Divider()
                                         .frame(height: 40)
-                                        .padding(.horizontal, 8)
+//                                        .padding(.horizontal, 8)
                                 }
                             }
                         }

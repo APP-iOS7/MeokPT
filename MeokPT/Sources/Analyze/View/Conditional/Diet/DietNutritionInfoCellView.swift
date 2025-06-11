@@ -5,7 +5,7 @@ struct DietNutritionInfoCellView: View {
     let value: String
     
     var body: some View {
-        VStack {
+        VStack(alignment: .center) {
             Text(name)
                 .font(.caption)
                 .foregroundStyle(Color("AppSecondaryColor"))
